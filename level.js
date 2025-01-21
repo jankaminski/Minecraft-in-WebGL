@@ -24,7 +24,7 @@ class Level {
         if (Input.keyboard.quit)
             throw "QUIT";
 
-        this.terrain.updateLoading(gl, this, this.blockTextureAtlas);
+        this.terrain.update(gl, this, this.blockTextureAtlas);
         //this.camera.followInFirstPerson(this.entities[0]);
         this.camera.followInThirdPerson(this.entities[0], 10, 0.2);
         //camera.freecam(Input.keyboard);

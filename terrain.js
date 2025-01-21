@@ -32,15 +32,11 @@ class Terrain {
                 return area;
         return null;
     }
-    updateLoading(gl, level, blockTextureAtlas) {
+    updateChunkEntities(level) {
         for (let chunk of this.chunks)
             chunk.updateEntities(level);
-
-        /*for (let chunk of this.chunks) {
-            if (chunk.entitiesForCollision.length > 0)
-                console.log("{ " + chunk.index.x + ", " + chunk.index.z + " }: " + chunk.entitiesForCollision.length + " entities");
-        }*/
-
+    }
+    moveLoadedAreas(level) {
         for (let player of level.players) {
             let areaID = player.getLoadedAreaID();
             let playerPosition = player.getCenter();
@@ -52,10 +48,18 @@ class Terrain {
             }
             area.move(chunkIndex);
         }
+    }
+    updateLoadingAreas(gl, blockTextureAtlas) {
         for (let area of this.loadedAreas){
-            area.updateLoadingTerrain();
-            area.updateLoadingGraphics(gl, blockTextureAtlas);
+            //area.updateLoadingTerrain();
+            //area.updateLoadingGraphics(gl, blockTextureAtlas);
+            area.update(gl, blockTextureAtlas);
         }
+    }
+    update(gl, level, blockTextureAtlas) {
+        this.updateChunkEntities(level);
+        this.moveLoadedAreas(level);
+        this.updateLoadingAreas(gl, blockTextureAtlas)
         this.markOutOfSightChunks();
         this.deleteMarkedChunks();
     }
@@ -175,12 +179,9 @@ class LoadedArea {
         this.terrain = terrain;
         this.radius = radius;
         this.centralIndex = { x : index.x, z : index.z };
-        this.physicalLoader = new TerrainLoader(this.centralIndex, radius, 1);
-        this.graphicalLoader = new TerrainLoader(this.centralIndex, radius, 4);
-        this.physicalLoader.restart(this.centralIndex);
-        this.graphicalUpdateCooldown = 0;
-        this.physicalUpdateCooldown = 0;
-        this.graphicalLoadCooldown = 0;
+        this.physicalLoader = new TerrainLoader(terrain, this.centralIndex, radius, 1);
+        this.graphicalLoader = new TerrainLoader(terrain, this.centralIndex, radius, 4);
+        this.loadCooldown = 0;
     }
     move(newCentralIndex) {
         let cx = this.centralIndex.x;
@@ -191,38 +192,31 @@ class LoadedArea {
             this.centralIndex = { x : nx, z : nz };
             console.log("loaded area moved");
             this.physicalLoader.restart(this.centralIndex);
-            this.graphicalLoadCooldown++;
+            this.loadCooldown++;
         }
-        if (Input.keyboard.forceReload || this.graphicalLoadCooldown > this.radius / 2) {
+        if (Input.keyboard.forceReload || this.loadCooldown > this.radius / 2) {
             console.log("graphical loading restart");
             this.graphicalLoader.restart(this.centralIndex);
-            this.graphicalLoadCooldown = 0;
+            this.loadCooldown = 0;
         }
     }
-    updateLoadingTerrain() {
-        this.physicalLoader.update();
-        if (!this.physicalLoader.readyForNext())
-            return;
-        let index = this.physicalLoader.nextIndex();
-        let chunk = this.terrain.getChunkByIndex(index);
-        if (chunk === null) {
-            chunk = new Chunk(this.terrain, index.x, index.z);
-            this.terrain.chunks.push(chunk);
-        }
-    }
-    updateLoadingGraphics(gl, blockTextureAtlas) {
-        this.graphicalLoader.update();
-        if (!this.graphicalLoader.readyForNext())
-            return;
-        let index = this.graphicalLoader.nextIndex();
-        let chunk = this.terrain.getChunkByIndex(index);
-        if (chunk != null) 
-            chunk.acquireModel(gl, blockTextureAtlas);
+    update(gl, blockTextureAtlas) {
+        this.physicalLoader.update((index, chunk) => {
+            if (chunk === null) {
+                chunk = new Chunk(this.terrain, index.x, index.z);
+                this.terrain.chunks.push(chunk);
+            }
+        });
+        this.graphicalLoader.update((index, chunk) => {
+            if (chunk !== null)
+                chunk.acquireModel(gl, blockTextureAtlas);
+        });
     }
 }
 
 class TerrainLoader {
-    constructor(originIndex, radius, updateRate) {
+    constructor(terrain, originIndex, radius, updateRate) {
+        this.terrain = terrain;
         this.radius = radius;
         this.updateRate = updateRate;
         this.restart(originIndex);
@@ -252,23 +246,19 @@ class TerrainLoader {
         this.noOfAlreadyLoadedChunks = 0;
         this.noOfChunksToLoad = this.currentLayerIndices.length;
     }
-    update() {
+    update(updateAction) {
         if (this.updateCooldown < this.updateRate)
             this.updateCooldown++; 
         else
             this.updateCooldown = 0;
-    }
-    readyForNext() {
-        if (this.updateCooldown === 0) 
-            return true;
-        return false;
-    }
-    nextIndex() {
-        if (this.noOfAlreadyLoadedChunks >= this.noOfChunksToLoad || this.currentLayer > this.radius)
+        if (this.updateCooldown !== 0)
+            return;
+        if (this.noOfAlreadyLoadedChunks >= this.noOfChunksToLoad)
             this.beginNewLoadingLayer();
         let index = this.currentLayerIndices[this.noOfAlreadyLoadedChunks];
         this.noOfAlreadyLoadedChunks++;
-        return index;
+        let chunk = this.terrain.getChunkByIndex(index);
+        updateAction(index, chunk);
     }
 } 
 
