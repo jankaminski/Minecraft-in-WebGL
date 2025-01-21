@@ -4,6 +4,10 @@ class Input {
         position : {
             x : 0.0,
             y : 0.0
+        },
+        delta : {
+            x : 0.0,
+            y : 0.0
         }
     };
     static keyboard = {
@@ -21,6 +25,12 @@ class Input {
         quit : false,
         forceReload : false
     };
+    static refresh() {
+        Input.mouse.delta.x = 0;
+        Input.mouse.delta.y = 0;
+        Input.mouse.position.x = 0;
+        Input.mouse.position.y = 0;
+    }
 }
 
 function mouseDown(event) {
@@ -31,9 +41,24 @@ function mouseUp(event) {
     Input.mouse.pressed = false;
 }
 
+let canvas = document.getElementById("game-surface");
+
 function mouseMove(event) {
-    Input.mouse.position.x = event.clientX;
-    Input.mouse.position.y = event.clientY;
+    if (document.pointerLockElement !== canvas && document.mozPointerLockElement !== canvas && document.webkitPointerLockElement !== canvas) {
+        return;
+    }
+    Input.mouse.delta.x = event.movementX;
+    Input.mouse.delta.y = event.movementY;
+    Input.mouse.position.x  = event.pageX;
+    Input.mouse.position.y  = event.pageY;
+}
+
+function mouseClick() {
+    canvas.requestPointerLock = 
+        canvas.requestPointerLock ||
+        canvas.mozRequestPointerLock ||
+        canvas.webkitRequestPointerLock;
+    canvas.requestPointerLock();
 }
 
 function keyDown(event) {
@@ -47,7 +72,7 @@ function keyDown(event) {
     if (event.key === 'ArrowDown') { Input.keyboard.lookDown = true; }
     if (event.key === 'ArrowLeft') { Input.keyboard.lookLeft = true; }
     if (event.key === 'ArrowRight') { Input.keyboard.lookRight = true; }
-    if (event.key === 'Shift') { Input.keyboard.sprint = true; }
+    if (event.shiftKey) { Input.keyboard.sprint = true; }
     if (event.key === 'b') { Input.keyboard.quit = true; }
     if (event.key === 'n') { Input.keyboard.forceReload = true; }
 }
@@ -63,16 +88,16 @@ function keyUp(event) {
     if (event.key === 'ArrowDown') { Input.keyboard.lookDown = false; }
     if (event.key === 'ArrowLeft') { Input.keyboard.lookLeft = false; }
     if (event.key === 'ArrowRight') { Input.keyboard.lookRight = false; }
-    if (event.key === 'Shift') { Input.keyboard.sprint = false; }
+    if (!event.shiftKey) { Input.keyboard.sprint = false; }
     if (event.key === 'b') { Input.keyboard.quit = false; }
     if (event.key === 'n') { Input.keyboard.forceReload = false; }
 }
 
-let body = document.querySelector('body');
-body.addEventListener('mousedown', mouseDown, false);
-body.addEventListener('mouseup', mouseUp, false);
-body.addEventListener('mousemove', mouseMove, false);
-body.addEventListener('keydown', keyDown, false);
-body.addEventListener('keyup', keyUp, false);
+document.addEventListener('mousedown', mouseDown, false);
+document.addEventListener('mouseup', mouseUp, false);
+document.addEventListener('mousemove', mouseMove, false);
+document.addEventListener("click", mouseClick, false);
+document.addEventListener('keydown', keyDown, false);
+document.addEventListener('keyup', keyUp, false);
 
 export { Input };

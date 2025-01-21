@@ -20,27 +20,37 @@ class Level {
         this.entities.push(entity);
         this.entityRenderer.addEntity(entity);
     }
+    cleanDeadEntities() {
+        for (let batch of this.entityRenderer.entityRenderBatches) {
+            let refreshedBatchEntities = [];
+            for (let entity of batch.entities)
+                if (!entity.toDelete)
+                    refreshedBatchEntities.push(entity);
+            batch.entities = refreshedBatchEntities;
+        }
+    }
     update(gl) {
         if (Input.keyboard.quit)
             throw "QUIT";
+        if (Input.keyboard.lookUp)
+            this.entities[0].setFirstPerson(true);
+        if (Input.keyboard.lookDown)
+            this.entities[0].setFirstPerson(false);
 
         this.terrain.update(gl, this, this.blockTextureAtlas);
-        //this.camera.followInFirstPerson(this.entities[0]);
-        this.camera.followInThirdPerson(this.entities[0], 10, 0.2);
-        //camera.freecam(Input.keyboard);
-        //this.camera.followTarget(this.entities[0].getCenter());
+        if (this.entities[0].firstPerson)
+            this.camera.followInFirstPerson(this.entities[0]);
+        else
+            this.camera.followInThirdPerson(this.entities[0], 10, 0.2);
+
         for (let entity of this.entities)
             entity.update(this);
 
-
-        let refreshedEntities = [];
-        for (let entity of this.entities) {
-            if (!entity.toDelete)
-                refreshedEntities.push(entity);
-        }
-        this.entities = refreshedEntities;
+        this.cleanDeadEntities();
 
         console.log("Entity count: " + this.entities.length);
+
+        Input.refresh();
     }
     render(gl, terrainProgram, entityProgram) {
         gl.clearColor(0.0, 0.1, 1.0, 0.2);
