@@ -9,7 +9,6 @@ class Player extends Creeper {
         this.focusID = Player.focusIDCount;
         //this.toRender = false;
         Player.focusIDCount++;
-        this.pl = true;
     }
     onBeforeUpdate(level) {
         let movement = Input.keyboard;

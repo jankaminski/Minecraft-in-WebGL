@@ -13,8 +13,6 @@ class Creeper extends Mob {
         this.addJoint(Vec3.make(-0.125, -0.4375,  0.125));
         this.addJoint(Vec3.make( 0.125, -0.4375, -0.125));
         this.addJoint(Vec3.make(-0.125, -0.4375, -0.125));
-
-        this.pl = false;
     }
     getEyePos() {
         return Vec3.add(this.getCenter(), Vec3.make(0, 0.0625 * 9, 0));
