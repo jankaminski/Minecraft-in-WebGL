@@ -141,20 +141,6 @@ class Chunk extends VoxelBox {
         let { worldX, worldY, worldZ } = this.worldCoordsFromInChunkCoords(x, y, z);
         this.terrain.setBlockByWorldCoords(worldX, worldY, worldZ, block);
     }
-    emergencyReloadNeighbors() {
-        let neighbors = this.getNeighborChunks();
-        if (neighbors[0] === null)
-            neighbors[0] = new Chunk(this.terrain, this.index.x + 1, this.index.z);
-        if (neighbors[1] === null)
-            neighbors[1] = new Chunk(this.terrain, this.index.x - 1, this.index.z);
-        if (neighbors[2] === null)
-            neighbors[2] = new Chunk(this.terrain, this.index.x, this.index.z + 1);
-        if (neighbors[3] === null)
-            neighbors[3] = new Chunk(this.terrain, this.index.x, this.index.z - 1);
-        for (let neighbor of neighbors)
-            if (!this.terrain.chunks.includes(neighbor))
-                this.terrain.chunks.push(neighbor);
-    }
 }
 
 class ChunkVertexBuffer {
