@@ -5,7 +5,7 @@ class Terrain {
         noise.seed(Math.random());
         this.chunks = [];
         this.loadedAreas = [];
-        this.generator = new Generator(0.017, 0);
+        this.generator = new Generator(0.017, 5);
     }
     getGenerator() {
         return this.generator;
