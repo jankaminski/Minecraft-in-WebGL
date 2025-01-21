@@ -8,6 +8,7 @@ import {
     Mesh
 } from "./model.js";
 import { loadShaderProgramFromFiles, makeMeshIndices } from "./res-utils.js";
+import { Block, BLOCK_SIZE } from "./block.js";
 
 const TERMINAL_VELOCITY = -0.4;
 const GRAVITY_CONSTANT = 0.003;
@@ -22,6 +23,7 @@ class Entity {
         this.momentum = Vec3.makeS(0.0);
         this.affectedByGravity = true;
         this.feetOnGround = false;
+        this.toDelete = false;
     }
     getEyePos() {
         return Vec3.copy(this.center);
@@ -212,6 +214,9 @@ class Entity {
         // move
         this.move(level);
         this.onAfterUpdate(level);
+
+        if (this.center.y < -10 * BLOCK_SIZE)
+            this.toDelete = true; 
     }
     getWorldMatrix() {
         let posMat = Mat4.translate(Mat4.identity(), this.center);

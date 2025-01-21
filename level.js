@@ -31,6 +31,16 @@ class Level {
         //this.camera.followTarget(this.entities[0].getCenter());
         for (let entity of this.entities)
             entity.update(this);
+
+
+        let refreshedEntities = [];
+        for (let entity of this.entities) {
+            if (!entity.toDelete)
+                refreshedEntities.push(entity);
+        }
+        this.entities = refreshedEntities;
+
+        console.log("Entity count: " + this.entities.length);
     }
     render(gl, terrainProgram, entityProgram) {
         gl.clearColor(0.0, 0.1, 1.0, 0.2);
