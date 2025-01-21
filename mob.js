@@ -1,9 +1,3 @@
-import { Entity } from "./entity.js";
-import { 
-    Mat4, 
-    Vec3 
-} from "./math-utils.js";
-
 class Mob extends Entity {
     constructor(posX, posY, posZ, sizeX, sizeY, sizeZ, model) {
         super(posX, posY, posZ, sizeX, sizeY, sizeZ, model);
@@ -21,5 +15,3 @@ class Mob extends Entity {
         this.getAnimationExternalForces(level);
     }
 }
-
-export { Mob };

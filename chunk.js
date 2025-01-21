@@ -1,17 +1,3 @@
-import { 
-    Block, 
-    BLOCK_SIZE, 
-    getBlockProperties 
-} from "./block.js";
-import { collided, Hitbox } from "./collision.js";
-import { 
-    makeAttrPtr, 
-    Mesh, 
-    Model 
-} from "./model.js";
-import { loadShaderProgramFromFiles, makeOneFaceIndices } from "./res-utils.js";
-import { VoxelBox } from "./voxel-box.js";
-
 const CHUNK_HEIGHT_IN_BLOCKS = 128;
 const CHUNK_WIDTH_IN_BLOCKS = 16;
 
@@ -19,7 +5,6 @@ const CHUNK_HEIGHT = CHUNK_HEIGHT_IN_BLOCKS * BLOCK_SIZE;
 const CHUNK_WIDTH = CHUNK_WIDTH_IN_BLOCKS * BLOCK_SIZE;
 const TOTAL_BLOCKS_PER_CHUNK = CHUNK_WIDTH_IN_BLOCKS * CHUNK_HEIGHT_IN_BLOCKS * CHUNK_WIDTH_IN_BLOCKS;
 
-const VERTICES_PER_FACE = 4;
 const FACES_IN_CUBE = 6; // oh really? 
 
 const INDICES_TEMPLATE = [
@@ -204,15 +189,3 @@ async function makeChunkShaderProgram(gl, projectionMatrix) {
     terrainProgram.turnOff(gl);
     return terrainProgram;
 }
-
-export { 
-    Chunk, 
-    CHUNK_WIDTH, 
-    CHUNK_HEIGHT, 
-    CHUNK_HEIGHT_IN_BLOCKS, 
-    CHUNK_WIDTH_IN_BLOCKS,
-    BLOCK_TEX_ATLAS_ROWS,
-    BLOCK_TEX_ATLAS_COLUMNS,
-    BLOCK_PIXELS,
-    makeChunkShaderProgram
-};

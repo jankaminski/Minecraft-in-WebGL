@@ -1,11 +1,3 @@
-import { Camera } from "./camera.js";
-import { Input } from "./input.js";
-import { 
-    EntityRenderer, 
-    TerrainRenderer 
-} from "./renderer.js";
-import { Terrain } from "./terrain.js";
-
 class Level {
     constructor(blockTextureAtlas, ...entities) {
         this.blockTextureAtlas = blockTextureAtlas;
@@ -59,5 +51,3 @@ class Level {
         this.entityRenderer.renderPass(gl, this, entityProgram);
     }
 }
-
-export { Level };

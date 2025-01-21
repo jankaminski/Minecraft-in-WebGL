@@ -87,8 +87,3 @@ class EntityRenderBatch {
         this.entities.push(entity);
     }
 }
-
-export {
-    TerrainRenderer, 
-    EntityRenderer 
-};

@@ -1,15 +1,3 @@
-import { 
-    Mat4, 
-    Vec3
-} from "./math-utils.js";
-import { detectCollision, detectCollisionWithTerrain } from "./collision.js";
-import { 
-    makeAttrPtr, 
-    Mesh
-} from "./model.js";
-import { loadShaderProgramFromFiles, makeMeshIndices } from "./res-utils.js";
-import { Block, BLOCK_SIZE } from "./block.js";
-
 const TERMINAL_VELOCITY = -0.4;
 const GRAVITY_CONSTANT = 0.003;
 
@@ -252,9 +240,3 @@ async function makeEntityShaderProgram(gl, projectionMatrix) {
     entityProgram.turnOff(gl);
     return entityProgram;
 }
-
-export { 
-    Entity, 
-    makeEntityMesh,
-    makeEntityShaderProgram 
-};

@@ -99,5 +99,3 @@ document.addEventListener('mousemove', mouseMove, false);
 document.addEventListener("click", mouseClick, false);
 document.addEventListener('keydown', keyDown, false);
 document.addEventListener('keyup', keyUp, false);
-
-export { Input };

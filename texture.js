@@ -62,8 +62,3 @@ function make2DTexFromImage(gl, wrap, filter, image) {
     tex.unbind(gl);
     return tex;
 }
-
-export { 
-    make2DTexFromImage, 
-    TextureAtlas 
-};

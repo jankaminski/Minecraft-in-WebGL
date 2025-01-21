@@ -69,5 +69,3 @@ class ShaderProgram {
         gl.uniformMatrix4fv(loc, gl.GL_FALSE, matrix);
     }
 }
-
-export { ShaderProgram };

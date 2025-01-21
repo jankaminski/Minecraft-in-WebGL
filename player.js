@@ -1,7 +1,3 @@
-import { Creeper } from "./creeper.js";
-import { Input } from "./input.js";
-import { Vec2, Vec3 } from "./math-utils.js";
-
 class Player extends Creeper {
     static loadedAreaIDCount = 0;
     constructor(posX, posY, posZ, model) {
@@ -90,5 +86,3 @@ class Player extends Creeper {
             this.alreadyShot = false;
     }
 }
-
-export { Player };

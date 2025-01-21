@@ -1,19 +1,3 @@
-import { Vec3 } from "./math-utils.js";
-import { noise } from "./perlin-noise.js";
-import { 
-    Chunk, 
-    CHUNK_WIDTH 
-} from "./chunk.js";
-import { 
-    Block, 
-    BLOCK_SIZE 
-} from "./block.js";
-import { Input } from "./input.js";
-import { 
-    CHUNK_HEIGHT_IN_BLOCKS, 
-    CHUNK_WIDTH_IN_BLOCKS 
-} from "./chunk.js";
-
 let RENDER_DISTANCE = 12;
 
 class Terrain {
@@ -261,5 +245,3 @@ class TerrainLoader {
         updateAction(index, chunk);
     }
 } 
-
-export { Terrain };

@@ -1,29 +1,3 @@
-import { Model } from "./model.js";
-import { Level } from "./level.js";
-import { Player } from "./player.js";
-import { 
-    makeEntityMesh, 
-    makeEntityShaderProgram
-} from "./entity.js";
-import { 
-    loadImage, 
-    loadMeshDataFromJSON 
-} from "./res-utils.js";
-import { 
-    make2DTexFromImage, 
-    TextureAtlas 
-} from "./texture.js";
-import { Mat4 } from "./math-utils.js";
-import { Block } from "./block.js";
-import { 
-    BLOCK_PIXELS, 
-    BLOCK_TEX_ATLAS_COLUMNS, 
-    BLOCK_TEX_ATLAS_ROWS, 
-    makeChunkShaderProgram 
-} from "./chunk.js";
-import { Mob } from "./mob.js";
-import { Creeper } from "./creeper.js";
-
 class BlockTextureAtlas extends TextureAtlas {
     constructor(gl) {
         super(gl, 
