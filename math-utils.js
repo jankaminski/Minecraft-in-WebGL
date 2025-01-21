@@ -225,13 +225,10 @@ class Mat4 {
         out[9] = a01 * b20 + a11 * b21 + a21 * b22;
         out[10] = a02 * b20 + a12 * b21 + a22 * b22;
         out[11] = a03 * b20 + a13 * b21 + a23 * b22;
-        if (a !== out) {
-            // If the source and destination differ, copy the unchanged last row
-            out[12] = a[12];
-            out[13] = a[13];
-            out[14] = a[14];
-            out[15] = a[15];
-        }
+        out[12] = a[12];
+        out[13] = a[13];
+        out[14] = a[14];
+        out[15] = a[15];
         return out;
     }
     static scale(a, v) {
