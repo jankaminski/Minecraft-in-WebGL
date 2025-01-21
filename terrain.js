@@ -20,16 +20,16 @@ class Terrain {
     constructor() {
         noise.seed(Math.random());
         this.chunks = [];
-        this.loadFoci = [];
+        this.loadedAreas = [];
         this.generator = new Generator(0.017, 0);
     }
     getGenerator() {
         return this.generator;
     }
-    getFocusByID(id) {
-        for (let focus of this.loadFoci)
-            if (focus.id === id)
-                return focus;
+    getLoadedAreaByID(id) {
+        for (let area of this.loadedAreas)
+            if (area.id === id)
+                return area;
         return null;
     }
     updateLoading(gl, level, blockTextureAtlas) {
@@ -42,19 +42,19 @@ class Terrain {
         }*/
 
         for (let player of level.players) {
-            let focusID = player.getFocusID();
+            let areaID = player.getLoadedAreaID();
             let playerPosition = player.getCenter();
             let chunkIndex = this.chunkIndexFromWorldCoords(playerPosition.x, playerPosition.z);
-            let focus = this.getFocusByID(focusID);
-            if (focus === null) {
-                focus = new TerrainLoadFocus(this, chunkIndex, RENDER_DISTANCE, focusID);
-                this.loadFoci.push(focus);
+            let area = this.getLoadedAreaByID(areaID);
+            if (area === null) {
+                area = new LoadedArea(this, chunkIndex, RENDER_DISTANCE, areaID);
+                this.loadedAreas.push(area);
             }
-            focus.moveLoadedArea(chunkIndex);
+            area.move(chunkIndex);
         }
-        for (let loadFocus of this.loadFoci){
-            loadFocus.updatePhysicalLoading();
-            loadFocus.updateLoadingGraphics(gl, blockTextureAtlas);
+        for (let area of this.loadedAreas){
+            area.updateLoadingTerrain();
+            area.updateLoadingGraphics(gl, blockTextureAtlas);
         }
         this.markOutOfSightChunks();
         this.deleteMarkedChunks();
@@ -62,12 +62,12 @@ class Terrain {
     markOutOfSightChunks() {
         for (let chunk of this.chunks) {
             let outs = [];
-            for (let loadFocus of this.loadFoci) {
+            for (let area of this.loadedAreas) {
                 let cx = chunk.index.x;
                 let cz = chunk.index.z;
-                let fx = loadFocus.centralIndex.x;
-                let fz = loadFocus.centralIndex.z;
-                let out = Math.abs(cx - fx) + Math.abs(cz - fz) >= loadFocus.radius;
+                let fx = area.centralIndex.x;
+                let fz = area.centralIndex.z;
+                let out = Math.abs(cx - fx) + Math.abs(cz - fz) >= area.radius;
                 outs.push(out);
             }
             if (outs.every((value) => value === true)) 
@@ -169,20 +169,20 @@ class Generator {
     }
 }
 
-class TerrainLoadFocus {
+class LoadedArea {
     constructor(terrain, index, radius, id) {
         this.id = id;
         this.terrain = terrain;
         this.radius = radius;
         this.centralIndex = { x : index.x, z : index.z };
-        this.physicalLoader = new TerrainLoader(this.centralIndex);
-        this.graphicalLoader = new TerrainLoader(this.centralIndex);
+        this.physicalLoader = new TerrainLoader(this.centralIndex, radius, 1);
+        this.graphicalLoader = new TerrainLoader(this.centralIndex, radius, 4);
         this.physicalLoader.restart(this.centralIndex);
         this.graphicalUpdateCooldown = 0;
         this.physicalUpdateCooldown = 0;
         this.graphicalLoadCooldown = 0;
     }
-    moveLoadedArea(newCentralIndex) {
+    move(newCentralIndex) {
         let cx = this.centralIndex.x;
         let cz = this.centralIndex.z;
         let nx = newCentralIndex.x;
@@ -199,13 +199,9 @@ class TerrainLoadFocus {
             this.graphicalLoadCooldown = 0;
         }
     }
-    updatePhysicalLoading() {
-        if (this.physicalUpdateCooldown < 1) {
-            this.physicalUpdateCooldown++; 
-            return;
-        }
-        this.physicalUpdateCooldown = 0;
-        if (this.physicalLoader.layer > this.radius) 
+    updateLoadingTerrain() {
+        this.physicalLoader.update();
+        if (!this.physicalLoader.readyForNext())
             return;
         let index = this.physicalLoader.nextIndex();
         let chunk = this.terrain.getChunkByIndex(index);
@@ -215,12 +211,8 @@ class TerrainLoadFocus {
         }
     }
     updateLoadingGraphics(gl, blockTextureAtlas) {
-        if (this.graphicalUpdateCooldown < 4) {
-            this.graphicalUpdateCooldown++; 
-            return;
-        }
-        this.graphicalUpdateCooldown = 0;
-        if (this.graphicalLoader.layer > this.radius) 
+        this.graphicalLoader.update();
+        if (!this.graphicalLoader.readyForNext())
             return;
         let index = this.graphicalLoader.nextIndex();
         let chunk = this.terrain.getChunkByIndex(index);
@@ -230,39 +222,53 @@ class TerrainLoadFocus {
 }
 
 class TerrainLoader {
-    constructor(originIndex) {
+    constructor(originIndex, radius, updateRate) {
+        this.radius = radius;
+        this.updateRate = updateRate;
         this.restart(originIndex);
     }
     restart(originIndex) {
         this.originIndex = { x : originIndex.x, z : originIndex.z };
         this.currentLayerIndices = [{ x : this.originIndex.x, z : this.originIndex.z }];
-        this.alreadyLoadedChunksCount = 0;
-        this.noOfChunksYetToLoad = 0;
-        this.layer = 0;
+        this.noOfAlreadyLoadedChunks = 0;
+        this.noOfChunksToLoad = 0;
+        this.currentLayer = 0;
     }
     beginNewLoadingLayer() {
         let newIndices = [];
-        for (let i = -this.layer; i <= this.layer; i++) {
+        for (let i = -this.currentLayer; i <= this.currentLayer; i++) {
             let offsetX = this.originIndex.x + i;
             let offsetZ1 = this.originIndex.z;
             let offsetZ2 = this.originIndex.z;
-            if (i != -this.layer && i != this.layer) {
-                offsetZ1 += (-this.layer + Math.abs(i));
-                offsetZ2 += ( this.layer - Math.abs(i));
+            if (i != -this.currentLayer && i != this.currentLayer) {
+                offsetZ1 += (-this.currentLayer + Math.abs(i));
+                offsetZ2 += ( this.currentLayer - Math.abs(i));
             }
             newIndices.push({ x : offsetX, z : offsetZ1 });
             newIndices.push({ x : offsetX, z : offsetZ2 });
         }
-        this.layer++;
+        this.currentLayer++;
         this.currentLayerIndices = newIndices;
-        this.alreadyLoadedChunksCount = 0;
-        this.noOfChunksYetToLoad = this.currentLayerIndices.length;
+        this.noOfAlreadyLoadedChunks = 0;
+        this.noOfChunksToLoad = this.currentLayerIndices.length;
+    }
+    update() {
+        if (this.updateCooldown < this.updateRate)
+            this.updateCooldown++; 
+        else
+            this.updateCooldown = 0;
+    }
+    readyForNext() {
+        if (this.updateCooldown === 0) 
+            return true;
+        return false;
     }
     nextIndex() {
-        if (this.alreadyLoadedChunksCount >= this.noOfChunksYetToLoad)
+        if (this.noOfAlreadyLoadedChunks >= this.noOfChunksToLoad || this.currentLayer > this.radius)
             this.beginNewLoadingLayer();
-        this.alreadyLoadedChunksCount++;
-        return this.currentLayerIndices[this.alreadyLoadedChunksCount - 1];
+        let index = this.currentLayerIndices[this.noOfAlreadyLoadedChunks];
+        this.noOfAlreadyLoadedChunks++;
+        return index;
     }
 } 
 

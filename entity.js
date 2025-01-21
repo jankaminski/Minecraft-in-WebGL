@@ -29,7 +29,9 @@ class Entity {
     getModel() {
         return this.model;
     }
-    isToRender() { return this.toRender; }
+    isToRender() { 
+        return this.toRender; 
+    }
     setToRender(toRender) {
         this.toRender = toRender;
     }
@@ -39,8 +41,29 @@ class Entity {
     setMomentum(momentum) {
         this.momentum = Vec3.copy(momentum);
     }
+    setMomX(momX) {
+        this.momentum.x = momX;
+    }
+    setMomY(momY) {
+        this.momentum.y = momY;
+    }
+    setMomZ(momZ) {
+        this.momentum.z = momZ;
+    }
+    addMomentumV(momentum) {
+        this.momentum = Vec3.add(this.momentum, momentum);
+    }
     addMomentum(x, y, z) {
         this.momentum = Vec3.add(this.momentum, { x, y, z });
+    }
+    addMomX(momX) {
+        this.momentum.x += momX;
+    }
+    addMomY(momY) {
+        this.momentum.y += momY;
+    }
+    addMomZ(momZ) {
+        this.momentum.z += momZ;
     }
     getSize() {
         return Vec3.copy(this.size);

@@ -3,12 +3,12 @@ import { Input } from "./input.js";
 import { Vec2, Vec3 } from "./math-utils.js";
 
 class Player extends Creeper {
-    static focusIDCount = 0;
+    static loadedAreaIDCount = 0;
     constructor(posX, posY, posZ, model) {
         super(posX, posY, posZ, model);
-        this.focusID = Player.focusIDCount;
+        this.loadedAreaID = Player.loadedAreaIDCount;
         //this.toRender = false;
-        Player.focusIDCount++;
+        Player.loadedAreaIDCount++;
     }
     onBeforeUpdate(level) {
         let movement = Input.keyboard;
@@ -45,17 +45,16 @@ class Player extends Creeper {
             pushX += -Math.cos(rotation.y);
         }
         let normalizedXandZ = Vec2.normalize({ x : pushX, y : pushZ });
-        let speed = movement.sprint ? 0.08 : 0.02;
+        let speed = movement.sprint ? 0.24 : 0.06;
         pushX = normalizedXandZ.x * speed;
         pushZ = normalizedXandZ.y * speed;
         this.rotate(turnH, turnV);
-        //this.setMomentum({ x : pushX, y : pushY, z : pushZ });
-        this.momentum.x = pushX;
-        this.momentum.z = pushZ;
-        this.momentum.y += pushY;
+        this.setMomX(pushX);
+        this.addMomY(pushY);
+        this.setMomZ(pushZ);
     }
-    getFocusID() {
-        return this.focusID;
+    getLoadedAreaID() {
+        return this.loadedAreaID;
     }
     onAfterUpdate(level) {
         if (Input.keyboard.sneak && !this.alreadyShot) {
@@ -77,6 +76,7 @@ class Player extends Creeper {
             let proj = new Creeper(barrel.x, barrel.y, barrel.z, this.model);
             proj.setRotX(rotV);
             proj.setRotY(this.getRotY());
+            proj.addMomentumV(this.getMomentum());
             proj.addMomentum(shift.x / 5, shift.y / 5 + 0.05, shift.z / 5);
             level.addEntity(proj);
         }
