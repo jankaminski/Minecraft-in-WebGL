@@ -3,25 +3,16 @@ class Player extends Creeper {
     constructor(posX, posY, posZ, model) {
         super(posX, posY, posZ, model);
         this.loadedAreaID = Player.loadedAreaIDCount;
-        this.setFirstPerson(true);
+        this.firstPerson = true;
+        this.alreadyShot = false;
         Player.loadedAreaIDCount++;
     }
-    setFirstPerson(first) {
-        if (first) {
-            this.firstPerson = true;
-            this.toRender = false;
-        } else {
-            this.firstPerson = false;
-            this.toRender = true;
-        }
+    isToRender() {
+        return !this.firstPerson;
     }
     onBeforeUpdate(level) {
-        let turnH = Input.mouse.delta.x / 100;
-        let turnV = Input.mouse.delta.y / 100;
-        turnH *= -1;
-        if (this.firstPerson) {
-            turnV *= -1;
-        }
+        let turnH = -Input.mouse.delta.x / 100;
+        let turnV = -Input.mouse.delta.y / 100;
         let pushX = 0.0;
         let pushY = 0.0;
         let pushZ = 0.0;
@@ -57,29 +48,29 @@ class Player extends Creeper {
         return this.loadedAreaID;
     }
     onAfterUpdate(level) {
+        if (Input.keyboard.lookUp)
+            this.firstPerson = true;
+        if (Input.keyboard.lookDown)
+            this.firstPerson = false;
+
+        if (this.firstPerson)
+            level.camera.followInFirstPerson(this);
+        else
+            level.camera.followInThirdPerson(this, 10, 0.2);
+
+        this.shoot(level);
+    }
+    shoot(level) {
         if (Input.mouse.pressed && !this.alreadyShot) {
-
-
-            let rotV = this.getRotX();
-            if (this.firstPerson)
-                rotV *= -1;
-            let sinusV = Math.sin(rotV);
-            let cosinusV = Math.cos(rotV);
-            let dist = 1;
-            let distH = cosinusV * dist;
-            let rotH = this.getRotY() + Math.PI;
-            let sinusH = Math.sin(rotH);
-            let cosinusH = Math.cos(rotH);
-            let shift = Vec3.negated(Vec3.make(sinusH * distH, sinusV * dist, cosinusH * distH));
-
-
             this.alreadyShot = true;
-            let barrel = Vec3.add(this.getEyePos(), shift);
-            let proj = new Creeper(barrel.x, barrel.y, barrel.z, this.model);
-            proj.setRotX(rotV);
+            let rotV = -this.getRotX();
+            let rotH = this.getRotY() + Math.PI;
+            let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 1);
+            let proj = new Creeper(tip.x, tip.y, tip.z, this.model);
+            proj.setRotX(this.getRotX());
             proj.setRotY(this.getRotY());
             proj.addMomentumV(this.getMomentum());
-            proj.addMomentum(shift.x / 5, shift.y / 5 + 0.05, shift.z / 5);
+            proj.addMomentum(offset.x / 5, offset.y / 5 + 0.05, offset.z / 5);
             level.addEntity(proj);
         }
         if (!Input.mouse.pressed)

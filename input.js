@@ -25,6 +25,14 @@ class Input {
         quit : false,
         forceReload : false
     };
+    static init() {
+        document.addEventListener('mousedown', mouseDown, false);
+        document.addEventListener('mouseup', mouseUp, false);
+        document.addEventListener('mousemove', mouseMove, false);
+        document.addEventListener("click", mouseClick, false);
+        document.addEventListener('keydown', keyDown, false);
+        document.addEventListener('keyup', keyUp, false);
+    }
     static refresh() {
         Input.mouse.delta.x = 0;
         Input.mouse.delta.y = 0;
@@ -41,9 +49,8 @@ function mouseUp(event) {
     Input.mouse.pressed = false;
 }
 
-let canvas = document.getElementById("game-surface");
-
 function mouseMove(event) {
+    let canvas = document.getElementById("game-surface");
     if (document.pointerLockElement !== canvas && document.mozPointerLockElement !== canvas && document.webkitPointerLockElement !== canvas) {
         return;
     }
@@ -54,6 +61,7 @@ function mouseMove(event) {
 }
 
 function mouseClick() {
+    let canvas = document.getElementById("game-surface");
     canvas.requestPointerLock = 
         canvas.requestPointerLock ||
         canvas.mozRequestPointerLock ||
@@ -92,10 +100,3 @@ function keyUp(event) {
     if (event.key === 'b') { Input.keyboard.quit = false; }
     if (event.key === 'n') { Input.keyboard.forceReload = false; }
 }
-
-document.addEventListener('mousedown', mouseDown, false);
-document.addEventListener('mouseup', mouseUp, false);
-document.addEventListener('mousemove', mouseMove, false);
-//document.addEventListener("click", mouseClick, false);
-document.addEventListener('keydown', keyDown, false);
-document.addEventListener('keyup', keyUp, false);

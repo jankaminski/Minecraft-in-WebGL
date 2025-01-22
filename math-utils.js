@@ -421,3 +421,14 @@ class Mat4 {
         return out;
     }
 }
+
+function castRay(origin, rotV, rotH, range) {
+    let sinV = Math.sin(rotV);
+    let cosV = Math.cos(rotV);
+    let distH = cosV * range;
+    let sinH = Math.sin(rotH);
+    let cosH = Math.cos(rotH);
+    let offset = Vec3.negated(Vec3.make(sinH * distH, sinV * range, cosH * distH));
+    let tip = Vec3.add(origin, offset);
+    return { offset, tip };
+}

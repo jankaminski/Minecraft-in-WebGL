@@ -32,24 +32,10 @@ class Level {
     update(gl) {
         if (Input.keyboard.quit)
             throw "QUIT";
-        if (Input.keyboard.lookUp)
-            this.entities[0].setFirstPerson(true);
-        if (Input.keyboard.lookDown)
-            this.entities[0].setFirstPerson(false);
-
         this.terrain.update(gl, this, this.blockTextureAtlas);
-        if (this.entities[0].firstPerson)
-            this.camera.followInFirstPerson(this.entities[0]);
-        else
-            this.camera.followInThirdPerson(this.entities[0], 10, 0.2);
-
         for (let entity of this.entities)
             entity.update(this);
-
         this.cleanDeadEntities();
-
-        console.log("Entity count: " + this.entities.length);
-
         Input.refresh();
     }
     render(gl, terrainProgram, entityProgram) {

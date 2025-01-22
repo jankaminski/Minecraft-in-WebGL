@@ -19,9 +19,7 @@ class Camera {
     }
     followTarget(target) {
         let origin = this.getPosition();
-        let xDist = origin.x - target.x;
-        let yDist = origin.y - target.y;
-        let zDist = origin.z - target.z;
+        let { x : xDist, y : yDist, z : zDist } = Vec3.sub(origin, target);
         let rotH = -Math.atan(xDist / Math.abs(zDist));
         if (zDist < 0)
             rotH = Math.PI - rotH;
@@ -32,38 +30,19 @@ class Camera {
     }
     followInThirdPerson(entity, dist, yOverhead) {
         let rotV = entity.getRotX();
-        let sinusV = Math.sin(rotV);
-        let cosinusV = Math.cos(rotV);
-        let distH = cosinusV * dist;
-        let rotH = entity.getRotY() + Math.PI;
-        let sinusH = Math.sin(rotH);
-        let cosinusH = Math.cos(rotH);
-        let shift = Vec3.make(sinusH * distH, sinusV * dist, cosinusH * distH);
-        let camPos = Vec3.add(entity.getCenter(), shift);
-        this.pos = camPos;
+        let rotH = entity.getRotY();
         let entPos = entity.getCenter();
-        entPos.y += yOverhead;
-        this.followTarget(entPos);
+        let ray = castRay(entPos, rotV, rotH, dist);
+        this.pos = ray.tip;
+        this.followTarget(Vec3.add(entPos, { x : 0, y : yOverhead, z : 0 }));
     }
     followInFirstPerson(entity) {
-        let rotV = entity.getRotX();
-
-        let sinusV = Math.sin(-rotV);
-        let cosinusV = Math.cos(-rotV);
-
-        let dist = 0.1;
-
-        let distH = cosinusV * dist;
+        let rotV = -entity.getRotX();
         let rotH = entity.getRotY() + Math.PI;
-        let sinusH = Math.sin(rotH);
-        let cosinusH = Math.cos(rotH);
-
-       
-
-        let shift = Vec3.negated(Vec3.make(sinusH * distH, sinusV * dist, cosinusH * distH));
-        let eyePos = entity.getEyePos();//Vec3.add(entity.getCenter(), Vec3.make(0, 0.0625 * 7, 0));
-        let target = Vec3.add(eyePos, shift);
-        this.pos = eyePos;
+        let dist = 0.1;
+        this.pos = entity.getEyePos();
+        let ray = castRay(this.pos, rotV, rotH, dist);
+        let target = ray.tip;
         this.followTarget(target);
     }
     freecam(movement) {

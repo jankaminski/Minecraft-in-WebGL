@@ -46,7 +46,7 @@ class Creeper extends Mob {
     getLimbMatrices() {
         return [
             this.getLimbMatrix(this.joints[0],  0,              this.getRotY()),
-            this.getLimbMatrix(this.joints[1],  this.getRotX(), this.getRotY()),
+            this.getLimbMatrix(this.joints[1], -this.getRotX(), this.getRotY()),
             this.getLimbMatrix(this.joints[2], -this.getRotX(), this.getRotY()),
             this.getLimbMatrix(this.joints[3],  this.getRotX(), this.getRotY()),
             this.getLimbMatrix(this.joints[4],  this.getRotX(), this.getRotY()),
