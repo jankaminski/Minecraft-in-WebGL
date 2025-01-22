@@ -96,6 +96,6 @@ function keyUp(event) {
 document.addEventListener('mousedown', mouseDown, false);
 document.addEventListener('mouseup', mouseUp, false);
 document.addEventListener('mousemove', mouseMove, false);
-document.addEventListener("click", mouseClick, false);
+//document.addEventListener("click", mouseClick, false);
 document.addEventListener('keydown', keyDown, false);
 document.addEventListener('keyup', keyUp, false);

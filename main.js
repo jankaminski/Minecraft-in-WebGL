@@ -149,5 +149,3 @@ async function run() {
     }, 1000);
     loop();
 }
-
-run();
