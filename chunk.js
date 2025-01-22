@@ -56,13 +56,12 @@ class Chunk extends VoxelBox {
         let iz = this.index.z + zOffset;
         return this.terrain.getChunkByIndex({x : ix, z : iz});
     }
-    getNeighborChunks() {
-        return [
-            this.getNearbyChunk( 1,  0),
-            this.getNearbyChunk(-1,  0),
-            this.getNearbyChunk( 0,  1),
-            this.getNearbyChunk( 0, -1)
-        ];
+    getNeighborChunks(xRadius, zRadius) {
+        let fetchedChunks = [];
+        for (let x = -xRadius; x <= xRadius; x++)
+            for (let z = -zRadius; z <= zRadius; z++)
+                fetchedChunks.push(this.getNearbyChunk(x, z));
+        return fetchedChunks;
     }
     generate(generator) {
         for (let i = 0; i < TOTAL_BLOCKS_PER_CHUNK; i++) {

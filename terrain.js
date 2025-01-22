@@ -22,9 +22,9 @@ class Terrain {
     }
     moveLoadedAreas(level) {
         for (let player of level.players) {
-            let areaID = player.getLoadedAreaID();
             let playerPosition = player.getCenter();
             let chunkIndex = this.chunkIndexFromWorldCoords(playerPosition.x, playerPosition.z);
+            let areaID = player.getLoadedAreaID();
             let area = this.getLoadedAreaByID(areaID);
             if (area === null) {
                 area = new LoadedArea(this, chunkIndex, RENDER_DISTANCE, areaID);
@@ -34,11 +34,8 @@ class Terrain {
         }
     }
     updateLoadingAreas(gl, blockTextureAtlas) {
-        for (let area of this.loadedAreas){
-            //area.updateLoadingTerrain();
-            //area.updateLoadingGraphics(gl, blockTextureAtlas);
+        for (let area of this.loadedAreas)
             area.update(gl, blockTextureAtlas);
-        }
     }
     update(gl, level, blockTextureAtlas) {
         this.updateChunkEntities(level);
@@ -63,12 +60,12 @@ class Terrain {
         }
     }
     deleteMarkedChunks() {
-        let refereshedChunks = [];
+        let refreshedChunks = [];
         for (let chunk of this.chunks) {
             if (!chunk.toDelete)
-                refereshedChunks.push(chunk);
+                refreshedChunks.push(chunk);
         }
-        this.chunks = refereshedChunks;
+        this.chunks = refreshedChunks;
     }
     chunkIndexFromWorldCoords(x, z) {
         let x1 = x % CHUNK_WIDTH;
@@ -163,9 +160,9 @@ class LoadedArea {
         this.terrain = terrain;
         this.radius = radius;
         this.centralIndex = { x : index.x, z : index.z };
-        this.physicalLoader = new TerrainLoader(terrain, this.centralIndex, radius, 1);
-        this.graphicalLoader = new TerrainLoader(terrain, this.centralIndex, radius, 4);
-        this.loadCooldown = 0;
+        this.physicalSpreadSource = new LoadSpreadSource(terrain, this.centralIndex, radius, 1);
+        this.graphicalSpreadSource = new LoadSpreadSource(terrain, this.centralIndex, radius, 4);
+        this.distanceFromPreviousCenter = 0;
     }
     move(newCentralIndex) {
         let cx = this.centralIndex.x;
@@ -175,33 +172,32 @@ class LoadedArea {
         if (cx != nx || cz != nz) {
             this.centralIndex = { x : nx, z : nz };
             console.log("loaded area moved");
-            this.physicalLoader.restart(this.centralIndex);
-            this.loadCooldown++;
+            this.physicalSpreadSource.restart(this.centralIndex);
+            this.distanceFromPreviousCenter++;
         }
-        if (Input.keyboard.forceReload || this.loadCooldown > this.radius / 2) {
+        if (Input.keyboard.forceReload || this.distanceFromPreviousCenter > this.radius / 2) {
             console.log("graphical loading restart");
-            this.graphicalLoader.restart(this.centralIndex);
-            this.loadCooldown = 0;
+            this.graphicalSpreadSource.restart(this.centralIndex);
+            this.distanceFromPreviousCenter = 0;
         }
     }
     update(gl, blockTextureAtlas) {
-        this.physicalLoader.update((index, chunk) => {
+        this.physicalSpreadSource.update((index, chunk) => {
             if (chunk === null) {
                 chunk = new Chunk(this.terrain, index.x, index.z);
                 this.terrain.chunks.push(chunk);
             }
         });
-        this.graphicalLoader.update((index, chunk) => {
+        this.graphicalSpreadSource.update((index, chunk) => {
             if (chunk !== null)
                 chunk.acquireModel(gl, blockTextureAtlas);
         });
     }
 }
 
-class TerrainLoader {
+class LoadSpreadSource {
     constructor(terrain, originIndex, radius, updateRate) {
         this.terrain = terrain;
-        this.radius = radius;
         this.updateRate = updateRate;
         this.restart(originIndex);
     }
