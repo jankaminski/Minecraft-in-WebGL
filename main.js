@@ -117,8 +117,8 @@ async function run() {
         grassSideTexImage, 
         grassSideTexImage);
 
-    const creeperTexImage = await loadImage('/res/creeper.png');    
-    const CREEPER_MESH_DATA = await loadMeshDataFromJSON("/res/creeper-vertices.json");
+    const creeperTexImage = await loadImage('./res/creeper.png');    
+    const CREEPER_MESH_DATA = await loadMeshDataFromJSON("./res/creeper-vertices.json");
     const CREEPER_TEXTURE = make2DTexFromImage(gl, gl.CLAMP_TO_EDGE, gl.NEAREST, creeperTexImage);
     const CREEPER_MODEL = new Model(makeEntityMesh(gl, CREEPER_MESH_DATA), CREEPER_TEXTURE);
 
