@@ -7,13 +7,22 @@
     <title>Minecraft w WebGL</title>
 </head>
 <body>
+    <div id="main-menu">
+        <p id="title">MINECRAFT</p>
+        <button id="start">Start</button>
+        <button id="options">Options</button>
+    </div>
     <canvas id="game-surface" width="1000" height="600"></canvas>
     <div id="game-desc">
-        Mouse - look around
-        WSAD - move
-        Space - jump
-        Shift - run
-        Ctrl - shoot a creeper
+        <p>Mouse - look around</p>
+        <p>WSAD - move</p>
+        <p>Space - jump</p>
+        <p>Shift - run</p>
+        <p>Click - shoot a creeper</p>
+        <p>Arrow up - 1st person</p>
+        <p>Arrow down - 3rd person</p>
+        <p>N - force reload chunks</p>
+        <p>B - crash game</p>
     </div>
     <script src="input.js"></script>
     <script src="model.js"></script>
@@ -35,5 +44,6 @@
     <script src="camera.js"></script>
     <script src="level.js"></script>
     <script src="main.js"></script>
+    <script src="launch.js"></script>
 </body>
 </html>
