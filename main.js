@@ -221,14 +221,14 @@ void main()
 `
     );
     
-    const oakLogTopTexImage = await loadImage('/res/oak_log_top.png');
-    const oakLogTexImage = await loadImage('/res/oak_log.png');
-    const cobbleTexImage = await loadImage('/res/cobblestone.png');
-    const mossyCobbleTexImage = await loadImage('/res/mossy_cobblestone.png');
-    const oakPlanksTexImage = await loadImage('/res/oak_planks.png');
-    const dirtTexImage = await loadImage('/res/dirt.png');
-    const grassSideTexImage = await loadImage('/res/grass_block_side.png');
-    const grassTopTexImage = await loadImage('/res/grass_block_top.png');
+    const oakLogTopTexImage = await loadImage('res/oak_log_top.png');
+    const oakLogTexImage = await loadImage('res/oak_log.png');
+    const cobbleTexImage = await loadImage('res/cobblestone.png');
+    const mossyCobbleTexImage = await loadImage('res/mossy_cobblestone.png');
+    const oakPlanksTexImage = await loadImage('res/oak_planks.png');
+    const dirtTexImage = await loadImage('res/dirt.png');
+    const grassSideTexImage = await loadImage('res/grass_block_side.png');
+    const grassTopTexImage = await loadImage('res/grass_block_top.png');
     
     const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas(gl)
     .addBlock(
