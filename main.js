@@ -69,8 +69,157 @@ async function run() {
 
     const PROJECTION_MATRIX = Mat4.perspective(Math.PI / 6, canvas.clientWidth, canvas.clientHeight, 0.1, 1000.0);
     
-    let terrainProgram = await makeChunkShaderProgram(gl, PROJECTION_MATRIX);
-    let entityProgram = await makeEntityShaderProgram(gl, PROJECTION_MATRIX);
+    let terrainProgram;// = await makeChunkShaderProgram(gl, PROJECTION_MATRIX);
+    let entityProgram;// = await makeEntityShaderProgram(gl, PROJECTION_MATRIX);
+
+    terrainProgram = new ShaderProgram(
+        gl,
+        `#version 300 es
+
+struct Vertex {
+	vec3 position;
+	vec2 texCoords;
+};
+
+const Vertex VERTICES_TEMPLATE[24] = Vertex[24](
+	Vertex(vec3( 0.5,  0.5,  0.5), vec2(0.0, 0.0)),
+	Vertex(vec3( 0.5,  0.5, -0.5), vec2(1.0, 0.0)),
+	Vertex(vec3( 0.5, -0.5,  0.5), vec2(0.0, 1.0)),
+	Vertex(vec3( 0.5, -0.5, -0.5), vec2(1.0, 1.0)),
+
+	Vertex(vec3(-0.5,  0.5, -0.5), vec2(0.0, 0.0)),
+	Vertex(vec3(-0.5,  0.5,  0.5), vec2(1.0, 0.0)),
+	Vertex(vec3(-0.5, -0.5, -0.5), vec2(0.0, 1.0)),
+	Vertex(vec3(-0.5, -0.5,  0.5), vec2(1.0, 1.0)),
+
+	Vertex(vec3(-0.5,  0.5, -0.5), vec2(0.0, 0.0)),
+	Vertex(vec3( 0.5,  0.5, -0.5), vec2(1.0, 0.0)),
+	Vertex(vec3(-0.5,  0.5,  0.5), vec2(0.0, 1.0)),
+	Vertex(vec3( 0.5,  0.5,  0.5), vec2(1.0, 1.0)),
+
+	Vertex(vec3( 0.5, -0.5, -0.5), vec2(0.0, 0.0)),
+	Vertex(vec3(-0.5, -0.5, -0.5), vec2(1.0, 0.0)),
+	Vertex(vec3( 0.5, -0.5,  0.5), vec2(0.0, 1.0)),
+	Vertex(vec3(-0.5, -0.5,  0.5), vec2(1.0, 1.0)),
+
+	Vertex(vec3(-0.5,  0.5,  0.5), vec2(0.0, 0.0)),
+	Vertex(vec3( 0.5,  0.5,  0.5), vec2(1.0, 0.0)),
+	Vertex(vec3(-0.5, -0.5,  0.5), vec2(0.0, 1.0)),
+	Vertex(vec3( 0.5, -0.5,  0.5), vec2(1.0, 1.0)),
+
+	Vertex(vec3( 0.5,  0.5, -0.5), vec2(0.0, 0.0)),
+	Vertex(vec3(-0.5,  0.5, -0.5), vec2(1.0, 0.0)),
+	Vertex(vec3( 0.5, -0.5, -0.5), vec2(0.0, 1.0)),
+	Vertex(vec3(-0.5, -0.5, -0.5), vec2(1.0, 1.0))
+);
+
+layout (location = 0) in vec3 data;
+
+out vec2 fragTexCoord;
+
+uniform mat4 mProj;
+uniform mat4 mView;
+
+uniform int CHUNK_WIDTH_IN_BLOCKS;
+uniform int CHUNK_HEIGHT_IN_BLOCKS;
+uniform int BLOCK_SIZE;
+
+uniform vec3 chunkPosition;
+
+// y z x
+// x y z
+
+vec3 fetchBlockPosition(int index) {
+	int chunkSquared = CHUNK_HEIGHT_IN_BLOCKS * CHUNK_WIDTH_IN_BLOCKS;
+	int x = index / chunkSquared;
+	int yandz = index % chunkSquared; //index - (y * chunkSquared);
+	int y = yandz / CHUNK_WIDTH_IN_BLOCKS;
+	int z = yandz % CHUNK_WIDTH_IN_BLOCKS; // xandz - (z * chunkSize);
+	return vec3(x * BLOCK_SIZE, y * BLOCK_SIZE, z * BLOCK_SIZE);
+}
+
+out float blockID;
+out float faceID;
+
+void main()
+{
+	int vertexIndex = int(data.x);
+	int blockIndex = int(data.y);
+	blockID = data.z;
+	int id = vertexIndex / 4;
+	faceID = float(id);
+	vec3 blockPosition = fetchBlockPosition(blockIndex);
+	Vertex vertex = VERTICES_TEMPLATE[vertexIndex];
+	vec3 fragPos = vertex.position + blockPosition + chunkPosition + (0.5 * float(BLOCK_SIZE));
+	//fragPos.y++;
+	fragTexCoord = vertex.texCoords;
+	gl_Position = mProj * mView * vec4(fragPos, 1.0); 
+}`,
+`#version 300 es
+
+precision mediump float;
+
+in vec2 fragTexCoord;
+
+in float blockID;
+in float faceID;
+
+out vec4 color;
+
+uniform sampler2D sampler;
+uniform float texAtlasNoOfRows;
+uniform float texAtlasNoOfColumns;
+
+void main()
+{
+    float x = (1.0 / texAtlasNoOfColumns) * (faceID + fragTexCoord.x);
+    float y = (1.0 / texAtlasNoOfRows) * (blockID + fragTexCoord.y);
+    vec2 texCoord = vec2(x, y);
+    color = texture(sampler, texCoord);
+    if (blockID == 6.0 && faceID == 2.0) 
+        color *= vec4(0.61f, 0.96f, 0.07f, 1.0f);
+}
+`
+    );
+    entityProgram = new ShaderProgram(
+        gl,
+        `#version 300 es
+
+layout (location = 0) in vec3 vertPosition;
+layout (location = 1) in vec2 vertTexCoord;
+layout (location = 2) in float vertJointIndex;
+
+out vec2 fragTexCoord;
+
+const int MAX_LIMBS = 30;
+
+uniform mat4 mProj;
+uniform mat4 mView;
+uniform mat4 limbMatrices[MAX_LIMBS];
+
+void main()
+{
+    fragTexCoord = vertTexCoord;
+    mat4 world = limbMatrices[int(vertJointIndex)];
+    gl_Position = mProj * mView * world * vec4(vertPosition, 1.0);
+}`,
+        `#version 300 es
+
+precision mediump float;
+
+in vec2 fragTexCoord;
+
+out vec4 color;
+
+uniform sampler2D sampler;
+
+void main()
+{
+    vec2 texCoord = fragTexCoord;
+    color = texture(sampler, texCoord);
+}
+`
+    );
     
     const oakLogTopTexImage = await loadImage('/res/oak_log_top.png');
     const oakLogTexImage = await loadImage('/res/oak_log.png');
