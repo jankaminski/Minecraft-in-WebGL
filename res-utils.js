@@ -1,5 +1,3 @@
-import { ShaderProgram } from "./shader-program.js";
-
 function loadTextResource(url) {
     return new Promise((resolve, reject) => {
         let request = new XMLHttpRequest();
@@ -58,12 +56,3 @@ function makeMeshIndices(noOfFaces, indicesTemplate) {
         indices = indices.concat(makeOneFaceIndices(indices.length, indicesTemplate));
     return indices;
 }
-
-export { 
-    loadTextResource, 
-    loadImage,
-    loadShaderProgramFromFiles,
-    loadMeshDataFromJSON,
-    makeOneFaceIndices,
-    makeMeshIndices
-};

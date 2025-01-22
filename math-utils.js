@@ -421,9 +421,3 @@ class Mat4 {
         return out;
     }
 }
-
-export { 
-    Mat4,
-    Vec3,
-    Vec2 
-};

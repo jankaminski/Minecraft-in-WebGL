@@ -1,11 +1,3 @@
-import { Camera } from "./camera.js";
-import { Input } from "./input.js";
-import { 
-    EntityRenderer, 
-    TerrainRenderer 
-} from "./renderer.js";
-import { Terrain } from "./terrain.js";
-
 class Level {
     constructor(blockTextureAtlas, ...entities) {
         this.blockTextureAtlas = blockTextureAtlas;
@@ -28,6 +20,14 @@ class Level {
                     refreshedBatchEntities.push(entity);
             batch.entities = refreshedBatchEntities;
         }
+
+
+        let refreshedEntities = [];
+        for (let entity of this.entities) {
+            if (!entity.toDelete)
+                refreshedEntities.push(entity);
+        }
+        this.entities = refreshedEntities;
     }
     update(gl) {
         if (Input.keyboard.quit)
@@ -59,5 +59,3 @@ class Level {
         this.entityRenderer.renderPass(gl, this, entityProgram);
     }
 }
-
-export { Level };

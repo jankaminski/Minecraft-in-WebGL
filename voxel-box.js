@@ -1,5 +1,3 @@
-import { Vec3 } from "./math-utils.js";
-
 class VoxelBox {
     constructor(xVoxels, yVoxels, zVoxels) {
         this.sizeInVoxels = Vec3.make(xVoxels, yVoxels, zVoxels);
@@ -15,5 +13,3 @@ class VoxelBox {
         return z + (y * this.sizeInVoxels.z) + (x * (this.sizeInVoxels.y * this.sizeInVoxels.z));
     }
 }
-
-export { VoxelBox };
