@@ -23,10 +23,17 @@ class Chunk extends VoxelBox {
         this.index = { x: indexX, z : indexZ };
         this.toDelete = false;
         this.model = null;
+        this.toRefresh = false;
         for (let i = 0; i < TOTAL_BLOCKS_PER_CHUNK; i++)
             this.blocks.push(Block.AIR);
         this.generate(terrain.getGenerator());
         this.entitiesForCollision = [];
+    }
+    setToRefresh(toRefresh) {
+        this.toRefresh = toRefresh;
+    }
+    isToRefresh() {
+        return this.toRefresh;
     }
     getWorldBounds() {
         let wpArray = this.getWorldPosition();
@@ -116,6 +123,9 @@ class Chunk extends VoxelBox {
         if (block === null)
             return 1;
         return block.id;
+    }
+    setBlockByIndex(index, newBlockID) {
+        this.blocks[index] = newBlockID;
     }
     setBlockByInChunkCoords(x, y, z, block) {
         if (this.coordsInsideChunk(x, y, z)) {

@@ -8,9 +8,17 @@ class Block {
     static OAK_PLANKS = 4;
     static DIRT = 5;
     static GRASS = 6;
-    constructor(pos, id) {
+    constructor(chunk, index, pos, id) {
+        this.chunk = chunk;
+        this.index = index;
         this.center = Vec3.copy(pos);
         this.id = id;
+    }
+    getChunk() {
+        return this.chunk;
+    }
+    getIndex() {
+        return this.index;
     }
     getCenter() {
         return Vec3.copy(this.center);

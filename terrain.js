@@ -43,6 +43,12 @@ class Terrain {
         this.updateLoadingAreas(gl, blockTextureAtlas)
         this.markOutOfSightChunks();
         this.deleteMarkedChunks();
+        for (let chunk of this.chunks) {
+            if (chunk.isToRefresh()) {
+                chunk.acquireModel(gl, blockTextureAtlas);
+                chunk.setToRefresh(false);
+            }
+        }
     }
     markOutOfSightChunks() {
         for (let chunk of this.chunks) {
@@ -80,7 +86,7 @@ class Terrain {
             indexZ--;
         return { x : indexX, z : indexZ };
     }
-    blockIndexFromWorldCoords(x, y, z) {
+    blockPosInChunkFromWorldCoords(x, y, z) {
         let blockY = Math.trunc(y) / BLOCK_SIZE;
         if (blockY < 0 || blockY >= CHUNK_HEIGHT_IN_BLOCKS) 
             return null;
@@ -120,25 +126,32 @@ class Terrain {
         let chunk = this.getChunkByWorldCoords(x, z, forceLoad);
         if (chunk === null) 
             return null;
-        let blockIndex = this.blockIndexFromWorldCoords(x, y, z);
-        if (blockIndex === null) 
+        let blockPosInChunk = this.blockPosInChunkFromWorldCoords(x, y, z);
+        if (blockPosInChunk === null) 
             return null;
-        let blockID = chunk.getBlockByInChunkCoords(blockIndex.x, blockIndex.y, blockIndex.z);
+        let blockID = chunk.getBlockByInChunkCoords(blockPosInChunk.x, blockPosInChunk.y, blockPosInChunk.z);
         let center = Vec3.make(
             (Math.trunc(x) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(x), 
             (Math.trunc(y) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(y), 
             (Math.trunc(z) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(z));
-        return new Block(center, blockID);
+        let blockIndex = chunk.makeIndexFromVoxelCoords(blockPosInChunk.x, blockPosInChunk.y, blockPosInChunk.z);
+        return new Block(chunk, blockPosInChunk, blockIndex, center, blockID);
     }
     setBlockByWorldCoords(x, y, z, block) {
         let chunk = this.getChunkByWorldCoords(x, z);
         if (chunk === null) 
             return false;
-        let blockIndex = this.blockIndexFromWorldCoords(x, y, z);
-        if (blockIndex === null) 
+        let blockPosInChunk = this.blockPosInChunkFromWorldCoords(x, y, z);
+        if (blockPosInChunk === null) 
             return false;
-        chunk.setBlockByInChunkCoords(blockIndex.x, blockIndex.y, blockIndex.z, block);
+        chunk.setBlockByInChunkCoords(blockPosInChunk.x, blockPosInChunk.y, blockPosInChunk.z, block);
         return true;
+    }
+    setBlock(oldBlock, newBlockID) {
+        let chunk = oldBlock.getChunk();
+        let index = oldBlock.getIndex();
+        chunk.setBlockByIndex(index, newBlockID);
+        chunk.setToRefresh(true);
     }
 }
 

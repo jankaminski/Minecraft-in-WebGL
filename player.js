@@ -48,6 +48,20 @@ class Player extends Creeper {
     getLoadedAreaID() {
         return this.loadedAreaID;
     }
+    castBlockInteractionRay(level) {
+        let rotV = -this.getRotX();
+        let rotH = this.getRotY() + Math.PI;
+        let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 1);
+        let oneStepVec = Vec3.divS(offset, 6);
+        for (let i = 0; i < 3; i += 0.1) {
+            tip = Vec3.add(tip, oneStepVec);
+            let block = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
+            if (block.isSolid()) {
+                level.terrain.setBlock(block, Block.AIR);
+                break;
+            }
+        }
+    }
     checkForSwitch() {
         let switchPerspective = Input.switchingPerspective();
         if (switchPerspective && !this.justSwitched) {
@@ -71,7 +85,8 @@ class Player extends Creeper {
     shoot(level) {
         if (Input.mouse.pressed && !this.alreadyShot) {
             this.alreadyShot = true;
-            let rotV = -this.getRotX();
+            this.castBlockInteractionRay(level);
+            /*let rotV = -this.getRotX();
             let rotH = this.getRotY() + Math.PI;
             let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 1);
             let proj = new Creeper(tip.x, tip.y, tip.z, this.model);
@@ -79,7 +94,7 @@ class Player extends Creeper {
             proj.setRotY(this.getRotY());
             proj.addMomentumV(this.getMomentum());
             proj.addMomentum(offset.x / 5, offset.y / 5 + 0.05, offset.z / 5);
-            level.addEntity(proj);
+            level.addEntity(proj);*/
         }
         if (!Input.mouse.pressed)
             this.alreadyShot = false;
