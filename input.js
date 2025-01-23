@@ -11,19 +11,30 @@ class Input {
         }
     };
     static keyboard = {
-        forward : false,
-        back : false,
-        strafeLeft : false,
-        strafeRight : false,
-        jump : false,
-        sneak : false,
-        lookUp : false,
-        lookDown : false,
-        lookLeft : false,
-        lookRight : false,
-        sprint : false,
-        quit : false,
-        forceReload : false
+        actions : {
+            moveForward : false,
+            moveBackwards : false,
+            strafeLeft : false,
+            strafeRight : false,
+            jump : false,
+            sneak : false,
+            sprint : false,
+            switchPerspective : false,
+            quit : false,
+            forceReload : false
+        },
+        bindings : {
+            MoveForward : 'w',
+            MoveBackwards : 's',
+            StrafeLeft : 'a',
+            StrafeRight : 'd',
+            Jump : ' ',
+            Sneak : 'Shift',
+            Sprint : 'Control',
+            SwitchPerspective : 'e',
+            Quit : 'b',
+            ForceReload : 'n'
+        }
     };
     static init() {
         document.addEventListener('mousedown', mouseDown, false);
@@ -70,33 +81,75 @@ function mouseClick() {
 }
 
 function keyDown(event) {
-    if (event.key === 'w') { Input.keyboard.forward = true; }
-    if (event.key === 's') { Input.keyboard.back = true; }
-    if (event.key === 'a') { Input.keyboard.strafeLeft = true; }
-    if (event.key === 'd') { Input.keyboard.strafeRight = true; }
-    if (event.key === ' ') { Input.keyboard.jump = true; }
-    if (event.key === 'Control') { Input.keyboard.sneak = true; }
-    if (event.key === 'ArrowUp') { Input.keyboard.lookUp = true; }
-    if (event.key === 'ArrowDown') { Input.keyboard.lookDown = true; }
-    if (event.key === 'ArrowLeft') { Input.keyboard.lookLeft = true; }
-    if (event.key === 'ArrowRight') { Input.keyboard.lookRight = true; }
-    if (event.shiftKey) { Input.keyboard.sprint = true; }
-    if (event.key === 'b') { Input.keyboard.quit = true; }
-    if (event.key === 'n') { Input.keyboard.forceReload = true; }
+    let bindings = Input.keyboard.bindings;
+    let actions = Input.keyboard.actions;
+    switch (event.key) {
+    case bindings.MoveForward:
+        actions.moveForward = true;
+        break;
+    case bindings.MoveBackwards:
+        actions.moveBackwards = true;
+        break;
+    case bindings.StrafeLeft:
+        actions.strafeLeft = true;
+        break;
+    case bindings.StrafeRight:
+        actions.strafeRight = true;
+        break;
+    case bindings.Jump:
+        actions.jump = true;
+        break;
+    case bindings.Sneak:
+        actions.sneak = true;
+        break;
+    case bindings.Sprint:
+        actions.sprint = true;
+        break;
+    case bindings.SwitchPerspective:
+        actions.switchPerspective = true;
+        break;
+    case bindings.Quit:
+        actions.quit = true;
+        break;
+    case bindings.ForceReload:
+        actions.forceReload = true;
+        break;
+    }
 }
 
 function keyUp(event) {
-    if (event.key === 'w') { Input.keyboard.forward = false; }
-    if (event.key === 's') { Input.keyboard.back = false; }
-    if (event.key === 'a') { Input.keyboard.strafeLeft = false; }
-    if (event.key === 'd') { Input.keyboard.strafeRight = false; }
-    if (event.key === ' ') { Input.keyboard.jump = false; }
-    if (event.key === 'Control') { Input.keyboard.sneak = false; }
-    if (event.key === 'ArrowUp') { Input.keyboard.lookUp = false; }
-    if (event.key === 'ArrowDown') { Input.keyboard.lookDown = false; }
-    if (event.key === 'ArrowLeft') { Input.keyboard.lookLeft = false; }
-    if (event.key === 'ArrowRight') { Input.keyboard.lookRight = false; }
-    if (!event.shiftKey) { Input.keyboard.sprint = false; }
-    if (event.key === 'b') { Input.keyboard.quit = false; }
-    if (event.key === 'n') { Input.keyboard.forceReload = false; }
+    let bindings = Input.keyboard.bindings;
+    let actions = Input.keyboard.actions;
+    switch (event.key) {
+    case bindings.MoveForward:
+        actions.moveForward = false;
+        break;
+    case bindings.MoveBackwards:
+        actions.moveBackwards = false;
+        break;
+    case bindings.StrafeLeft:
+        actions.strafeLeft = false;
+        break;
+    case bindings.StrafeRight:
+        actions.strafeRight = false;
+        break;
+    case bindings.Jump:
+        actions.jump = false;
+        break;
+    case bindings.Sneak:
+        actions.sneak = false;
+        break;
+    case bindings.Sprint:
+        actions.sprint = false;
+        break;
+    case bindings.SwitchPerspective:
+        actions.switchPerspective = false;
+        break;
+    case bindings.Quit:
+        actions.quit = false;
+        break;
+    case bindings.ForceReload:
+        actions.forceReload = false;
+        break;
+    }
 }

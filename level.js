@@ -30,7 +30,7 @@ class Level {
         this.entities = refreshedEntities;
     }
     update(gl) {
-        if (Input.keyboard.quit)
+        if (Input.keyboard.actions.quit)
             throw "QUIT";
         this.terrain.update(gl, this, this.blockTextureAtlas);
         for (let entity of this.entities)

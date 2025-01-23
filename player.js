@@ -5,6 +5,7 @@ class Player extends Creeper {
         this.loadedAreaID = Player.loadedAreaIDCount;
         this.firstPerson = true;
         this.alreadyShot = false;
+        this.justSwitched = false;
         Player.loadedAreaIDCount++;
     }
     isToRender() {
@@ -16,27 +17,28 @@ class Player extends Creeper {
         let pushX = 0.0;
         let pushY = 0.0;
         let pushZ = 0.0;
-        if (Input.keyboard.jump && this.feetOnGround) 
+        let actions = Input.keyboard.actions;
+        if (actions.jump && this.feetOnGround) 
             pushY = 0.1;
         let rotation = this.getRotation();
-        if (Input.keyboard.forward) {
+        if (actions.moveForward) {
             pushZ +=  Math.sin(rotation.y + (Math.PI / 2));
             pushX += -Math.cos(rotation.y + (Math.PI / 2));
         }
-        if (Input.keyboard.back) {
+        if (actions.moveBackwards) {
             pushZ += -Math.sin(rotation.y + (Math.PI / 2));
             pushX +=  Math.cos(rotation.y + (Math.PI / 2));
         }
-        if (Input.keyboard.strafeLeft) {
+        if (actions.strafeLeft) {
             pushZ += -Math.sin(rotation.y);
             pushX +=  Math.cos(rotation.y);
         }
-        if (Input.keyboard.strafeRight) {
+        if (actions.strafeRight) {
             pushZ +=  Math.sin(rotation.y);
             pushX += -Math.cos(rotation.y);
         }
         let normalizedXandZ = Vec2.normalize({ x : pushX, y : pushZ });
-        let speed = Input.keyboard.sprint ? 0.6 : 0.06;
+        let speed = actions.sprint ? 0.6 : 0.06;
         pushX = normalizedXandZ.x * speed;
         pushZ = normalizedXandZ.y * speed;
         this.rotate(turnH, turnV);
@@ -47,17 +49,24 @@ class Player extends Creeper {
     getLoadedAreaID() {
         return this.loadedAreaID;
     }
-    onAfterUpdate(level) {
-        if (Input.keyboard.lookUp)
-            this.firstPerson = true;
-        if (Input.keyboard.lookDown)
-            this.firstPerson = false;
-
+    checkForSwitch() {
+        let switchPerspective = Input.keyboard.actions.switchPerspective;
+        if (switchPerspective && !this.justSwitched) {
+            this.firstPerson = !this.firstPerson;
+            this.justSwitched = true;
+        }
+        if (!switchPerspective)
+            this.justSwitched = false;
+    }
+    beFollowedByCamera(level) {
         if (this.firstPerson)
             level.camera.followInFirstPerson(this);
         else
             level.camera.followInThirdPerson(this, 10, 0.2);
-
+    }
+    onAfterUpdate(level) {
+        this.checkForSwitch();
+        this.beFollowedByCamera(level);
         this.shoot(level);
     }
     shoot(level) {
