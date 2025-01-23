@@ -4,8 +4,8 @@ class Player extends Creeper {
         super(posX, posY, posZ, model);
         this.loadedAreaID = Player.loadedAreaIDCount;
         this.firstPerson = true;
-        this.alreadyShot = false;
         this.justSwitched = false;
+        this.blockActionCooldown = 0;
         Player.loadedAreaIDCount++;
     }
     isToRender() {
@@ -48,16 +48,47 @@ class Player extends Creeper {
     getLoadedAreaID() {
         return this.loadedAreaID;
     }
+    actOnBlock(level, block, newBlockID) {
+        level.terrain.setBlock(block, newBlockID);
+        let chunk = block.chunk;
+        let neighbors = chunk.getNeighborChunks(1, 1);
+        for (let neighbor of neighbors)
+            neighbor.setToRefresh(true);
+    }
+    breakBlock(level, blockToBreak) {
+        this.actOnBlock(level, blockToBreak, Block.AIR);
+    }
+    placeBlock(level, blockToPlace) {
+        let chunk = blockToPlace.chunk;
+        for (let entity of chunk.entitiesForCollision) {
+            let myHitbox = new Hitbox(entity);
+            let blockHitbox = new Hitbox(blockToPlace);
+            if (collided(myHitbox, blockHitbox))
+                return;
+        }
+        this.actOnBlock(level, blockToPlace, Block.COBBLESTONE);
+    }
     castBlockInteractionRay(level) {
         let rotV = -this.getRotX();
         let rotH = this.getRotY() + Math.PI;
-        let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 1);
-        let oneStepVec = Vec3.divS(offset, 6);
-        for (let i = 0; i < 3; i += 0.1) {
-            tip = Vec3.add(tip, oneStepVec);
-            let block = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
-            if (block.isSolid()) {
-                level.terrain.setBlock(block, Block.AIR);
+        let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 0.5);
+        for (let i = 0; i < 10; i++) {
+            tip = Vec3.add(tip, offset);
+            let blockToBreak = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
+            if (blockToBreak.isSolid()) {
+                blockToBreak.chunk.highlightedBlockIndex = blockToBreak.index;
+                if (this.blockActionCooldown > 0) {
+                    this.blockActionCooldown--;
+                    break;
+                } else
+                    this.blockActionCooldown = 4;
+                if (Input.mouse.leftButton)
+                    this.breakBlock(level, blockToBreak);
+                if (Input.mouse.rightButton) {
+                    tip = Vec3.sub(tip, offset);
+                    let blockToPlace = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
+                    this.placeBlock(level, blockToPlace);
+                }
                 break;
             }
         }
@@ -83,20 +114,13 @@ class Player extends Creeper {
         this.shoot(level);
     }
     shoot(level) {
-        if (Input.mouse.pressed && !this.alreadyShot) {
-            this.alreadyShot = true;
-            this.castBlockInteractionRay(level);
-            /*let rotV = -this.getRotX();
-            let rotH = this.getRotY() + Math.PI;
-            let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 1);
-            let proj = new Creeper(tip.x, tip.y, tip.z, this.model);
-            proj.setRotX(this.getRotX());
-            proj.setRotY(this.getRotY());
-            proj.addMomentumV(this.getMomentum());
-            proj.addMomentum(offset.x / 5, offset.y / 5 + 0.05, offset.z / 5);
-            level.addEntity(proj);*/
-        }
-        if (!Input.mouse.pressed)
-            this.alreadyShot = false;
+        this.castBlockInteractionRay(level);
     }
 }
+
+/*
+rotH = this.getRotY() + Math.PI;
+        let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 1);
+        let oneStepVec = Vec3.divS(offset, 6);
+        for (let i = 0; i < 3; i += 0.1) {
+*/

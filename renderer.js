@@ -14,6 +14,7 @@ class TerrainRenderer extends Renderer {
             if (model === null)
                 continue;
             model.bind(gl);
+            shaderProgram.loadInt(gl, "highlightedBlockIndex", chunk.highlightedBlockIndex);
             shaderProgram.loadVec3(gl, "chunkPosition", chunk.getWorldPosition());
             gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
             model.unbind(gl);

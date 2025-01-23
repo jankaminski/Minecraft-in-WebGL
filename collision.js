@@ -59,7 +59,7 @@ function detectCollisionWithTerrain(entity, terrain) {
     let blocksToCheck = [];
     for (let i = 0; i < checkBox.totalVoxelCount; i++) {
         let { x, y, z } = checkBox.makeWorldCoordsFromIndex(i);
-        let block = terrain.getBlockByWorldCoords(x, y, z);
+        let block = terrain.getBlockByWorldCoords(x, y, z, false);
         if (block === null) 
             continue;
         if (!block.isSolid()) 

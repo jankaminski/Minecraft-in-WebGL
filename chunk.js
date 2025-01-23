@@ -28,6 +28,7 @@ class Chunk extends VoxelBox {
             this.blocks.push(Block.AIR);
         this.generate(terrain.getGenerator());
         this.entitiesForCollision = [];
+        this.highlightedBlockIndex = -1;
     }
     setToRefresh(toRefresh) {
         this.toRefresh = toRefresh;

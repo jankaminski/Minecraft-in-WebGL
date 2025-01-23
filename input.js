@@ -1,6 +1,7 @@
 class Input {
     static mouse = {
-        pressed : false,
+        leftButton : false,
+        rightButton : false,
         position : {
             x : 0.0,
             y : 0.0
@@ -81,11 +82,17 @@ class Input {
 }
 
 function mouseDown(event) {
-    Input.mouse.pressed = true;
+    if (event.button === 0)
+        Input.mouse.leftButton = true;
+    if (event.button === 2)
+        Input.mouse.rightButton = true;
 }
 
 function mouseUp(event) {
-    Input.mouse.pressed = false;
+    if (event.button === 0)
+        Input.mouse.leftButton = false;
+    if (event.button === 2)
+        Input.mouse.rightButton = false;
 }
 
 function mouseMove(event) {
