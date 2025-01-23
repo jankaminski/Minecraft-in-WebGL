@@ -37,7 +37,7 @@ class Player extends Creeper {
             pushX += -Math.cos(rotation.y);
         }
         let normalizedXandZ = Vec2.normalize({ x : pushX, y : pushZ });
-        let speed = actions.sprint ? 0.6 : 0.06;
+        let speed = Input.sprinting() ? 0.6 : 0.06;
         pushX = normalizedXandZ.x * speed;
         pushZ = normalizedXandZ.y * speed;
         this.rotate(turnH, turnV);
