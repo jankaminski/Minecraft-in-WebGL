@@ -17,23 +17,22 @@ class Player extends Creeper {
         let pushX = 0.0;
         let pushY = 0.0;
         let pushZ = 0.0;
-        let actions = Input.keyboard.actions;
-        if (actions.jump && this.feetOnGround) 
+        if (Input.jumping() && this.feetOnGround) 
             pushY = 0.1;
         let rotation = this.getRotation();
-        if (actions.moveForward) {
+        if (Input.movingForward()) {
             pushZ +=  Math.sin(rotation.y + (Math.PI / 2));
             pushX += -Math.cos(rotation.y + (Math.PI / 2));
         }
-        if (actions.moveBackwards) {
+        if (Input.movingBackwards()) {
             pushZ += -Math.sin(rotation.y + (Math.PI / 2));
             pushX +=  Math.cos(rotation.y + (Math.PI / 2));
         }
-        if (actions.strafeLeft) {
+        if (Input.strafingLeft()) {
             pushZ += -Math.sin(rotation.y);
             pushX +=  Math.cos(rotation.y);
         }
-        if (actions.strafeRight) {
+        if (Input.strafingRight()) {
             pushZ +=  Math.sin(rotation.y);
             pushX += -Math.cos(rotation.y);
         }
@@ -50,7 +49,7 @@ class Player extends Creeper {
         return this.loadedAreaID;
     }
     checkForSwitch() {
-        let switchPerspective = Input.keyboard.actions.switchPerspective;
+        let switchPerspective = Input.switchingPerspective();
         if (switchPerspective && !this.justSwitched) {
             this.firstPerson = !this.firstPerson;
             this.justSwitched = true;

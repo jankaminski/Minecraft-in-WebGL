@@ -10,33 +10,61 @@ class Input {
             y : 0.0
         }
     };
-    static keyboard = {
-        actions : {
-            moveForward : false,
-            moveBackwards : false,
-            strafeLeft : false,
-            strafeRight : false,
-            jump : false,
-            sneak : false,
-            sprint : false,
-            switchPerspective : false,
-            quit : false,
-            forceReload : false
-        },
-        bindings : {
-            MoveForward : 'w',
-            MoveBackwards : 's',
-            StrafeLeft : 'a',
-            StrafeRight : 'd',
-            Jump : ' ',
-            Sneak : 'Shift',
-            Sprint : 'Control',
-            SwitchPerspective : 'e',
-            Quit : 'b',
-            ForceReload : 'n'
-        }
-    };
+    static keyBindings = {
+        MoveForward :       'w',
+        MoveBackwards :     's',
+        StrafeLeft :        'a',
+        StrafeRight :       'd',
+        Jump :              ' ',
+        Sneak :             'Shift',
+        Sprint :            'Control',
+        SwitchPerspective : 'e',
+        Quit :              'b',
+        ForceReload :       'n'
+    } ;
+    static actionMap = {};
+    static movingForward() {
+        return Input.actionMap.get(Input.keyBindings.MoveForward);
+    }
+    static movingBackwards() {
+        return Input.actionMap.get(Input.keyBindings.MoveBackwards);
+    }
+    static strafingLeft() {
+        return Input.actionMap.get(Input.keyBindings.StrafeLeft);
+    }
+    static strafingRight() {
+        return Input.actionMap.get(Input.keyBindings.StrafeRight);
+    }
+    static jumping() {
+        return Input.actionMap.get(Input.keyBindings.Jump);
+    }
+    static sneaking() {
+        return Input.actionMap.get(Input.keyBindings.Sneak);
+    }
+    static sprinting() {
+        return Input.actionMap.get(Input.keyBindings.Sprint);
+    }
+    static switchingPerspective() {
+        return Input.actionMap.get(Input.keyBindings.SwitchPerspective);
+    }
+    static quitting() {
+        return Input.actionMap.get(Input.keyBindings.Quit);
+    }
+    static forceReloading() {
+        return Input.actionMap.get(Input.keyBindings.ForceReload);
+    }
     static init() {
+        Input.actionMap = new Map();
+        Input.actionMap.set(Input.keyBindings.MoveForward, false);
+        Input.actionMap.set(Input.keyBindings.MoveBackwards, false);
+        Input.actionMap.set(Input.keyBindings.StrafeLeft, false);
+        Input.actionMap.set(Input.keyBindings.StrafeRight, false);
+        Input.actionMap.set(Input.keyBindings.Jump, false);
+        Input.actionMap.set(Input.keyBindings.Sneak, false);
+        Input.actionMap.set(Input.keyBindings.Sprint, false);
+        Input.actionMap.set(Input.keyBindings.SwitchPerspective, false);
+        Input.actionMap.set(Input.keyBindings.Quit, false);
+        Input.actionMap.set(Input.keyBindings.ForceReload, false);
         document.addEventListener('mousedown', mouseDown, false);
         document.addEventListener('mouseup', mouseUp, false);
         document.addEventListener('mousemove', mouseMove, false);
@@ -81,75 +109,9 @@ function mouseClick() {
 }
 
 function keyDown(event) {
-    let bindings = Input.keyboard.bindings;
-    let actions = Input.keyboard.actions;
-    switch (event.key) {
-    case bindings.MoveForward:
-        actions.moveForward = true;
-        break;
-    case bindings.MoveBackwards:
-        actions.moveBackwards = true;
-        break;
-    case bindings.StrafeLeft:
-        actions.strafeLeft = true;
-        break;
-    case bindings.StrafeRight:
-        actions.strafeRight = true;
-        break;
-    case bindings.Jump:
-        actions.jump = true;
-        break;
-    case bindings.Sneak:
-        actions.sneak = true;
-        break;
-    case bindings.Sprint:
-        actions.sprint = true;
-        break;
-    case bindings.SwitchPerspective:
-        actions.switchPerspective = true;
-        break;
-    case bindings.Quit:
-        actions.quit = true;
-        break;
-    case bindings.ForceReload:
-        actions.forceReload = true;
-        break;
-    }
+    Input.actionMap.set(event.key, true);
 }
 
 function keyUp(event) {
-    let bindings = Input.keyboard.bindings;
-    let actions = Input.keyboard.actions;
-    switch (event.key) {
-    case bindings.MoveForward:
-        actions.moveForward = false;
-        break;
-    case bindings.MoveBackwards:
-        actions.moveBackwards = false;
-        break;
-    case bindings.StrafeLeft:
-        actions.strafeLeft = false;
-        break;
-    case bindings.StrafeRight:
-        actions.strafeRight = false;
-        break;
-    case bindings.Jump:
-        actions.jump = false;
-        break;
-    case bindings.Sneak:
-        actions.sneak = false;
-        break;
-    case bindings.Sprint:
-        actions.sprint = false;
-        break;
-    case bindings.SwitchPerspective:
-        actions.switchPerspective = false;
-        break;
-    case bindings.Quit:
-        actions.quit = false;
-        break;
-    case bindings.ForceReload:
-        actions.forceReload = false;
-        break;
-    }
+    Input.actionMap.set(event.key, false);
 }

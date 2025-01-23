@@ -160,8 +160,8 @@ class LoadedArea {
         this.terrain = terrain;
         this.radius = radius;
         this.centralIndex = { x : index.x, z : index.z };
-        this.physicalSpreadSource = new LoadSpreadSource(terrain, this.centralIndex, radius, 1);
-        this.graphicalSpreadSource = new LoadSpreadSource(terrain, this.centralIndex, radius, 4);
+        this.physicalSpreadSource = new LoadSpreadSource(terrain, this.centralIndex, 1);
+        this.graphicalSpreadSource = new LoadSpreadSource(terrain, this.centralIndex, 4);
         this.distanceFromPreviousCenter = 0;
     }
     move(newCentralIndex) {
@@ -175,7 +175,7 @@ class LoadedArea {
             this.physicalSpreadSource.restart(this.centralIndex);
             this.distanceFromPreviousCenter++;
         }
-        if (Input.keyboard.forceReload || this.distanceFromPreviousCenter > this.radius / 2) {
+        if (Input.forceReloading() || this.distanceFromPreviousCenter > this.radius / 2) {
             console.log("graphical loading restart");
             this.graphicalSpreadSource.restart(this.centralIndex);
             this.distanceFromPreviousCenter = 0;
@@ -196,7 +196,7 @@ class LoadedArea {
 }
 
 class LoadSpreadSource {
-    constructor(terrain, originIndex, radius, updateRate) {
+    constructor(terrain, originIndex, updateRate) {
         this.terrain = terrain;
         this.updateRate = updateRate;
         this.restart(originIndex);
