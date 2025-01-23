@@ -32,15 +32,15 @@ class Creeper extends Mob {
     }
     lookAt(target) {
         let eye = Vec3.add(this.center, this.joints[1]);
-        let lookMat = Mat4.targetTo(eye, target, [0, 1, 0]);
+        let lookMat = Mat4.targetTo(eye, target, Vec3.make(0, 1, 0));
         return lookMat;
     }
     getLimbMatrix(joint, rotX, rotY) {
         let posMat = Mat4.translate(Mat4.identity(), this.getCenter());
-        let yRotMat = Mat4.rotate(Mat4.identity(), rotY, [0, 1, 0]);
+        let yRotMat = Mat4.rotate(Mat4.identity(), rotY, Vec3.make(0, 1, 0));
         let worldMat = Mat4.multiply(posMat, yRotMat);
         worldMat = Mat4.translate(worldMat, joint);
-        worldMat = Mat4.rotate(worldMat, rotX, [1, 0, 0]);
+        worldMat = Mat4.rotate(worldMat, rotX, Vec3.make(1, 0, 0));
         return worldMat;
     }
     getLimbMatrices() {

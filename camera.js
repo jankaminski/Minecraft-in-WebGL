@@ -84,8 +84,8 @@ class Camera {
     }
     getViewMatrix() {
         let posMat = Mat4.translate(Mat4.identity(), this.getNegPosition());
-        let xRotMat = Mat4.rotate(Mat4.identity(), this.rotV, [1, 0, 0]);
-        let yRotMat = Mat4.rotate(Mat4.identity(), this.rotH, [0, 1, 0]);
+        let xRotMat = Mat4.rotate(Mat4.identity(), this.rotV, Vec3.make(1, 0, 0));
+        let yRotMat = Mat4.rotate(Mat4.identity(), this.rotH, Vec3.make(0, 1, 0));
         let xyRotMat = Mat4.multiply(xRotMat, yRotMat);
         let viewMatrix = Mat4.multiply(xyRotMat, posMat);
         return viewMatrix;

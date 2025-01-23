@@ -208,9 +208,9 @@ class Entity {
     }
     getWorldMatrix() {
         let posMat = Mat4.translate(Mat4.identity(), this.center);
-        let xRotMat = Mat4.rotate(Mat4.identity(), this.rotation.x, [1, 0, 0]);
-        let yRotMat = Mat4.rotate(Mat4.identity(), this.rotation.y, [0, 1, 0]);
-        let zRotMat = Mat4.rotate(Mat4.identity(), this.rotation.z, [0, 0, 1]);
+        let xRotMat = Mat4.rotate(Mat4.identity(), this.rotation.x, Vec3.make(1, 0, 0));
+        let yRotMat = Mat4.rotate(Mat4.identity(), this.rotation.y, Vec3.make(0, 1, 0));
+        let zRotMat = Mat4.rotate(Mat4.identity(), this.rotation.z, Vec3.make(0, 0, 1));
         let xyRotMat = Mat4.multiply(yRotMat, xRotMat);
         let xyzRotMat = Mat4.multiply(xyRotMat, zRotMat);
         let worldMat = Mat4.multiply(posMat, xyzRotMat);

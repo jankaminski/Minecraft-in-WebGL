@@ -148,9 +148,9 @@ class Mat4 {
     }
     static EPSILON = 0.000001;
     static rotate(a, rad, axis) {
-        let x = axis[0],
-            y = axis[1],
-            z = axis[2];
+        let x = axis.x,
+            y = axis.y,
+            z = axis.z;
         let len = Math.hypot(x, y, z);
         if (len < Mat4.EPSILON)
             return null;
@@ -234,29 +234,21 @@ class Mat4 {
         return out;
     }
     static lookAt(eye, center, up) {
-        var x0, x1, x2, y0, y1, y2, z0, z1, z2, len;
-        var eyex = eye.x;
-        var eyey = eye.y;
-        var eyez = eye.z;
-        var upx = up[0];
-        var upy = up[1];
-        var upz = up[2];
-        var centerx = center.x;
-        var centery = center.y;
-        var centerz = center.z;
-        if (Math.abs(eyex - centerx) < Mat4.EPSILON && Math.abs(eyey - centery) < Mat4.EPSILON && Math.abs(eyez - centerz) < Mat4.EPSILON) {
+        if (Math.abs(eye.x - center.x) < Mat4.EPSILON && 
+            Math.abs(eye.y - center.y) < Mat4.EPSILON && 
+            Math.abs(eye.z - center.z) < Mat4.EPSILON) {
             return Mat4.identity();
         }
-        z0 = eyex - centerx;
-        z1 = eyey - centery;
-        z2 = eyez - centerz;
-        len = 1 / Math.hypot(z0, z1, z2);
+        let z0 = eye.x - center.x;
+        let z1 = eye.y - center.y;
+        let z2 = eye.z - center.z;
+        let len = 1 / Math.hypot(z0, z1, z2);
         z0 *= len;
         z1 *= len;
         z2 *= len;
-        x0 = upy * z2 - upz * z1;
-        x1 = upz * z0 - upx * z2;
-        x2 = upx * z1 - upy * z0;
+        let x0 = up.y * z2 - up.z * z1;
+        let x1 = up.z * z0 - up.x * z2;
+        let x2 = up.x * z1 - up.y * z0;
         len = Math.hypot(x0, x1, x2);
         if (!len) {
             x0 = 0;
@@ -268,9 +260,9 @@ class Mat4 {
             x1 *= len;
             x2 *= len;
         }
-        y0 = z1 * x2 - z2 * x1;
-        y1 = z2 * x0 - z0 * x2;
-        y2 = z0 * x1 - z1 * x0;
+        let y0 = z1 * x2 - z2 * x1;
+        let y1 = z2 * x0 - z0 * x2;
+        let y2 = z0 * x1 - z1 * x0;
         len = Math.hypot(y0, y1, y2);
         if (!len) {
             y0 = 0;
@@ -295,32 +287,26 @@ class Mat4 {
         out[9] = y2;
         out[10] = z2;
         out[11] = 0;
-        out[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
-        out[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
-        out[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
+        out[12] = -(x0 * eye.x + x1 * eye.y + x2 * eye.z);
+        out[13] = -(y0 * eye.x + y1 * eye.y + y2 * eye.z);
+        out[14] = -(z0 * eye.x + z1 * eye.y + z2 * eye.z);
         out[15] = 1;
         return out;
     }
     static targetTo(eye, target, up) {
-        var eyex = eye.x,
-            eyey = eye.y,
-            eyez = eye.z,
-            upx = up[0],
-            upy = up[1],
-            upz = up[2];
-        var z0 = target.x - eyex,
-            z1 = target.y - eyey,
-            z2 = target.z - eyez;
-        var len = z0 * z0 + z1 * z1 + z2 * z2;
+        let z0 = target.x - eye.x,
+            z1 = target.y - eye.y,
+            z2 = target.z - eye.z;
+        let len = z0 * z0 + z1 * z1 + z2 * z2;
         if (len > 0) {
             len = 1 / Math.sqrt(len);
             z0 *= len;
             z1 *= len;
             z2 *= len;
         }
-        var x0 = upy * z2 - upz * z1,
-            x1 = upz * z0 - upx * z2,
-            x2 = upx * z1 - upy * z0;
+        let x0 = up.y * z2 - up.z * z1,
+            x1 = up.z * z0 - up.x * z2,
+            x2 = up.x * z1 - up.y * z0;
         len = x0 * x0 + x1 * x1 + x2 * x2;
         if (len > 0) {
             len = 1 / Math.sqrt(len);
@@ -341,9 +327,9 @@ class Mat4 {
         out[9] = z1;
         out[10] = z2;
         out[11] = 0;
-        out[12] = eyex;
-        out[13] = eyey;
-        out[14] = eyez;
+        out[12] = eye.x;
+        out[13] = eye.y;
+        out[14] = eye.z;
         out[15] = 1;
         return out;
     }

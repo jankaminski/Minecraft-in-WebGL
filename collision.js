@@ -86,9 +86,9 @@ function detectCollision(entity, obstacle) {
     let entityHitbox = new Hitbox(entity);
     let obstacleHitbox = new Hitbox(obstacle);
     let sank = collided(entityHitbox, obstacleHitbox);
-    let onX = detectCollisionIn1D(entity, obstacleHitbox, [1, 0, 0]);
-    let onY = detectCollisionIn1D(entity, obstacleHitbox, [0, 1, 0]);
-    let onZ = detectCollisionIn1D(entity, obstacleHitbox, [0, 0, 1]);
+    let onX = detectCollisionIn1D(entity, obstacleHitbox, Vec3.make(1, 0, 0));
+    let onY = detectCollisionIn1D(entity, obstacleHitbox, Vec3.make(0, 1, 0));
+    let onZ = detectCollisionIn1D(entity, obstacleHitbox, Vec3.make(0, 0, 1));
     let collision = new Collision(entity, onX, onY, onZ, obstacle, sank);
     return collision;
 }
@@ -112,7 +112,7 @@ function detectCollisionIn1D(entity, obstacleHitbox, dir) {
     if (!detectCollisionIn1DAssert(dir)) 
         throw "BLEH";
     let entityHitbox = new Hitbox(entity);
-    let mom1D = Vec3.mul(entity.getMomentum(), Vec3.make(dir[0], dir[1], dir[2]));
+    let mom1D = Vec3.mul(entity.getMomentum(), dir);
     let oneStepVec = Vec3.divS(mom1D, BLOCK_SIZE);
     let mom1DAbs = Vec3.abs(mom1D);
     let noOfSteps = Math.max(mom1DAbs.x, mom1DAbs.y, mom1DAbs.z) / BLOCK_SIZE;
@@ -125,8 +125,8 @@ function detectCollisionIn1D(entity, obstacleHitbox, dir) {
 }
 
 function detectCollisionIn1DAssert(dir) {
-    let option1 = dir[0] === 0 && dir[1] === 1 && dir[2] === 0;
-    let option2 = dir[0] === 0 && dir[1] === 0 && dir[2] === 1;
-    let option3 = dir[0] === 1 && dir[1] === 0 && dir[2] === 0;
+    let option1 = dir.x === 0 && dir.y === 1 && dir.z === 0;
+    let option2 = dir.x === 0 && dir.y === 0 && dir.z === 1;
+    let option3 = dir.x === 1 && dir.y === 0 && dir.z === 0;
     return (option1 || option2 || option3) ? true : false;
 }
