@@ -86,6 +86,8 @@ class Chunk extends VoxelBox {
                 this.setBlockByInChunkCoords(x, y, z, Block.DIRT);
                 this.setBlockByInChunkCoords(x, y + 1, z, Block.GRASS);
             }
+            if (x === 4 && z === 4 && y === 80)
+                this.loadStructure(OAK_TREE, Vec3.make(x, y, z));
         }
     }
     getWorldPosition() { 
@@ -142,6 +144,25 @@ class Chunk extends VoxelBox {
         }
         let { worldX, worldY, worldZ } = this.worldCoordsFromInChunkCoords(x, y, z);
         this.terrain.setBlockByWorldCoords(worldX, worldY, worldZ, block);
+    }
+    loadStructure(structure, rootPosition) {
+        let min = Vec3.sub(rootPosition, structure.root);
+        let size = structure.size;
+        for (let x = 0; x < size.x; x++) {
+            for (let y = 0; y < size.y; y++) {
+                for (let z = 0; z < size.z; z++) {
+                    
+                    let xx = min.x + x;
+                    let yy = min.y + y;
+                    let zz = min.z + z;
+                    let i = structure.makeIndexFromVoxelCoords(x, size.y - y - 1, z);
+                    let block = structure.blocks[i];
+                    if (block != 0)
+                        this.setBlockByInChunkCoords(xx, yy, zz, block);
+
+                }
+            }
+        }
     }
 }
 
