@@ -52,15 +52,12 @@ uniform int highlightedBlockIndex;
 uniform float blockBreakProgress;
 uniform vec3 chunkPosition;
 
-// y z x
-// x y z
-
 vec3 fetchBlockPosition(int index) {
 	int chunkSquared = CHUNK_HEIGHT_IN_BLOCKS * CHUNK_WIDTH_IN_BLOCKS;
 	int x = index / chunkSquared;
-	int yandz = index % chunkSquared; //index - (y * chunkSquared);
+	int yandz = index % chunkSquared;
 	int y = yandz / CHUNK_WIDTH_IN_BLOCKS;
-	int z = yandz % CHUNK_WIDTH_IN_BLOCKS; // xandz - (z * chunkSize);
+	int z = yandz % CHUNK_WIDTH_IN_BLOCKS;
 	return vec3(x * BLOCK_SIZE, y * BLOCK_SIZE, z * BLOCK_SIZE);
 }
 
@@ -78,10 +75,9 @@ void main()
 	vec3 blockPosition = fetchBlockPosition(blockIndex);
 	Vertex vertex = VERTICES_TEMPLATE[vertexIndex];
 	vec3 fragPos = vertex.position + blockPosition + chunkPosition + (0.5 * float(BLOCK_SIZE));
-	//fragPos.y++;
 	fragTexCoord = vertex.texCoords;
 	if (blockIndex == highlightedBlockIndex)
-		highlight = 0.3 + blockBreakProgress;
+		highlight = 0.2 + blockBreakProgress * 0.2;
 	else
 		highlight = 0.0;
 	gl_Position = mProj * mView * vec4(fragPos, 1.0); 

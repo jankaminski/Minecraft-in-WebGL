@@ -35,6 +35,11 @@ class Level {
         this.terrain.update(gl, this, this.blockTextureAtlas);
         for (let entity of this.entities)
             entity.update(this);
+
+        /*for (let chunk of this.terrain.chunks) {
+            chunk.highlightedBlockIndex = -1;
+        }*/
+
         this.cleanDeadEntities();
         Input.refresh();
     }

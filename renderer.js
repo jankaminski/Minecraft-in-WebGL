@@ -14,7 +14,10 @@ class TerrainRenderer extends Renderer {
             if (model === null)
                 continue;
             model.bind(gl);
-            shaderProgram.loadInt(gl, "highlightedBlockIndex", chunk.highlightedBlockIndex);
+            let highlightedBlockIndex = -1;
+            if (chunk.isHighlighted)
+                highlightedBlockIndex = chunk.highlightedBlockIndex;
+            shaderProgram.loadInt(gl, "highlightedBlockIndex", highlightedBlockIndex);
             shaderProgram.loadFloat(gl, "blockBreakProgress", chunk.blockBreakProgress);
             shaderProgram.loadVec3(gl, "chunkPosition", chunk.getWorldPosition());
             gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);

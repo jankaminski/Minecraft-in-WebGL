@@ -1,3 +1,5 @@
+const BLOCK_BREAK_COOLDOWN = 60;
+
 class Player extends Creeper {
     static loadedAreaIDCount = 0;
     constructor(posX, posY, posZ, model) {
@@ -5,8 +7,9 @@ class Player extends Creeper {
         this.loadedAreaID = Player.loadedAreaIDCount;
         this.firstPerson = true;
         this.justSwitched = false;
-        this.blockBreakCooldown = 0;
-        this.blockPlaceCooldown = 0;
+        this.blockBreakCooldown = new Cooldown(BLOCK_BREAK_COOLDOWN);
+        this.blockPlaceCooldown = new Cooldown(30);
+        //this.prevHighlightedBlockIndex = -1;
         Player.loadedAreaIDCount++;
     }
     isToRender() {
@@ -57,19 +60,15 @@ class Player extends Creeper {
             neighbor.setToRefresh(true);
     }
     breakBlock(level, blockToBreak) {
-        if (this.blockBreakCooldown > 0) {
-            this.blockBreakCooldown--;
+        this.blockBreakCooldown.progress();
+        if (!this.blockBreakCooldown.reached())
             return;
-        } 
-        this.blockBreakCooldown = 60;
         this.actOnBlock(level, blockToBreak, Block.AIR);
     }
     placeBlock(level, blockToPlace) {
-        if (this.blockPlaceCooldown > 0) {
-            this.blockPlaceCooldown--;
+        this.blockPlaceCooldown.progress();
+        if (!this.blockPlaceCooldown.reached())
             return;
-        } 
-        this.blockPlaceCooldown = 10;
         let chunk = blockToPlace.chunk;
         for (let entity of chunk.entitiesForCollision) {
             let myHitbox = new Hitbox(entity);
@@ -79,34 +78,48 @@ class Player extends Creeper {
         }
         this.actOnBlock(level, blockToPlace, Block.COBBLESTONE);
     }
+    calcBlockBreakProgress(cooldown) {
+        return cooldown.getCurrentProgress() / cooldown.getRate();
+    }
+    performBlockInteractionOnTipOfTheRay(level, tip, offset) {
+        let blockToBreak = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
+        if (blockToBreak === null)
+            return false;
+        
+        if (!blockToBreak.isSolid())
+            return false;
+        let chunk = blockToBreak.chunk;
+        if (blockToBreak.index != chunk.highlightedBlockIndex)
+            this.blockBreakCooldown.reset();
+        chunk.highlightedBlockIndex = blockToBreak.index;
+        chunk.isHighlighted = true;
+        chunk.blockBreakProgress = this.calcBlockBreakProgress(this.blockBreakCooldown);
+        if (Input.mouse.leftButton)
+            this.breakBlock(level, blockToBreak);
+        if (Input.mouse.rightButton) {
+            tip = Vec3.sub(tip, offset);
+            let blockToPlace = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
+            if (blockToPlace !== null)
+                this.placeBlock(level, blockToPlace);
+        }
+        return true;
+    }
     castBlockInteractionRay(level) {
         if (!Input.mouse.leftButton)
-            this.blockBreakCooldown = 60;
+            this.blockBreakCooldown.reset();
         if (!Input.mouse.rightButton)
-            this.blockPlaceCooldown = 0;
+            this.blockPlaceCooldown.setToReached();
         let rotV = -this.getRotX();
         let rotH = this.getRotY() + Math.PI;
         let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 0.5);
         for (let i = 0; i < 10; i++) {
             tip = Vec3.add(tip, offset);
-            let blockToBreak = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
-            if (blockToBreak === null)
-                return;
-            if (blockToBreak.isSolid()) {
-                let chunk = blockToBreak.chunk;
-                chunk.highlightedBlockIndex = blockToBreak.index;
-                chunk.blockBreakProgress = (60 - this.blockBreakCooldown) / 360;
-                if (Input.mouse.leftButton)
-                    this.breakBlock(level, blockToBreak);
-                if (Input.mouse.rightButton) {
-                    tip = Vec3.sub(tip, offset);
-                    let blockToPlace = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
-                    if (blockToPlace === null)
-                        return;
-                    this.placeBlock(level, blockToPlace);
-                }
+            if (i >= 9) {
+                this.blockBreakCooldown.reset();
                 return;
             }
+            if (this.performBlockInteractionOnTipOfTheRay(level, tip, offset))
+                return;
         }
     }
     checkForSwitch() {
@@ -127,16 +140,6 @@ class Player extends Creeper {
     onAfterUpdate(level) {
         this.checkForSwitch();
         this.beFollowedByCamera(level);
-        this.shoot(level);
-    }
-    shoot(level) {
         this.castBlockInteractionRay(level);
     }
 }
-
-/*
-rotH = this.getRotY() + Math.PI;
-        let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 1);
-        let oneStepVec = Vec3.divS(offset, 6);
-        for (let i = 0; i < 3; i += 0.1) {
-*/

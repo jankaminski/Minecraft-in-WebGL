@@ -48,7 +48,8 @@ class Terrain {
                 chunk.acquireModel(gl, blockTextureAtlas);
                 chunk.setToRefresh(false);
             }
-            chunk.highlightedBlockIndex = -1;
+            //chunk.highlightedBlockIndex = -1;
+            chunk.isHighlighted = false;
         }
     }
     markOutOfSightChunks() {

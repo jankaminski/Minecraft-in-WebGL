@@ -15,6 +15,9 @@ class Block {
         this.center = Vec3.copy(pos);
         this.id = id;
     }
+    getID() {
+        return this.id;
+    }
     getChunk() {
         return this.chunk;
     }
