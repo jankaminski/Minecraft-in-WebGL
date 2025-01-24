@@ -49,6 +49,7 @@ uniform int CHUNK_HEIGHT_IN_BLOCKS;
 uniform int BLOCK_SIZE;
 
 uniform int highlightedBlockIndex;
+uniform float blockBreakProgress;
 uniform vec3 chunkPosition;
 
 // y z x
@@ -65,7 +66,7 @@ vec3 fetchBlockPosition(int index) {
 
 out float blockID;
 out float faceID;
-out float highlighted;
+out float highlight;
 
 void main()
 {
@@ -80,8 +81,8 @@ void main()
 	//fragPos.y++;
 	fragTexCoord = vertex.texCoords;
 	if (blockIndex == highlightedBlockIndex)
-		highlighted = 1.0;
+		highlight = 0.3 + blockBreakProgress;
 	else
-		highlighted = 0.0;
+		highlight = 0.0;
 	gl_Position = mProj * mView * vec4(fragPos, 1.0); 
 }

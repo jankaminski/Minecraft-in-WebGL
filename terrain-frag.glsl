@@ -6,7 +6,7 @@ in vec2 fragTexCoord;
 
 in float blockID;
 in float faceID;
-in float highlighted;
+in float highlight;
 
 out vec4 color;
 
@@ -22,6 +22,5 @@ void main()
     color = texture(sampler, texCoord);
     if (blockID == 6.0 && faceID == 2.0) 
         color *= vec4(0.61f, 0.96f, 0.07f, 1.0f);
-    if (highlighted == 1.0)
-        color += vec4(0.28f, 0.28f, 0.28f, 1.0f);
+    color += vec4(highlight, highlight, highlight, 1.0f);
 }

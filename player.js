@@ -5,7 +5,8 @@ class Player extends Creeper {
         this.loadedAreaID = Player.loadedAreaIDCount;
         this.firstPerson = true;
         this.justSwitched = false;
-        this.blockActionCooldown = 0;
+        this.blockBreakCooldown = 0;
+        this.blockPlaceCooldown = 0;
         Player.loadedAreaIDCount++;
     }
     isToRender() {
@@ -56,9 +57,19 @@ class Player extends Creeper {
             neighbor.setToRefresh(true);
     }
     breakBlock(level, blockToBreak) {
+        if (this.blockBreakCooldown > 0) {
+            this.blockBreakCooldown--;
+            return;
+        } 
+        this.blockBreakCooldown = 60;
         this.actOnBlock(level, blockToBreak, Block.AIR);
     }
     placeBlock(level, blockToPlace) {
+        if (this.blockPlaceCooldown > 0) {
+            this.blockPlaceCooldown--;
+            return;
+        } 
+        this.blockPlaceCooldown = 10;
         let chunk = blockToPlace.chunk;
         for (let entity of chunk.entitiesForCollision) {
             let myHitbox = new Hitbox(entity);
@@ -69,6 +80,10 @@ class Player extends Creeper {
         this.actOnBlock(level, blockToPlace, Block.COBBLESTONE);
     }
     castBlockInteractionRay(level) {
+        if (!Input.mouse.leftButton)
+            this.blockBreakCooldown = 60;
+        if (!Input.mouse.rightButton)
+            this.blockPlaceCooldown = 0;
         let rotV = -this.getRotX();
         let rotH = this.getRotY() + Math.PI;
         let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 0.5);
@@ -76,12 +91,9 @@ class Player extends Creeper {
             tip = Vec3.add(tip, offset);
             let blockToBreak = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
             if (blockToBreak.isSolid()) {
-                blockToBreak.chunk.highlightedBlockIndex = blockToBreak.index;
-                if (this.blockActionCooldown > 0) {
-                    this.blockActionCooldown--;
-                    break;
-                } else
-                    this.blockActionCooldown = 4;
+                let chunk = blockToBreak.chunk;
+                chunk.highlightedBlockIndex = blockToBreak.index;
+                chunk.blockBreakProgress = (60 - this.blockBreakCooldown) / 360;
                 if (Input.mouse.leftButton)
                     this.breakBlock(level, blockToBreak);
                 if (Input.mouse.rightButton) {
