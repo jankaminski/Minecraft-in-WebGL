@@ -90,6 +90,8 @@ class Player extends Creeper {
         for (let i = 0; i < 10; i++) {
             tip = Vec3.add(tip, offset);
             let blockToBreak = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
+            if (blockToBreak === null)
+                return;
             if (blockToBreak.isSolid()) {
                 let chunk = blockToBreak.chunk;
                 chunk.highlightedBlockIndex = blockToBreak.index;
@@ -99,9 +101,11 @@ class Player extends Creeper {
                 if (Input.mouse.rightButton) {
                     tip = Vec3.sub(tip, offset);
                     let blockToPlace = level.terrain.getBlockByWorldCoords(tip.x, tip.y, tip.z, false);
+                    if (blockToPlace === null)
+                        return;
                     this.placeBlock(level, blockToPlace);
                 }
-                break;
+                return;
             }
         }
     }
