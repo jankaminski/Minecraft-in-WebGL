@@ -32,6 +32,11 @@ class Chunk extends VoxelBox {
         this.highlightedBlockIndex = -1;
         this.blockBreakProgress = 0.0;
     }
+    loadBlockUpdateData(index, breakProgress) {
+        this.highlightedBlockIndex = index;
+        this.isHighlighted = true;
+        this.blockBreakProgress = breakProgress;
+    }
     setToRefresh(toRefresh) {
         this.toRefresh = toRefresh;
     }

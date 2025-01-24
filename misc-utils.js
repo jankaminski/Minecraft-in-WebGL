@@ -12,6 +12,9 @@ class Cooldown {
     getCurrentProgress() {
         return this.currentProgress;
     }
+    getNormalizedProgress() {
+        return this.currentProgress / this.rate;
+    }
     progress() {
         if (this.currentProgress < this.rate) {
             this.currentProgress++;

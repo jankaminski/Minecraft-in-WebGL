@@ -59,6 +59,9 @@ class Vec3 {
         };
         return result;
     }
+    static sign(vec) {
+        return { x : Math.sign(vec.x), y : Math.sign(vec.y), z : Math.sign(vec.z) };
+    }
 }
 
 class Vec2 {
