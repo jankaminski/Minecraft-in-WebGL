@@ -213,7 +213,7 @@ class LoadedArea {
 class LoadSpreadSource {
     constructor(terrain, originIndex, updateRate) {
         this.terrain = terrain;
-        this.updateRate = updateRate;
+        this.updateCooldown = new Cooldown(updateRate);
         this.restart(originIndex);
     }
     restart(originIndex) {
@@ -242,11 +242,8 @@ class LoadSpreadSource {
         this.noOfChunksToLoad = this.currentLayerIndices.length;
     }
     update(updateAction) {
-        if (this.updateCooldown < this.updateRate)
-            this.updateCooldown++; 
-        else
-            this.updateCooldown = 0;
-        if (this.updateCooldown !== 0)
+        this.updateCooldown.progress();
+        if (!this.updateCooldown.reached())
             return;
         if (this.noOfAlreadyLoadedChunks >= this.noOfChunksToLoad)
             this.beginNewLoadingLayer();
