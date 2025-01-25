@@ -6,6 +6,7 @@ class Terrain {
         this.chunks = [];
         this.loadedAreas = [];
         this.generator = new Generator(0.017, 5);
+        this.loadCooldown = new Cooldown(4);
     }
     getGenerator() {
         return this.generator;
@@ -43,17 +44,20 @@ class Terrain {
         this.updateLoadingAreas(gl, blockTextureAtlas)
         this.markOutOfSightChunks();
         this.deleteMarkedChunks();
-        for (let chunk of this.chunks) {
-            if (chunk.isToRefresh()) {
-                chunk.acquireModel(gl, blockTextureAtlas);
-                chunk.setToRefresh(false);
-            }
-            chunk.isHighlighted = false;
 
-            if (!chunk.structuresLoaded && chunk.hasNeighbors()) {
-                chunk.addStructures(this.generator);
-                chunk.structuresLoaded = true;
+        this.loadCooldown.progress();
+        if (this.loadCooldown.reached())
+            for (let i = 0; i < this.chunks.length; i++) {
+                let chunk = this.chunks[i];
+                if (chunk.isToRefresh()) {
+                    chunk.acquireModel(gl, blockTextureAtlas);
+                    chunk.setToRefresh(false);
+                    break;
+                }
             }
+        for (let chunk of this.chunks) {
+            chunk.isHighlighted = false;
+            chunk.keepLoadingStructureIfNeeded();
         }
     }
     markOutOfSightChunks() {
