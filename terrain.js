@@ -48,8 +48,12 @@ class Terrain {
                 chunk.acquireModel(gl, blockTextureAtlas);
                 chunk.setToRefresh(false);
             }
-            //chunk.highlightedBlockIndex = -1;
             chunk.isHighlighted = false;
+
+            if (!chunk.structuresLoaded && chunk.hasNeighbors()) {
+                chunk.addStructures(this.generator);
+                chunk.structuresLoaded = true;
+            }
         }
     }
     markOutOfSightChunks() {

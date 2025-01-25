@@ -31,6 +31,7 @@ class Chunk extends VoxelBox {
         this.isHighlighted = false;
         this.highlightedBlockIndex = -1;
         this.blockBreakProgress = 0.0;
+        this.structuresLoaded = false;
     }
     loadBlockUpdateData(index, breakProgress) {
         this.highlightedBlockIndex = index;
@@ -78,6 +79,15 @@ class Chunk extends VoxelBox {
                 fetchedChunks.push(this.getNearbyChunk(x, z));
         return fetchedChunks;
     }
+    hasNeighbors() {
+        let fetchedChunks = [];
+        for (let x = -1; x <= 1; x++)
+            for (let z = -1; z <= 1; z++)
+                fetchedChunks.push(this.getNearbyChunk(x, z) !== null);
+        if (fetchedChunks.every((value) => value === true)) 
+            return true;
+        return false;
+    }
     generate(generator) {
         for (let i = 0; i < TOTAL_BLOCKS_PER_CHUNK; i++) {
             let { x, y, z } = this.makeVoxelCoordsFromIndex(i);
@@ -86,7 +96,13 @@ class Chunk extends VoxelBox {
                 this.setBlockByInChunkCoords(x, y, z, Block.DIRT);
                 this.setBlockByInChunkCoords(x, y + 1, z, Block.GRASS);
             }
-            if (x === 4 && z === 4 && y === 80)
+        }
+    }
+    addStructures(generator) {
+        for (let i = 0; i < TOTAL_BLOCKS_PER_CHUNK; i++) {
+            let { x, y, z } = this.makeVoxelCoordsFromIndex(i);
+            let height = 40 + generator.evalHeight(this.index, x, z);
+            if ((x === 0) && (z === 0) && y > height + 1 && y < height + 2)
                 this.loadStructure(OAK_TREE, Vec3.make(x, y, z));
         }
     }
@@ -142,8 +158,26 @@ class Chunk extends VoxelBox {
             let index = this.makeIndexFromVoxelCoords(x, y, z);
             this.blocks[index] = block;
         }
-        let { worldX, worldY, worldZ } = this.worldCoordsFromInChunkCoords(x, y, z);
-        this.terrain.setBlockByWorldCoords(worldX, worldY, worldZ, block);
+        let bx = (x % CHUNK_WIDTH_IN_BLOCKS);
+        let bz = (z % CHUNK_WIDTH_IN_BLOCKS);
+        let xDiff = x - bx;
+        let zDiff = z - bz;
+        let xOff = xDiff / CHUNK_WIDTH_IN_BLOCKS;
+        let zOff = zDiff / CHUNK_WIDTH_IN_BLOCKS;
+        if (x < 0) {
+            xOff--;
+            bx = CHUNK_WIDTH_IN_BLOCKS + bx;
+        }
+        if (z < 0) {
+            zOff--;
+            bz = CHUNK_WIDTH_IN_BLOCKS + bz;
+        }
+        let otherChunk = this.getNearbyChunk(xOff, zOff);
+        if (otherChunk === null)
+            return;
+        let index = otherChunk.makeIndexFromVoxelCoords(bx, y, bz);
+        otherChunk.blocks[index] = block;
+        otherChunk.setToRefresh(true);
     }
     loadStructure(structure, rootPosition) {
         let min = Vec3.sub(rootPosition, structure.root);
