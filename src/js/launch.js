@@ -1,5 +1,5 @@
-import { Input } from "../js/input.js";
-import { run } from "../js/main.js";
+import { Input } from "./input.js";
+import { run } from "./main.js";
 
 console.log("Launched");
 let start = document.getElementById("start");
