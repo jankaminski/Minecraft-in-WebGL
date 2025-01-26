@@ -8,6 +8,7 @@ class StructureTemplate extends VoxelBox {
         this.blocks = jsonData.blocks;
         this.size = jsonData.size;
         this.root = jsonData.root;
+        this.noOfBlocks = Vec3.xyzScalarProduct(this.sizeInVoxels);
     }
 }
 

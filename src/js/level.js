@@ -13,7 +13,7 @@ class Level {
         this.terrainRenderer = new TerrainRenderer();
         this.entityRenderer = new EntityRenderer(this);
         this.players = [entities[0]];
-        this.camera = new Camera(5, 900, 2);
+        this.camera = new Camera(5, 1000, 2);
     }
     addEntity(entity) {
         this.entities.push(entity);
@@ -42,6 +42,7 @@ class Level {
         this.terrain.update(gl, this);
         for (let entity of this.entities)
             entity.update(this);
+        this.camera.followTarget(this.entities[0].getCenter());
         this.cleanDeadEntities();
         Input.refresh();
     }

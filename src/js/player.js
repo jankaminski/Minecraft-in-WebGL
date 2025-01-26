@@ -6,8 +6,13 @@ import {
     Vec3
 } from "./math-utils.js";
 import { Block } from "./block.js";
-import { Hitbox } from "./collision.js";
+import { 
+    collided,
+    Hitbox 
+} from "./collision.js";
 import { castRay } from "./misc-utils.js";
+
+import { gl } from "./webgl-init.js";
 
 class Player extends Creeper {
     static loadedAreaIDCount = 0;
@@ -71,9 +76,9 @@ class Player extends Creeper {
         let rotV = -this.getRotX();
         let rotH = this.getRotY() + Math.PI;
         let { offset, tip } = castRay(this.getEyePos(), rotV, rotH, 0.01);
-        for (let i = 0; i < 500; i++) {
+        for (let i = 0; i < 700; i++) {
             tip = Vec3.add(tip, offset);
-            if (i >= 499)
+            if (i >= 699)
                 this.blockBreakCooldown.reset();
             if (this.breakOrPlaceABlock(level, tip, offset))
                 return;
@@ -120,6 +125,7 @@ class Player extends Creeper {
     changeBlock(level, block, newBlockID) {
         level.terrain.setBlock(block, newBlockID);
         let chunk = block.chunk;
+        chunk.acquireModel(gl);
         let neighbors = chunk.getNeighborChunks(1, 1);
         for (let neighbor of neighbors)
             neighbor.setToRefresh(true);
@@ -141,7 +147,7 @@ class Player extends Creeper {
     }
     onAfterUpdate(level) {
         this.checkForSwitch();
-        this.beFollowedByCamera(level);
+        //this.beFollowedByCamera(level);
         this.castBlockInteractionRay(level);
     }
 }

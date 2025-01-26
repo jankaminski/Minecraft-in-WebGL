@@ -46,7 +46,16 @@ function castRay(origin, rotV, rotH, range) {
     return { offset, tip };
 }
 
+function areAll(array, condition) {
+    let checks = [];
+    for (let elem of array) {
+        checks.push(condition(elem));
+    }
+    return (checks.every((value) => value === true)) ? true : false;
+}
+
 export {
     Cooldown,
-    castRay
+    castRay,
+    areAll
 };
