@@ -1,8 +1,8 @@
-import { Entity } from "../js/entity.js";
+import { Entity } from "./entity.js";
 import { 
     Vec3,
     Mat4 
-} from "../js/math-utils.js";
+} from "./math-utils.js";
 
 class Mob extends Entity {
     constructor(posX, posY, posZ, sizeX, sizeY, sizeZ, model) {

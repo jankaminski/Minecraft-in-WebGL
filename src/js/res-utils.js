@@ -1,4 +1,4 @@
-import { ShaderProgram } from "../js/shader-program.js";
+import { ShaderProgram } from "./shader-program.js";
 
 function loadTextResource(url) {
     return new Promise((resolve, reject) => {

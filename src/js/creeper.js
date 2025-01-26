@@ -1,8 +1,8 @@
-import { Mob } from "../js/mob.js";
+import { Mob } from "./mob.js";
 import { 
     Mat4, 
     Vec3
-} from "../js/math-utils.js";
+} from "./math-utils.js";
 
 class Creeper extends Mob {
     constructor(posX, posY, posZ, model) {

@@ -1,6 +1,6 @@
-import { BLOCK_SIZE } from "../js/block.js";
-import { Vec3 } from "../js/math-utils.js";
-import { VoxelBox } from "../js/voxel-box.js";
+import { BLOCK_SIZE } from "./block.js";
+import { Vec3 } from "./math-utils.js";
+import { VoxelBox } from "./voxel-box.js";
 
 class Hitbox {
     constructor(collidable) {

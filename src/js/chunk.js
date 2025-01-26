@@ -2,32 +2,32 @@ import {
     Block,
     BLOCK_SIZE, 
     getBlockProperties
-} from "../js/block.js";
-import { VoxelBox } from "../js/voxel-box.js";
+} from "./block.js";
+import { VoxelBox } from "./voxel-box.js";
 import { 
     Hitbox, 
     collided 
-} from "../js/collision.js";
+} from "./collision.js";
 import { 
     makeAttrPtr,
     Mesh, 
     Model
-} from "../js/model.js";
+} from "./model.js";
 import { 
     loadShaderProgramFromFiles, 
     makeOneFaceIndices, 
     VERTICES_PER_FACE 
-} from "../js/res-utils.js";
-import { Vec3 } from "../js/math-utils.js";
+} from "./res-utils.js";
+import { Vec3 } from "./math-utils.js";
 import { 
     OAK_TREE, 
     Structure 
-} from "../js/structure.js";
+} from "./structure.js";
 import { 
     BLOCK_TEX_ATLAS_COLUMNS, 
     BLOCK_TEX_ATLAS_ROWS, 
     BLOCK_TEXTURE_ATLAS 
-} from "../js/textures.js";
+} from "./textures.js";
 
 const CHUNK_HEIGHT_IN_BLOCKS = 128;
 const CHUNK_WIDTH_IN_BLOCKS = 16;

@@ -1,4 +1,4 @@
-import { Vec3 } from "../js/math-utils.js";
+import { Vec3 } from "./math-utils.js";
 
 class VoxelBox {
     constructor(xVoxels, yVoxels, zVoxels) {
