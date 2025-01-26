@@ -50,8 +50,8 @@ async function loadStructureFromFile(url) {
     return new StructureTemplate(data);
 }
 
-const OAK_TREE = await loadStructureFromFile("../res/structures/oak-tree.json");
-const HUGE_BOX = await loadStructureFromFile("../res/structures/huge-box.json");
+const OAK_TREE = await loadStructureFromFile("./res/structures/oak-tree.json");
+const HUGE_BOX = await loadStructureFromFile("./res/structures/huge-box.json");
 
 export {
     StructureTemplate,
