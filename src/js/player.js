@@ -1,13 +1,13 @@
-import { Creeper } from "./creeper.js";
-import { Cooldown } from "./misc-utils.js";
-import { Input } from "./input.js";
+import { Creeper } from "../js/creeper.js";
+import { Cooldown } from "../js/misc-utils.js";
+import { Input } from "../js/input.js";
 import {
     Vec2,
     Vec3
-} from "./math-utils.js";
-import { Block } from "./block.js";
-import { Hitbox } from "./collision.js";
-import { castRay } from "./misc-utils.js";
+} from "../js/math-utils.js";
+import { Block } from "../js/block.js";
+import { Hitbox } from "../js/collision.js";
+import { castRay } from "../js/misc-utils.js";
 
 class Player extends Creeper {
     static loadedAreaIDCount = 0;

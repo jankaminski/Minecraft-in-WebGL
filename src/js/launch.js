@@ -1,5 +1,5 @@
-import { Input } from "./input.js";
-import { run } from "./main.js";
+import { Input } from "../js/input.js";
+import { run } from "../js/main.js";
 
 let start = document.getElementById("start");
 start.addEventListener("click", () => {

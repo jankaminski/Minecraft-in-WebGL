@@ -1,6 +1,6 @@
-import { VoxelBox } from "./voxel-box.js";
-import { loadMeshDataFromJSON } from "./res-utils.js";
-import { Vec3 } from "./math-utils.js";
+import { VoxelBox } from "../js/voxel-box.js";
+import { loadMeshDataFromJSON } from "../js/res-utils.js";
+import { Vec3 } from "../js/math-utils.js";
 
 class StructureTemplate extends VoxelBox {
     constructor(jsonData) {

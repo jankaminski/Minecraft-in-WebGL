@@ -1,7 +1,7 @@
-import { make2DTexFromImage, TextureAtlas } from "./texture.js";
-import { gl } from "./webgl-init.js";
-import { loadImage } from "./res-utils.js";
-import { Block } from "./block.js";
+import { make2DTexFromImage, TextureAtlas } from "../js/texture.js";
+import { gl } from "../js/webgl-init.js";
+import { loadImage } from "../js/res-utils.js";
+import { Block } from "../js/block.js";
 
 const BLOCK_TEX_ATLAS_ROWS = 100;
 const BLOCK_TEX_ATLAS_COLUMNS = 6;

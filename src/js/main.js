@@ -1,15 +1,14 @@
 import { 
     canvas, 
     gl 
-} from "./webgl-init.js";
-import { Mat4 } from "./math-utils.js";
-import { makeEntityShaderProgram } from "./entity.js";
-import { makeChunkShaderProgram } from "./chunk.js";
-import { Creeper } from "./creeper.js";
-import { Player } from "./player.js";
-import { BLOCK_TEXTURE_ATLAS } from "./textures.js";
-import { Level } from "./level.js";
-import { CREEPER_MODEL } from "./models.js";
+} from "../js/webgl-init.js";
+import { Mat4 } from "../js/math-utils.js";
+import { makeEntityShaderProgram } from "../js/entity.js";
+import { makeChunkShaderProgram } from "../js/chunk.js";
+import { Creeper } from "../js/creeper.js";
+import { Player } from "../js/player.js";
+import { Level } from "../js/level.js";
+import { CREEPER_MODEL } from "../js/models.js";
 
 class FPSCounter {
     constructor() {

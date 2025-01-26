@@ -1,10 +1,10 @@
-import { Terrain } from "./terrain.js";
+import { Terrain } from "../js/terrain.js";
 import {
     TerrainRenderer,
     EntityRenderer
-} from "./renderer.js";
-import { Camera } from "./camera.js";
-import { Input } from "./input.js";
+} from "../js/renderer.js";
+import { Camera } from "../js/camera.js";
+import { Input } from "../js/input.js";
 
 class Level {
     constructor(...entities) {

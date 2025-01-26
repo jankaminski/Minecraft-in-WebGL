@@ -1,14 +1,20 @@
-import { BLOCK_SIZE } from "./block.js";
-import { detectCollision, detectCollisionWithTerrain } from "./collision.js";
-import { Mat4, Vec3 } from "./math-utils.js";
+import { BLOCK_SIZE } from "../js/block.js";
+import { 
+    detectCollision, 
+    detectCollisionWithTerrain 
+} from "../js/collision.js";
+import { 
+    Mat4, 
+    Vec3 
+} from "../js/math-utils.js";
 import { 
     makeAttrPtr, 
     Mesh 
-} from "./model.js";
+} from "../js/model.js";
 import { 
     loadShaderProgramFromFiles, 
     makeMeshIndices 
-} from "./res-utils.js";
+} from "../js/res-utils.js";
 
 const TERMINAL_VELOCITY = -0.4;
 const GRAVITY_CONSTANT = 0.003;

@@ -1,17 +1,17 @@
-import { noise } from './perlin-noise.js';
-import { Cooldown } from './misc-utils.js';
+import { noise } from '../js/perlin-noise.js';
+import { Cooldown } from '../js/misc-utils.js';
 import { 
     Block, 
     BLOCK_SIZE 
-} from './block.js';
+} from '../js/block.js';
 import { 
     CHUNK_WIDTH, 
     CHUNK_WIDTH_IN_BLOCKS, 
     CHUNK_HEIGHT_IN_BLOCKS, 
     Chunk
-} from './chunk.js';
-import { Input } from './input.js';
-import { Vec3 } from './math-utils.js';
+} from '../js/chunk.js';
+import { Input } from '../js/input.js';
+import { Vec3 } from '../js/math-utils.js';
 
 let RENDER_DISTANCE = 12;
 
