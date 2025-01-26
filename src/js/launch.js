@@ -1,6 +1,7 @@
 import { Input } from "../js/input.js";
 import { run } from "../js/main.js";
 
+console.log("Launched");
 let start = document.getElementById("start");
 start.addEventListener("click", () => {
     let menu = document.getElementById("main-menu");
