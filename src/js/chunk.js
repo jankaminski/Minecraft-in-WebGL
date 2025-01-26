@@ -324,7 +324,7 @@ function makeChunkMesh(gl, chunk) {
 }
 
 async function makeChunkShaderProgram(gl, projectionMatrix) {
-    let terrainProgram = await loadShaderProgramFromFiles(gl, "../src/shaders/terrain-vert.glsl", "../src/shaders/terrain-frag.glsl");
+    let terrainProgram = await loadShaderProgramFromFiles(gl, "./src/shaders/terrain-vert.glsl", "./src/shaders/terrain-frag.glsl");
     terrainProgram.turnOn(gl);
     terrainProgram.loadMatrix(gl, "mProj", projectionMatrix);
     terrainProgram.loadInt(gl, "BLOCK_SIZE", BLOCK_SIZE);
