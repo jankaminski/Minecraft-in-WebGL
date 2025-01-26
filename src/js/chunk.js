@@ -13,12 +13,21 @@ import {
     Mesh, 
     Model
 } from "./model.js";
-import { loadShaderProgramFromFiles, makeOneFaceIndices, VERTICES_PER_FACE } from "./res-utils.js";
+import { 
+    loadShaderProgramFromFiles, 
+    makeOneFaceIndices, 
+    VERTICES_PER_FACE 
+} from "./res-utils.js";
 import { Vec3 } from "./math-utils.js";
 import { 
     OAK_TREE, 
     Structure 
 } from "./structure.js";
+import { 
+    BLOCK_TEX_ATLAS_COLUMNS, 
+    BLOCK_TEX_ATLAS_ROWS, 
+    BLOCK_TEXTURE_ATLAS 
+} from "./textures.js";
 
 const CHUNK_HEIGHT_IN_BLOCKS = 128;
 const CHUNK_WIDTH_IN_BLOCKS = 16;
@@ -32,10 +41,6 @@ const FACES_IN_CUBE = 6; // oh really?
 const INDICES_TEMPLATE = [
     3, 1, 0, 0, 2, 3
 ];
-
-const BLOCK_TEX_ATLAS_ROWS = 100;
-const BLOCK_TEX_ATLAS_COLUMNS = 6;
-const BLOCK_PIXELS = 16;
 
 class Chunk extends VoxelBox {
     constructor(terrain, indexX, indexZ) {
@@ -151,8 +156,8 @@ class Chunk extends VoxelBox {
         ];
         return position;
     }
-    acquireModel(gl, blockTextureAtlas) {
-        this.model = new Model(makeChunkMesh(gl, this), blockTextureAtlas);
+    acquireModel(gl) {
+        this.model = new Model(makeChunkMesh(gl, this), BLOCK_TEXTURE_ATLAS);
     }
     getBlockByIndex(index) {
         return this.blocks[index];
@@ -319,7 +324,7 @@ function makeChunkMesh(gl, chunk) {
 }
 
 async function makeChunkShaderProgram(gl, projectionMatrix) {
-    let terrainProgram = await loadShaderProgramFromFiles(gl, "./terrain-vert.glsl", "./terrain-frag.glsl");
+    let terrainProgram = await loadShaderProgramFromFiles(gl, "../src/shaders/terrain-vert.glsl", "../src/shaders/terrain-frag.glsl");
     terrainProgram.turnOn(gl);
     terrainProgram.loadMatrix(gl, "mProj", projectionMatrix);
     terrainProgram.loadInt(gl, "BLOCK_SIZE", BLOCK_SIZE);
@@ -332,9 +337,6 @@ async function makeChunkShaderProgram(gl, projectionMatrix) {
 }
 
 export { 
-    BLOCK_TEX_ATLAS_ROWS,
-    BLOCK_TEX_ATLAS_COLUMNS,
-    BLOCK_PIXELS,
     CHUNK_WIDTH,
     CHUNK_HEIGHT,
     CHUNK_WIDTH_IN_BLOCKS,

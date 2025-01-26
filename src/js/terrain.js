@@ -49,14 +49,14 @@ class Terrain {
             area.move(chunkIndex);
         }
     }
-    updateLoadingAreas(gl, blockTextureAtlas) {
+    updateLoadingAreas(gl) {
         for (let area of this.loadedAreas)
-            area.update(gl, blockTextureAtlas);
+            area.update(gl);
     }
-    update(gl, level, blockTextureAtlas) {
+    update(gl, level) {
         this.updateChunkEntities(level);
         this.moveLoadedAreas(level);
-        this.updateLoadingAreas(gl, blockTextureAtlas)
+        this.updateLoadingAreas(gl)
         this.markOutOfSightChunks();
         this.deleteMarkedChunks();
 
@@ -65,7 +65,7 @@ class Terrain {
             for (let i = 0; i < this.chunks.length; i++) {
                 let chunk = this.chunks[i];
                 if (chunk.isToRefresh()) {
-                    chunk.acquireModel(gl, blockTextureAtlas);
+                    chunk.acquireModel(gl);
                     chunk.setToRefresh(false);
                     break;
                 }
@@ -219,7 +219,7 @@ class LoadedArea {
             this.distanceFromPreviousCenter = 0;
         }
     }
-    update(gl, blockTextureAtlas) {
+    update(gl) {
         this.physicalSpreadSource.update((index, chunk) => {
             if (chunk === null) {
                 chunk = new Chunk(this.terrain, index.x, index.z);
@@ -228,7 +228,7 @@ class LoadedArea {
         });
         this.graphicalSpreadSource.update((index, chunk) => {
             if (chunk !== null)
-                chunk.acquireModel(gl, blockTextureAtlas);
+                chunk.acquireModel(gl);
         });
     }
 }

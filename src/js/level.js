@@ -7,8 +7,7 @@ import { Camera } from "./camera.js";
 import { Input } from "./input.js";
 
 class Level {
-    constructor(blockTextureAtlas, ...entities) {
-        this.blockTextureAtlas = blockTextureAtlas;
+    constructor(...entities) {
         this.entities = entities;
         this.terrain = new Terrain();
         this.terrainRenderer = new TerrainRenderer();
@@ -40,9 +39,10 @@ class Level {
     update(gl) {
         if (Input.quitting())
             throw "QUIT";
-        this.terrain.update(gl, this, this.blockTextureAtlas);
+        this.terrain.update(gl, this);
         for (let entity of this.entities)
-            entity.update(this);this.cleanDeadEntities();
+            entity.update(this);
+        this.cleanDeadEntities();
         Input.refresh();
     }
     render(gl, terrainProgram, entityProgram) {

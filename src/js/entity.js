@@ -246,7 +246,7 @@ function makeEntityMesh(gl, meshData) {
 }
 
 async function makeEntityShaderProgram(gl, projectionMatrix) {
-    let entityProgram = await loadShaderProgramFromFiles(gl, "./entity-vert.glsl", "./entity-frag.glsl");
+    let entityProgram = await loadShaderProgramFromFiles(gl, "../src/shaders/entity-vert.glsl", "../src/shaders/entity-frag.glsl");
     entityProgram.turnOn(gl);
     entityProgram.loadMatrix(gl, "mProj", projectionMatrix);
     entityProgram.turnOff(gl);

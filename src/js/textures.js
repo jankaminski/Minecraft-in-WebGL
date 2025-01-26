@@ -1,12 +1,11 @@
 import { make2DTexFromImage, TextureAtlas } from "./texture.js";
 import { gl } from "./webgl-init.js";
-import { 
-    BLOCK_PIXELS, 
-    BLOCK_TEX_ATLAS_COLUMNS, 
-    BLOCK_TEX_ATLAS_ROWS
-} from "./chunk.js";
 import { loadImage } from "./res-utils.js";
 import { Block } from "./block.js";
+
+const BLOCK_TEX_ATLAS_ROWS = 100;
+const BLOCK_TEX_ATLAS_COLUMNS = 6;
+const BLOCK_PIXELS = 16;
 
 class BlockTextureAtlas extends TextureAtlas {
     constructor(gl) {
@@ -33,14 +32,14 @@ class BlockTextureAtlas extends TextureAtlas {
     }
 }
 
-const oakLogTopTexImage = await loadImage("./res/oak_log_top.png");
-const oakLogTexImage = await loadImage("./res/oak_log.png");
-const cobbleTexImage = await loadImage("./res/cobblestone.png");
-const mossyCobbleTexImage = await loadImage("./res/mossy_cobblestone.png");
-const oakPlanksTexImage = await loadImage("./res/oak_planks.png");
-const dirtTexImage = await loadImage("./res/dirt.png");
-const grassSideTexImage = await loadImage("./res/grass_block_side.png");
-const grassTopTexImage = await loadImage("./res/grass_block_top.png");
+const oakLogTopTexImage = await loadImage("../res/textures/oak_log_top.png");
+const oakLogTexImage = await loadImage("../res/textures/oak_log.png");
+const cobbleTexImage = await loadImage("../res/textures/cobblestone.png");
+const mossyCobbleTexImage = await loadImage("../res/textures/mossy_cobblestone.png");
+const oakPlanksTexImage = await loadImage("../res/textures/oak_planks.png");
+const dirtTexImage = await loadImage("../res/textures/dirt.png");
+const grassSideTexImage = await loadImage("../res/textures/grass_block_side.png");
+const grassTopTexImage = await loadImage("../res/textures/grass_block_top.png");
 
 const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas(gl)
 .addBlock(
@@ -78,10 +77,13 @@ const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas(gl)
     grassSideTexImage, 
     grassSideTexImage);
 
-const creeperTexImage = await loadImage("./res/creeper.png");
+const creeperTexImage = await loadImage("../res/textures/creeper.png");
 const CREEPER_TEXTURE = make2DTexFromImage(gl, gl.CLAMP_TO_EDGE, gl.NEAREST, creeperTexImage);
 
 export {
+    BLOCK_TEX_ATLAS_ROWS,
+    BLOCK_TEX_ATLAS_COLUMNS,
+    BLOCK_PIXELS,
     BLOCK_TEXTURE_ATLAS,
     CREEPER_TEXTURE
 };

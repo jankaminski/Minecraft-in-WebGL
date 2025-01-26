@@ -1,4 +1,7 @@
-import { canvas, gl } from "./webgl-init.js";
+import { 
+    canvas, 
+    gl 
+} from "./webgl-init.js";
 import { Mat4 } from "./math-utils.js";
 import { makeEntityShaderProgram } from "./entity.js";
 import { makeChunkShaderProgram } from "./chunk.js";
@@ -41,7 +44,6 @@ async function run() {
     let entityProgram = await makeEntityShaderProgram(gl, PROJECTION_MATRIX);
 
     let level = new Level(
-        BLOCK_TEXTURE_ATLAS, 
         new Player(2, 70, 2, CREEPER_MODEL), 
         new Creeper(14, 90, -14, CREEPER_MODEL),
         new Creeper(9, 90, -12, CREEPER_MODEL),
