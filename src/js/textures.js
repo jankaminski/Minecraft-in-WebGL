@@ -77,7 +77,7 @@ const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas(gl)
     grassSideTexImage, 
     grassSideTexImage);
 
-const creeperTexImage = await loadImage("../res/textures/creeper.png");
+const creeperTexImage = await loadImage("./res/textures/creeper.png");
 const CREEPER_TEXTURE = make2DTexFromImage(gl, gl.CLAMP_TO_EDGE, gl.NEAREST, creeperTexImage);
 
 export {
