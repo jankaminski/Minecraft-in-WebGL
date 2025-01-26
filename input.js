@@ -66,12 +66,12 @@ class Input {
         Input.actionMap.set(Input.keyBindings.SwitchPerspective, false);
         Input.actionMap.set(Input.keyBindings.Quit, false);
         Input.actionMap.set(Input.keyBindings.ForceReload, false);
-        document.addEventListener('mousedown', mouseDown, false);
-        document.addEventListener('mouseup', mouseUp, false);
-        document.addEventListener('mousemove', mouseMove, false);
+        document.addEventListener("mousedown", mouseDown, false);
+        document.addEventListener("mouseup", mouseUp, false);
+        document.addEventListener("mousemove", mouseMove, false);
         document.addEventListener("click", mouseClick, false);
-        document.addEventListener('keydown', keyDown, false);
-        document.addEventListener('keyup', keyUp, false);
+        document.addEventListener("keydown", keyDown, false);
+        document.addEventListener("keyup", keyUp, false);
     }
     static refresh() {
         Input.mouse.delta.x = 0;
@@ -122,3 +122,5 @@ function keyDown(event) {
 function keyUp(event) {
     Input.actionMap.set(event.key, false);
 }
+
+export { Input };

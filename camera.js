@@ -1,3 +1,6 @@
+import { Mat4, Vec3 } from "./math-utils.js";
+import { castRay } from "./misc-utils.js";
+
 class Camera {
     constructor(posX, posY, posZ) {
         this.pos = Vec3.make(posX, posY, posZ);
@@ -91,3 +94,5 @@ class Camera {
         return viewMatrix;
     }
 }
+
+export { Camera };

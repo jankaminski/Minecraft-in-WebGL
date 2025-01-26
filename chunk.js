@@ -1,3 +1,25 @@
+import { 
+    Block,
+    BLOCK_SIZE, 
+    getBlockProperties
+} from "./block.js";
+import { VoxelBox } from "./voxel-box.js";
+import { 
+    Hitbox, 
+    collided 
+} from "./collision.js";
+import { 
+    makeAttrPtr,
+    Mesh, 
+    Model
+} from "./model.js";
+import { loadShaderProgramFromFiles, makeOneFaceIndices, VERTICES_PER_FACE } from "./res-utils.js";
+import { Vec3 } from "./math-utils.js";
+import { 
+    OAK_TREE, 
+    Structure 
+} from "./structure.js";
+
 const CHUNK_HEIGHT_IN_BLOCKS = 128;
 const CHUNK_WIDTH_IN_BLOCKS = 16;
 
@@ -297,9 +319,9 @@ function makeChunkMesh(gl, chunk) {
 }
 
 async function makeChunkShaderProgram(gl, projectionMatrix) {
-    let terrainProgram = await loadShaderProgramFromFiles(gl, './terrain-vert.glsl', './terrain-frag.glsl');
+    let terrainProgram = await loadShaderProgramFromFiles(gl, "./terrain-vert.glsl", "./terrain-frag.glsl");
     terrainProgram.turnOn(gl);
-    terrainProgram.loadMatrix(gl, 'mProj', projectionMatrix);
+    terrainProgram.loadMatrix(gl, "mProj", projectionMatrix);
     terrainProgram.loadInt(gl, "BLOCK_SIZE", BLOCK_SIZE);
     terrainProgram.loadInt(gl, "CHUNK_HEIGHT_IN_BLOCKS", CHUNK_HEIGHT_IN_BLOCKS);
     terrainProgram.loadInt(gl, "CHUNK_WIDTH_IN_BLOCKS", CHUNK_WIDTH_IN_BLOCKS);
@@ -308,3 +330,15 @@ async function makeChunkShaderProgram(gl, projectionMatrix) {
     terrainProgram.turnOff(gl);
     return terrainProgram;
 }
+
+export { 
+    BLOCK_TEX_ATLAS_ROWS,
+    BLOCK_TEX_ATLAS_COLUMNS,
+    BLOCK_PIXELS,
+    CHUNK_WIDTH,
+    CHUNK_HEIGHT,
+    CHUNK_WIDTH_IN_BLOCKS,
+    CHUNK_HEIGHT_IN_BLOCKS,
+    Chunk,
+    makeChunkShaderProgram 
+};

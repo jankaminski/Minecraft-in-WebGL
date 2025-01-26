@@ -1,3 +1,5 @@
+import { Vec3 } from "./math-utils.js";
+
 class Cooldown {
     constructor(rate) {
         this.rate = rate;
@@ -43,3 +45,8 @@ function castRay(origin, rotV, rotH, range) {
     let tip = Vec3.add(origin, offset);
     return { offset, tip };
 }
+
+export {
+    Cooldown,
+    castRay
+};

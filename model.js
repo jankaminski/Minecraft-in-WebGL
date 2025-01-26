@@ -67,3 +67,9 @@ class Model {
         this.mesh.unbind(gl);
     }
 }
+
+export {
+    Mesh,
+    Model,
+    makeAttrPtr
+};

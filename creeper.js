@@ -1,3 +1,9 @@
+import { Mob } from "./mob.js";
+import { 
+    Mat4, 
+    Vec3
+} from "./math-utils.js";
+
 class Creeper extends Mob {
     constructor(posX, posY, posZ, model) {
         super(posX, posY, posZ, 0.5, 1.625, 0.5, model);
@@ -54,3 +60,5 @@ class Creeper extends Mob {
         ];
     }
 }
+
+export { Creeper };

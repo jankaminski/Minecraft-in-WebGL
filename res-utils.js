@@ -1,10 +1,12 @@
+import { ShaderProgram } from "./shader-program.js";
+
 function loadTextResource(url) {
     return new Promise((resolve, reject) => {
         let request = new XMLHttpRequest();
-        request.open('GET', url, true);
-        request.addEventListener('load', () => {
+        request.open("GET", url, true);
+        request.addEventListener("load", () => {
             if (request.status < 200 || request.status > 299)
-                reject('Error: HTTP Status ' + request.status + ' on resource ' + url);
+                reject("Error: HTTP Status " + request.status + " on resource " + url);
             else
                 resolve(request.responseText);
         });
@@ -15,7 +17,7 @@ function loadTextResource(url) {
 function loadImage(url) {
     return new Promise((resolve) => {
         let im = new Image();
-        im.addEventListener('load', () => resolve(im));
+        im.addEventListener("load", () => resolve(im));
         im.src = url;
     });
 }
@@ -33,7 +35,7 @@ async function loadMeshDataFromJSON(url) {
     try {
         meshData = JSON.parse(src);
     } catch (e) {
-        console.log('Error parsing JSON file into mesh data');
+        console.log("Error parsing JSON file into mesh data");
     }
     return meshData;
 }
@@ -56,3 +58,14 @@ function makeMeshIndices(noOfFaces, indicesTemplate) {
         indices = indices.concat(makeOneFaceIndices(indices.length, indicesTemplate));
     return indices;
 }
+
+export {
+    loadTextResource,
+    loadShaderProgramFromFiles,
+    loadMeshDataFromJSON,
+    loadImage,
+    VERTICES_PER_FACE,
+    INDICES_PER_FACE,
+    makeOneFaceIndices,
+    makeMeshIndices
+};

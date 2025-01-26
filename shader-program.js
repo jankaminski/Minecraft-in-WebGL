@@ -12,7 +12,7 @@ class ShaderProgram {
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            console.error('ERROR compiling fragment shader', gl.getShaderInfoLog(shader));
+            console.error("ERROR compiling fragment shader", gl.getShaderInfoLog(shader));
             return null;
         }
         return shader;
@@ -28,12 +28,12 @@ class ShaderProgram {
         }
         gl.linkProgram(program);
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.error('ERROR linking program!', gl.getProgramInfoLog(program));
+            console.error("ERROR linking program!", gl.getProgramInfoLog(program));
             return null;
         }
         gl.validateProgram(program);
         if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
-            console.error('ERROR validating program!', gl.getProgramInfoLog(program));
+            console.error("ERROR validating program!", gl.getProgramInfoLog(program));
             return null;
         }
         return program;
@@ -69,3 +69,5 @@ class ShaderProgram {
         gl.uniformMatrix4fv(loc, gl.GL_FALSE, matrix);
     }
 }
+
+export { ShaderProgram };

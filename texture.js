@@ -38,7 +38,6 @@ class TextureAtlas extends Texture2D {
         this.bind(gl);
         gl.texImage2D(this.target, 0, this.format, this.width, this.height, 0, this.format, this.type, null);
         gl.generateMipmap(this.target);
-        //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         this.unbind(gl);
     }
     addTile(gl, image, xOffset, yOffset) {
@@ -51,7 +50,7 @@ class TextureAtlas extends Texture2D {
         this.bind(gl);
         gl.texSubImage2D(this.target, 0, xOffset * this.tileWidth, yOffset * this.tileHeight, 
             this.tileWidth, this.tileHeight, this.format, this.type, image);
-        this.unbind(gl); // type ^
+        this.unbind(gl); 
     }
 }
 
@@ -62,3 +61,8 @@ function make2DTexFromImage(gl, wrap, filter, image) {
     tex.unbind(gl);
     return tex;
 }
+
+export {
+    make2DTexFromImage,
+    TextureAtlas
+};

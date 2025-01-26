@@ -305,3 +305,5 @@ noise.perlin3 = function(x, y, z) {
         lerp(n011, n111, u), w),
      v);
 };
+
+export { noise };

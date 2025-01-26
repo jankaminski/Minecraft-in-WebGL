@@ -6,7 +6,7 @@ class TerrainRenderer extends Renderer {
     constructor() { super(); }
     renderPass(gl, level, shaderProgram) {
         shaderProgram.turnOn(gl);
-        shaderProgram.loadMatrix(gl, 'mView', level.camera.getViewMatrix());
+        shaderProgram.loadMatrix(gl, "mView", level.camera.getViewMatrix());
         for (let chunk of level.terrain.chunks) {
             if (chunk === null)
                 continue;
@@ -55,7 +55,7 @@ class EntityRenderer extends Renderer {
     }
     renderPass(gl, level, shaderProgram) {
         shaderProgram.turnOn(gl);
-        shaderProgram.loadMatrix(gl, 'mView', level.camera.getViewMatrix());
+        shaderProgram.loadMatrix(gl, "mView", level.camera.getViewMatrix());
         for (let batch of this.entityRenderBatches) {
             let model = batch.model;
             let entities = batch.entities;
@@ -92,3 +92,8 @@ class EntityRenderBatch {
         this.entities.push(entity);
     }
 }
+
+export {
+    EntityRenderer,
+    TerrainRenderer
+};

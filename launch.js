@@ -1,3 +1,6 @@
+import { Input } from "./input.js";
+import { run } from "./main.js";
+
 let start = document.getElementById("start");
 start.addEventListener("click", () => {
     let menu = document.getElementById("main-menu");

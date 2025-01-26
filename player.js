@@ -1,3 +1,14 @@
+import { Creeper } from "./creeper.js";
+import { Cooldown } from "./misc-utils.js";
+import { Input } from "./input.js";
+import {
+    Vec2,
+    Vec3
+} from "./math-utils.js";
+import { Block } from "./block.js";
+import { Hitbox } from "./collision.js";
+import { castRay } from "./misc-utils.js";
+
 class Player extends Creeper {
     static loadedAreaIDCount = 0;
     constructor(posX, posY, posZ, model) {
@@ -134,3 +145,5 @@ class Player extends Creeper {
         this.castBlockInteractionRay(level);
     }
 }
+
+export { Player };

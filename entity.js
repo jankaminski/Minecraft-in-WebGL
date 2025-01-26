@@ -1,3 +1,15 @@
+import { BLOCK_SIZE } from "./block.js";
+import { detectCollision, detectCollisionWithTerrain } from "./collision.js";
+import { Mat4, Vec3 } from "./math-utils.js";
+import { 
+    makeAttrPtr, 
+    Mesh 
+} from "./model.js";
+import { 
+    loadShaderProgramFromFiles, 
+    makeMeshIndices 
+} from "./res-utils.js";
+
 const TERMINAL_VELOCITY = -0.4;
 const GRAVITY_CONSTANT = 0.003;
 
@@ -234,9 +246,15 @@ function makeEntityMesh(gl, meshData) {
 }
 
 async function makeEntityShaderProgram(gl, projectionMatrix) {
-    let entityProgram = await loadShaderProgramFromFiles(gl, './entity-vert.glsl', './entity-frag.glsl');
+    let entityProgram = await loadShaderProgramFromFiles(gl, "./entity-vert.glsl", "./entity-frag.glsl");
     entityProgram.turnOn(gl);
-    entityProgram.loadMatrix(gl, 'mProj', projectionMatrix);
+    entityProgram.loadMatrix(gl, "mProj", projectionMatrix);
     entityProgram.turnOff(gl);
     return entityProgram;
 }
+
+export { 
+    Entity, 
+    makeEntityMesh,
+    makeEntityShaderProgram
+};

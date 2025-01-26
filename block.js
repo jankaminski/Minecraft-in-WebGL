@@ -1,3 +1,7 @@
+import {
+    Vec3
+} from "./math-utils.js";
+
 const BLOCK_SIZE = 1.0;
 
 class Block {
@@ -66,3 +70,9 @@ registerBlock(blockList, Block.GRASS,        true,  false);
 function getBlockProperties(id) {
     return blockList[id];
 }
+
+export {
+    BLOCK_SIZE,
+    Block,
+    getBlockProperties
+};

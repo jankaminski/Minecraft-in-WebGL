@@ -337,3 +337,9 @@ class Mat4 {
         return out;
     }
 }
+
+export {
+    Vec2,
+    Vec3,
+    Mat4
+};

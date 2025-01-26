@@ -1,3 +1,18 @@
+import { noise } from './perlin-noise.js';
+import { Cooldown } from './misc-utils.js';
+import { 
+    Block, 
+    BLOCK_SIZE 
+} from './block.js';
+import { 
+    CHUNK_WIDTH, 
+    CHUNK_WIDTH_IN_BLOCKS, 
+    CHUNK_HEIGHT_IN_BLOCKS, 
+    Chunk
+} from './chunk.js';
+import { Input } from './input.js';
+import { Vec3 } from './math-utils.js';
+
 let RENDER_DISTANCE = 12;
 
 class Terrain {
@@ -261,3 +276,5 @@ class LoadSpreadSource {
         updateAction(index, chunk);
     }
 } 
+
+export { Terrain };

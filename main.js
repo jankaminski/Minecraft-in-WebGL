@@ -1,27 +1,12 @@
-class BlockTextureAtlas extends TextureAtlas {
-    constructor(gl) {
-        super(gl, 
-            gl.CLAMP_TO_EDGE, 
-            gl.NEAREST, 
-            BLOCK_PIXELS, 
-            BLOCK_PIXELS, 
-            BLOCK_TEX_ATLAS_COLUMNS, 
-            BLOCK_TEX_ATLAS_ROWS);
-    }
-    addBlock(gl, blockID, ...images) {
-        if (images.length != 6 && images.length != 1) 
-            throw "BLEH";
-        for (let i = 0; i < 6; i++) {
-            let image;
-            if (images.length === 1)
-                image = images[0];
-            else
-                image = images[i];
-            this.addTile(gl, image, i, blockID);
-        }
-        return this;
-    }
-}
+import { canvas, gl } from "./webgl-init.js";
+import { Mat4 } from "./math-utils.js";
+import { makeEntityShaderProgram } from "./entity.js";
+import { makeChunkShaderProgram } from "./chunk.js";
+import { Creeper } from "./creeper.js";
+import { Player } from "./player.js";
+import { BLOCK_TEXTURE_ATLAS } from "./textures.js";
+import { Level } from "./level.js";
+import { CREEPER_MODEL } from "./models.js";
 
 class FPSCounter {
     constructor() {
@@ -49,78 +34,11 @@ class FPSCounter {
     }
 }
 
-function initWebGL() {
-    let canvas = document.getElementById('game-surface');
-    let gl = canvas.getContext('webgl2');
-    if (!gl) {
-        console.log("WebGL 2 not supported, falling back on experimental");
-        gl = canvas.getContext('experimental-webgl');
-    }
-    if (!gl)
-        alert('Your browser does not support WebGL');
-    gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.BACK);
-    return { canvas, gl };
-}
-
 async function run() {
-    let { canvas, gl } = initWebGL();
-
     const PROJECTION_MATRIX = Mat4.perspective(Math.PI / 6, canvas.clientWidth, canvas.clientHeight, 0.1, 1000.0);
     
     let terrainProgram = await makeChunkShaderProgram(gl, PROJECTION_MATRIX);
     let entityProgram = await makeEntityShaderProgram(gl, PROJECTION_MATRIX);
-    
-    const oakLogTopTexImage = await loadImage('./res/oak_log_top.png');
-    const oakLogTexImage = await loadImage('./res/oak_log.png');
-    const cobbleTexImage = await loadImage('./res/cobblestone.png');
-    const mossyCobbleTexImage = await loadImage('./res/mossy_cobblestone.png');
-    const oakPlanksTexImage = await loadImage('./res/oak_planks.png');
-    const dirtTexImage = await loadImage('./res/dirt.png');
-    const grassSideTexImage = await loadImage('./res/grass_block_side.png');
-    const grassTopTexImage = await loadImage('./res/grass_block_top.png');
-    
-    const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas(gl)
-    .addBlock(
-        gl, 
-        Block.OAK_LOG, 
-        oakLogTexImage, 
-        oakLogTexImage, 
-        oakLogTopTexImage, 
-        oakLogTopTexImage, 
-        oakLogTexImage, 
-        oakLogTexImage)
-    .addBlock(
-        gl, 
-        Block.COBBLESTONE, 
-        cobbleTexImage)
-    .addBlock(
-        gl, 
-        Block.MOSSY_COBBLE, 
-        mossyCobbleTexImage)   
-    .addBlock(
-        gl, 
-        Block.OAK_PLANKS, 
-        oakPlanksTexImage)
-    .addBlock(
-        gl, 
-        Block.DIRT, 
-        dirtTexImage)
-    .addBlock(
-        gl, 
-        Block.GRASS, 
-        grassSideTexImage, 
-        grassSideTexImage, 
-        grassTopTexImage, 
-        dirtTexImage, 
-        grassSideTexImage, 
-        grassSideTexImage);
-
-    const creeperTexImage = await loadImage('./res/creeper.png');    
-    const CREEPER_MESH_DATA = await loadMeshDataFromJSON("./res/creeper-vertices.json");
-    const CREEPER_TEXTURE = make2DTexFromImage(gl, gl.CLAMP_TO_EDGE, gl.NEAREST, creeperTexImage);
-    const CREEPER_MODEL = new Model(makeEntityMesh(gl, CREEPER_MESH_DATA), CREEPER_TEXTURE);
 
     let level = new Level(
         BLOCK_TEXTURE_ATLAS, 
@@ -149,3 +67,5 @@ async function run() {
     }, 1000);
     loop();
 }
+
+export { run };

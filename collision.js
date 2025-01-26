@@ -1,3 +1,7 @@
+import { BLOCK_SIZE } from "./block.js";
+import { Vec3 } from "./math-utils.js";
+import { VoxelBox } from "./voxel-box.js";
+
 class Hitbox {
     constructor(collidable) {
         this.center = collidable.getCenter();
@@ -130,3 +134,10 @@ function detectCollisionIn1DAssert(dir) {
     let option3 = dir.x === 1 && dir.y === 0 && dir.z === 0;
     return (option1 || option2 || option3) ? true : false;
 }
+
+export { 
+    Hitbox,
+    collided,
+    detectCollision,
+    detectCollisionWithTerrain
+};

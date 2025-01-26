@@ -1,3 +1,11 @@
+import { Terrain } from "./terrain.js";
+import {
+    TerrainRenderer,
+    EntityRenderer
+} from "./renderer.js";
+import { Camera } from "./camera.js";
+import { Input } from "./input.js";
+
 class Level {
     constructor(blockTextureAtlas, ...entities) {
         this.blockTextureAtlas = blockTextureAtlas;
@@ -34,13 +42,7 @@ class Level {
             throw "QUIT";
         this.terrain.update(gl, this, this.blockTextureAtlas);
         for (let entity of this.entities)
-            entity.update(this);
-
-        /*for (let chunk of this.terrain.chunks) {
-            chunk.highlightedBlockIndex = -1;
-        }*/
-
-        this.cleanDeadEntities();
+            entity.update(this);this.cleanDeadEntities();
         Input.refresh();
     }
     render(gl, terrainProgram, entityProgram) {
@@ -50,3 +52,5 @@ class Level {
         this.entityRenderer.renderPass(gl, this, entityProgram);
     }
 }
+
+export { Level };
