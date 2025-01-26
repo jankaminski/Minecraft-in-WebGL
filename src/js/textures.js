@@ -8,8 +8,8 @@ const BLOCK_TEX_ATLAS_COLUMNS = 6;
 const BLOCK_PIXELS = 16;
 
 class BlockTextureAtlas extends TextureAtlas {
-    constructor(gl) {
-        super(gl, 
+    constructor() {
+        super(
             gl.CLAMP_TO_EDGE, 
             gl.NEAREST, 
             BLOCK_PIXELS, 
@@ -17,7 +17,7 @@ class BlockTextureAtlas extends TextureAtlas {
             BLOCK_TEX_ATLAS_COLUMNS, 
             BLOCK_TEX_ATLAS_ROWS);
     }
-    addBlock(gl, blockID, ...images) {
+    addBlock(blockID, ...images) {
         if (images.length != 6 && images.length != 1) 
             throw "BLEH";
         for (let i = 0; i < 6; i++) {
@@ -26,7 +26,7 @@ class BlockTextureAtlas extends TextureAtlas {
                 image = images[0];
             else
                 image = images[i];
-            this.addTile(gl, image, i, blockID);
+            this.addTile(image, i, blockID);
         }
         return this;
     }
@@ -41,9 +41,8 @@ const dirtTexImage = await loadImage("./res/textures/dirt.png");
 const grassSideTexImage = await loadImage("./res/textures/grass_block_side.png");
 const grassTopTexImage = await loadImage("./res/textures/grass_block_top.png");
 
-const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas(gl)
+const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas()
 .addBlock(
-    gl, 
     Block.OAK_LOG, 
     oakLogTexImage, 
     oakLogTexImage, 
@@ -52,23 +51,18 @@ const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas(gl)
     oakLogTexImage, 
     oakLogTexImage)
 .addBlock(
-    gl, 
     Block.COBBLESTONE, 
     cobbleTexImage)
 .addBlock(
-    gl, 
     Block.MOSSY_COBBLE, 
     mossyCobbleTexImage)   
 .addBlock(
-    gl, 
     Block.OAK_PLANKS, 
     oakPlanksTexImage)
 .addBlock(
-    gl, 
     Block.DIRT, 
     dirtTexImage)
 .addBlock(
-    gl, 
     Block.GRASS, 
     grassSideTexImage, 
     grassSideTexImage, 
@@ -78,7 +72,7 @@ const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas(gl)
     grassSideTexImage);
 
 const creeperTexImage = await loadImage("./res/textures/creeper.png");
-const CREEPER_TEXTURE = make2DTexFromImage(gl, gl.CLAMP_TO_EDGE, gl.NEAREST, creeperTexImage);
+const CREEPER_TEXTURE = make2DTexFromImage(gl.CLAMP_TO_EDGE, gl.NEAREST, creeperTexImage);
 
 export {
     BLOCK_TEX_ATLAS_ROWS,

@@ -1,29 +1,31 @@
+import { gl } from "./webgl-init.js";
+
 class Renderer {
-    renderPass(gl, level, shaderProgram) {  }
+    renderPass(level, shaderProgram) {  }
 }
 
 class TerrainRenderer extends Renderer {
     constructor() { super(); }
-    renderPass(gl, level, shaderProgram) {
-        shaderProgram.turnOn(gl);
-        shaderProgram.loadMatrix(gl, "mView", level.camera.getViewMatrix());
+    renderPass(level, shaderProgram) {
+        shaderProgram.turnOn();
+        shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
         for (let chunk of level.terrain.chunks) {
             if (chunk === null)
                 continue;
             let model = chunk.model;
             if (model === null)
                 continue;
-            model.bind(gl);
+            model.bind();
             let highlightedBlockIndex = -1;
             if (chunk.isHighlighted)
                 highlightedBlockIndex = chunk.highlightedBlockIndex;
-            shaderProgram.loadInt(gl, "highlightedBlockIndex", highlightedBlockIndex);
-            shaderProgram.loadFloat(gl, "blockBreakProgress", chunk.blockBreakProgress);
-            shaderProgram.loadVec3(gl, "chunkPosition", chunk.getWorldPositionArray());
+            shaderProgram.loadInt("highlightedBlockIndex", highlightedBlockIndex);
+            shaderProgram.loadFloat("blockBreakProgress", chunk.blockBreakProgress);
+            shaderProgram.loadVec3("chunkPosition", chunk.getWorldPositionArray());
             gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
-            model.unbind(gl);
+            model.unbind();
         }
-        shaderProgram.turnOff(gl);
+        shaderProgram.turnOff();
     }
 }
 
@@ -53,24 +55,24 @@ class EntityRenderer extends Renderer {
             }
         }
     }
-    renderPass(gl, level, shaderProgram) {
-        shaderProgram.turnOn(gl);
-        shaderProgram.loadMatrix(gl, "mView", level.camera.getViewMatrix());
+    renderPass(level, shaderProgram) {
+        shaderProgram.turnOn();
+        shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
         for (let batch of this.entityRenderBatches) {
             let model = batch.model;
             let entities = batch.entities;
-            model.bind(gl);
+            model.bind();
             for (let entity of entities) {
                 if (!entity.isToRender()) 
                     continue;
                 let limbMatrices = entity.getLimbMatrices();
                 for (let i = 0; i < limbMatrices.length; i++)
-                    shaderProgram.loadMatrix(gl, "limbMatrices[" + i + "]", limbMatrices[i]);
+                    shaderProgram.loadMatrix("limbMatrices[" + i + "]", limbMatrices[i]);
                 gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
             }
-            model.unbind(gl);
+            model.unbind();
         }
-        shaderProgram.turnOff(gl);
+        shaderProgram.turnOff();
     }
 }
 

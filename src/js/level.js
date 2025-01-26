@@ -5,6 +5,7 @@ import {
 } from "./renderer.js";
 import { Camera } from "./camera.js";
 import { Input } from "./input.js";
+import { gl } from "./webgl-init.js";
 
 class Level {
     constructor(...entities) {
@@ -36,21 +37,25 @@ class Level {
         }
         this.entities = refreshedEntities;
     }
-    update(gl) {
+    update() {
         if (Input.quitting())
             throw "QUIT";
-        this.terrain.update(gl, this);
+        this.terrain.update(this);
         for (let entity of this.entities)
             entity.update(this);
-        this.camera.followTarget(this.entities[0].getCenter());
+        //this.camera.followTarget(this.entities[0].getCenter());
+        if (this.entities[0].firstPerson)
+            this.camera.followInFirstPerson(this.entities[0]);
+        else
+            this.camera.followInThirdPerson(this.entities[0], 10, 0.2);
         this.cleanDeadEntities();
         Input.refresh();
     }
-    render(gl, terrainProgram, entityProgram) {
+    render(terrainProgram, entityProgram) {
         gl.clearColor(0.0, 0.1, 1.0, 0.2);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        this.terrainRenderer.renderPass(gl, this, terrainProgram);
-        this.entityRenderer.renderPass(gl, this, entityProgram);
+        this.terrainRenderer.renderPass(this, terrainProgram);
+        this.entityRenderer.renderPass(this, entityProgram);
     }
 }
 

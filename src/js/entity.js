@@ -237,12 +237,11 @@ class Entity {
     }
 }
 
-function makeEntityMesh(gl, meshData) {
+function makeEntityMesh(meshData) {
     let posAttrPtr = makeAttrPtr(0, 3, 6, 0);
     let texAttrPtr = makeAttrPtr(1, 2, 6, 3);
     let jointAttrPtr = makeAttrPtr(2, 1, 6, 5);
     let mesh = new Mesh(
-        gl, 
         meshData.vertices, 
         makeMeshIndices(meshData.noOfFaces, meshData.indicesTemplate), 
         posAttrPtr, 
@@ -251,11 +250,11 @@ function makeEntityMesh(gl, meshData) {
     return mesh;
 }
 
-async function makeEntityShaderProgram(gl, projectionMatrix) {
-    let entityProgram = await loadShaderProgramFromFiles(gl, "./src/shaders/entity-vert.glsl", "./src/shaders/entity-frag.glsl");
-    entityProgram.turnOn(gl);
-    entityProgram.loadMatrix(gl, "mProj", projectionMatrix);
-    entityProgram.turnOff(gl);
+async function makeEntityShaderProgram(projectionMatrix) {
+    let entityProgram = await loadShaderProgramFromFiles("./src/shaders/entity-vert.glsl", "./src/shaders/entity-frag.glsl");
+    entityProgram.turnOn();
+    entityProgram.loadMatrix("mProj", projectionMatrix);
+    entityProgram.turnOff();
     return entityProgram;
 }
 

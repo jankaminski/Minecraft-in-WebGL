@@ -157,7 +157,7 @@ class Chunk extends VoxelBox {
             let height = 40 + generator.evalHeight(this.index, x, z);
             height = Math.trunc(height);
             if ((x === 7) && (z === 9) && y === height) {
-                let oak = new Structure(HUGE_BOX, Vec3.make(x, y, z), this);
+                let oak = new Structure(OAK_TREE, Vec3.make(x, y, z), this);
                 this.structures.push(oak);
                 this.loadStructure(oak, Vec3.make(x, y, z));
             }
@@ -171,8 +171,8 @@ class Chunk extends VoxelBox {
         ];
         return position;
     }
-    acquireModel(gl) {
-        this.model = new Model(makeChunkMesh(gl, this), BLOCK_TEXTURE_ATLAS);
+    acquireModel() {
+        this.model = new Model(makeChunkMesh(this), BLOCK_TEXTURE_ATLAS);
     }
     getBlockByIndex(index) {
         return this.blocks[index];
@@ -357,25 +357,25 @@ class ChunkVertexBuffer {
     }
 }
 
-function makeChunkMesh(gl, chunk) {
+function makeChunkMesh(chunk) {
     let chunkVertexBuffer = new ChunkVertexBuffer(chunk);
     let vertices = chunkVertexBuffer.vertices;
     let indices = chunkVertexBuffer.indices;
     let attr = makeAttrPtr(0, 3, 3, 0);
-    let mesh = new Mesh(gl, vertices, indices, attr);
+    let mesh = new Mesh(vertices, indices, attr);
     return mesh;
 }
 
-async function makeChunkShaderProgram(gl, projectionMatrix) {
-    let terrainProgram = await loadShaderProgramFromFiles(gl, "./src/shaders/terrain-vert.glsl", "./src/shaders/terrain-frag.glsl");
-    terrainProgram.turnOn(gl);
-    terrainProgram.loadMatrix(gl, "mProj", projectionMatrix);
-    terrainProgram.loadInt(gl, "BLOCK_SIZE", BLOCK_SIZE);
-    terrainProgram.loadInt(gl, "CHUNK_HEIGHT_IN_BLOCKS", CHUNK_HEIGHT_IN_BLOCKS);
-    terrainProgram.loadInt(gl, "CHUNK_WIDTH_IN_BLOCKS", CHUNK_WIDTH_IN_BLOCKS);
-    terrainProgram.loadFloat(gl, "texAtlasNoOfRows", BLOCK_TEX_ATLAS_ROWS);
-    terrainProgram.loadFloat(gl, "texAtlasNoOfColumns", BLOCK_TEX_ATLAS_COLUMNS);
-    terrainProgram.turnOff(gl);
+async function makeChunkShaderProgram(projectionMatrix) {
+    let terrainProgram = await loadShaderProgramFromFiles("./src/shaders/terrain-vert.glsl", "./src/shaders/terrain-frag.glsl");
+    terrainProgram.turnOn();
+    terrainProgram.loadMatrix("mProj", projectionMatrix);
+    terrainProgram.loadInt("BLOCK_SIZE", BLOCK_SIZE);
+    terrainProgram.loadInt("CHUNK_HEIGHT_IN_BLOCKS", CHUNK_HEIGHT_IN_BLOCKS);
+    terrainProgram.loadInt("CHUNK_WIDTH_IN_BLOCKS", CHUNK_WIDTH_IN_BLOCKS);
+    terrainProgram.loadFloat("texAtlasNoOfRows", BLOCK_TEX_ATLAS_ROWS);
+    terrainProgram.loadFloat("texAtlasNoOfColumns", BLOCK_TEX_ATLAS_COLUMNS);
+    terrainProgram.turnOff();
     return terrainProgram;
 }
 

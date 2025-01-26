@@ -20,7 +20,7 @@ class Terrain {
         noise.seed(Math.random());
         this.chunks = [];
         this.loadedAreas = [];
-        this.generator = new Generator(0.017, 0);
+        this.generator = new Generator(0.017, 2);
         //this.loadCooldown = new Cooldown(2);
     }
     getGenerator() {
@@ -49,14 +49,14 @@ class Terrain {
             area.move(chunkIndex);
         }
     }
-    updateLoadingAreas(gl) {
+    updateLoadingAreas() {
         for (let area of this.loadedAreas)
-            area.update(gl);
+            area.update();
     }
-    update(gl, level) {
+    update(level) {
         this.updateChunkEntities(level);
         this.moveLoadedAreas(level);
-        this.updateLoadingAreas(gl)
+        this.updateLoadingAreas()
         this.markOutOfSightChunks();
         this.deleteMarkedChunks();
 
@@ -250,7 +250,7 @@ class LoadedArea {
             this.refreshSpreadSource.restart(this.centralIndex);
         }
     }
-    update(gl) {
+    update() {
         this.physicalSpreadSource.update((index, chunk) => {
             if (chunk === null) {
                 chunk = new Chunk(this.terrain, index.x, index.z);
@@ -259,13 +259,13 @@ class LoadedArea {
         });
         this.graphicalSpreadSource.update((index, chunk) => {
             if (chunk !== null)
-                chunk.acquireModel(gl);
+                chunk.acquireModel();
         });
         this.refreshSpreadSource.update((index, chunk) => {
             if (chunk !== null)
                 if (chunk.isToRefresh()) {
                     chunk.setToRefresh(false);
-                    chunk.acquireModel(gl);
+                    chunk.acquireModel();
                 }
         });
     }

@@ -1,13 +1,15 @@
+import { gl } from "./webgl-init.js";
+
 class ShaderProgram {
-    constructor(gl, vertexSource, fragmentSource) {
-        let vertexShader = this.makeShader(gl, vertexSource, gl.VERTEX_SHADER);
-        let fragmentShader = this.makeShader(gl, fragmentSource, gl.FRAGMENT_SHADER);
-        let program = this.makeProgram(gl, vertexShader, fragmentShader);
+    constructor(vertexSource, fragmentSource) {
+        let vertexShader = this.makeShader(vertexSource, gl.VERTEX_SHADER);
+        let fragmentShader = this.makeShader(fragmentSource, gl.FRAGMENT_SHADER);
+        let program = this.makeProgram(vertexShader, fragmentShader);
         if (!program)
             throw "BLEH";
         this.program = program;
     }
-    makeShader(gl, source, type) {
+    makeShader(source, type) {
         let shader = gl.createShader(type);
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
@@ -17,7 +19,7 @@ class ShaderProgram {
         }
         return shader;
     }
-    makeProgram(gl, ...shaders) {
+    makeProgram(...shaders) {
         for (let shader of shaders) {
             if (!shader)
                 return null;
@@ -38,33 +40,33 @@ class ShaderProgram {
         }
         return program;
     }
-    turnOn(gl) {
+    turnOn() {
         gl.useProgram(this.program);
     }
-    turnOff(gl) {
+    turnOff() {
         gl.useProgram(null);
     }
-    loadInt(gl, name, value) {
+    loadInt(name, value) {
         let loc = gl.getUniformLocation(this.program, name);
         gl.uniform1i(loc, value);
     }
-    loadFloat(gl, name, value) {
+    loadFloat(name, value) {
         let loc = gl.getUniformLocation(this.program, name);
         gl.uniform1f(loc, value);
     }
-    loadVec2(gl, name, vec) {
+    loadVec2(name, vec) {
         let loc = gl.getUniformLocation(this.program, name);
         gl.uniform2fv(loc, vec);
     }
-    loadVec3(gl, name, vec) {
+    loadVec3(name, vec) {
         let loc = gl.getUniformLocation(this.program, name);
         gl.uniform3fv(loc, vec);
     }
-    loadVec4(gl, name, vec) {
+    loadVec4(name, vec) {
         let loc = gl.getUniformLocation(this.program, name);
         gl.uniform4fv(loc, vec);
     }
-    loadMatrix(gl, name, matrix) {
+    loadMatrix(name, matrix) {
         let loc = gl.getUniformLocation(this.program, name);
         gl.uniformMatrix4fv(loc, gl.GL_FALSE, matrix);
     }

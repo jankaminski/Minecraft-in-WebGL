@@ -22,10 +22,10 @@ function loadImage(url) {
     });
 }
 
-async function loadShaderProgramFromFiles(gl, vertURL, fragURL) {
+async function loadShaderProgramFromFiles(vertURL, fragURL) {
     let vertexShaderSource = await loadTextResource(vertURL);
     let fragmentShaderSource = await loadTextResource(fragURL);
-    let shaderProgram = new ShaderProgram(gl, vertexShaderSource, fragmentShaderSource);
+    let shaderProgram = new ShaderProgram(vertexShaderSource, fragmentShaderSource);
     return shaderProgram;
 }
 

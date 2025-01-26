@@ -1,14 +1,11 @@
-import { 
-    canvas, 
-    gl 
-} from "../js/webgl-init.js";
-import { Mat4 } from "../js/math-utils.js";
-import { makeEntityShaderProgram } from "../js/entity.js";
-import { makeChunkShaderProgram } from "../js/chunk.js";
-import { Creeper } from "../js/creeper.js";
-import { Player } from "../js/player.js";
-import { Level } from "../js/level.js";
-import { CREEPER_MODEL } from "../js/models.js";
+import { canvas } from "./webgl-init.js";
+import { Mat4 } from "./math-utils.js";
+import { makeEntityShaderProgram } from "./entity.js";
+import { makeChunkShaderProgram } from "./chunk.js";
+import { Creeper } from "./creeper.js";
+import { Player } from "./player.js";
+import { Level } from "./level.js";
+import { CREEPER_MODEL } from "./models.js";
 
 class FPSCounter {
     constructor() {
@@ -39,8 +36,8 @@ class FPSCounter {
 async function run() {
     const PROJECTION_MATRIX = Mat4.perspective(Math.PI / 6, canvas.clientWidth, canvas.clientHeight, 0.1, 1000.0);
     
-    let terrainProgram = await makeChunkShaderProgram(gl, PROJECTION_MATRIX);
-    let entityProgram = await makeEntityShaderProgram(gl, PROJECTION_MATRIX);
+    let terrainProgram = await makeChunkShaderProgram(PROJECTION_MATRIX);
+    let entityProgram = await makeEntityShaderProgram(PROJECTION_MATRIX);
 
     let level = new Level(
         new Player(2, 70, 2, CREEPER_MODEL), 
@@ -57,8 +54,8 @@ async function run() {
     let fpsCounter = new FPSCounter();
 
     let loop = () => {
-        level.update(gl);
-        level.render(gl, terrainProgram, entityProgram);
+        level.update();
+        level.render(terrainProgram, entityProgram);
         requestAnimationFrame(loop);
         fpsCounter.update();
     };

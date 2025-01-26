@@ -12,8 +12,6 @@ import {
 } from "./collision.js";
 import { castRay } from "./misc-utils.js";
 
-import { gl } from "./webgl-init.js";
-
 class Player extends Creeper {
     static loadedAreaIDCount = 0;
     constructor(posX, posY, posZ, model) {
@@ -125,7 +123,7 @@ class Player extends Creeper {
     changeBlock(level, block, newBlockID) {
         level.terrain.setBlock(block, newBlockID);
         let chunk = block.chunk;
-        chunk.acquireModel(gl);
+        chunk.acquireModel();
         let neighbors = chunk.getNeighborChunks(1, 1);
         for (let neighbor of neighbors)
             neighbor.setToRefresh(true);
@@ -139,15 +137,8 @@ class Player extends Creeper {
         if (!switchPerspective)
             this.justSwitched = false;
     }
-    beFollowedByCamera(level) {
-        if (this.firstPerson)
-            level.camera.followInFirstPerson(this);
-        else
-            level.camera.followInThirdPerson(this, 10, 0.2);
-    }
     onAfterUpdate(level) {
         this.checkForSwitch();
-        //this.beFollowedByCamera(level);
         this.castBlockInteractionRay(level);
     }
 }
