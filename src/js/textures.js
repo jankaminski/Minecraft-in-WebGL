@@ -32,14 +32,14 @@ class BlockTextureAtlas extends TextureAtlas {
     }
 }
 
-const oakLogTopTexImage = await loadImage("../res/textures/oak_log_top.png");
-const oakLogTexImage = await loadImage("../res/textures/oak_log.png");
-const cobbleTexImage = await loadImage("../res/textures/cobblestone.png");
-const mossyCobbleTexImage = await loadImage("../res/textures/mossy_cobblestone.png");
-const oakPlanksTexImage = await loadImage("../res/textures/oak_planks.png");
-const dirtTexImage = await loadImage("../res/textures/dirt.png");
-const grassSideTexImage = await loadImage("../res/textures/grass_block_side.png");
-const grassTopTexImage = await loadImage("../res/textures/grass_block_top.png");
+const oakLogTopTexImage = await loadImage("./res/textures/oak_log_top.png");
+const oakLogTexImage = await loadImage("./res/textures/oak_log.png");
+const cobbleTexImage = await loadImage("./res/textures/cobblestone.png");
+const mossyCobbleTexImage = await loadImage("./res/textures/mossy_cobblestone.png");
+const oakPlanksTexImage = await loadImage("./res/textures/oak_planks.png");
+const dirtTexImage = await loadImage("./res/textures/dirt.png");
+const grassSideTexImage = await loadImage("./res/textures/grass_block_side.png");
+const grassTopTexImage = await loadImage("./res/textures/grass_block_top.png");
 
 const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas(gl)
 .addBlock(
