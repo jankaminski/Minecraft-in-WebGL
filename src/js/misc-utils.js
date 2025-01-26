@@ -54,8 +54,18 @@ function areAll(array, condition) {
     return (checks.every((value) => value === true)) ? true : false;
 }
 
+function arrayWithRemoved(array, condition) {
+    let newArray = [];
+    for (let elem of array) {
+        if (!condition(elem))
+            newArray.push(elem);
+    }
+    return newArray;
+}
+
 export {
     Cooldown,
     castRay,
-    areAll
+    areAll,
+    arrayWithRemoved
 };

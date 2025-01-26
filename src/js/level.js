@@ -6,6 +6,7 @@ import {
 import { Camera } from "./camera.js";
 import { Input } from "./input.js";
 import { gl } from "./webgl-init.js";
+import { arrayWithRemoved } from "./misc-utils.js";
 
 class Level {
     constructor(...entities) {
@@ -21,21 +22,9 @@ class Level {
         this.entityRenderer.addEntity(entity);
     }
     cleanDeadEntities() {
-        for (let batch of this.entityRenderer.entityRenderBatches) {
-            let refreshedBatchEntities = [];
-            for (let entity of batch.entities)
-                if (!entity.toDelete)
-                    refreshedBatchEntities.push(entity);
-            batch.entities = refreshedBatchEntities;
-        }
-
-
-        let refreshedEntities = [];
-        for (let entity of this.entities) {
-            if (!entity.toDelete)
-                refreshedEntities.push(entity);
-        }
-        this.entities = refreshedEntities;
+        for (let batch of this.entityRenderer.entityRenderBatches)
+            batch.entities = arrayWithRemoved(batch.entities, (entity) => entity.toDelete);
+        this.entities = arrayWithRemoved(this.entities, (entity) => entity.toDelete);
     }
     update() {
         if (Input.quitting())

@@ -1,5 +1,5 @@
 import { noise } from './perlin-noise.js';
-import { areAll, Cooldown } from './misc-utils.js';
+import { areAll, arrayWithRemoved, Cooldown } from './misc-utils.js';
 import { 
     Block, 
     BLOCK_SIZE 
@@ -12,6 +12,7 @@ import {
 } from './chunk.js';
 import { Input } from './input.js';
 import { Vec3 } from './math-utils.js';
+import { HUGE_BOX, OAK_TREE } from './structure.js';
 
 let RENDER_DISTANCE = 12;
 
@@ -21,10 +22,15 @@ class Terrain {
         this.chunks = [];
         this.loadedAreas = [];
         this.generator = new Generator(0.017, 2);
-        //this.loadCooldown = new Cooldown(2);
+        this.structureGenerators = [];
+        this.structureGenerators.push(new StructureGenerator(0.6, 20, OAK_TREE));
+        this.structureGenerators.push(new StructureGenerator(0.3, 300, HUGE_BOX));
     }
     getGenerator() {
         return this.generator;
+    }
+    getStructureGenerators() {
+        return this.structureGenerators;
     }
     getLoadedAreaByID(id) {
         for (let area of this.loadedAreas)
@@ -59,29 +65,9 @@ class Terrain {
         this.updateLoadingAreas()
         this.markOutOfSightChunks();
         this.deleteMarkedChunks();
-
-
-        //let noOfChunksToRefresh = 0;
-        /*for (let chunk of this.chunks) {
-            if (chunk.isToRefresh()) {
-                let choice = Math.random();
-                if (choice < 0.001) {
-                    chunk.acquireModel(gl);
-                    chunk.setToRefresh(false);
-                }
-                //noOfChunksToRefresh++;
-            }
-        }*/
-
-        /*this.loadCooldown.progress();
-        if (this.loadCooldown.reached()) {
-            let i = Math.trunc(Math.random() * (noOfChunksToRefresh - 1));
-            let chunk = this.chunks[i];
-            if (chunk.isToRefresh()) {
-                chunk.acquireModel(gl);
-                chunk.setToRefresh(false);
-            }
-        }*/
+        this.updateLoadingChunks();
+    }
+    updateLoadingChunks() {
         for (let chunk of this.chunks) {
             chunk.isHighlighted = false;
             chunk.keepLoadingStructureIfNeeded();
@@ -89,7 +75,6 @@ class Terrain {
     }
     markOutOfSightChunks() {
         for (let chunk of this.chunks) {
-
             if (areAll(this.loadedAreas, (area) => {
                 let cx = chunk.index.x;
                 let cz = chunk.index.z;
@@ -99,27 +84,10 @@ class Terrain {
             })) {
                 chunk.toDelete = true;
             }
-
-            /*let outs = [];
-            for (let area of this.loadedAreas) {
-                let cx = chunk.index.x;
-                let cz = chunk.index.z;
-                let fx = area.centralIndex.x;
-                let fz = area.centralIndex.z;
-                let out = Math.abs(cx - fx) + Math.abs(cz - fz) >= area.radius;
-                outs.push(out);
-            }
-            if (outs.every((value) => value === true)) 
-                chunk.toDelete = true;*/
         }
     }
     deleteMarkedChunks() {
-        let refreshedChunks = [];
-        for (let chunk of this.chunks) {
-            if (!chunk.toDelete)
-                refreshedChunks.push(chunk);
-        }
-        this.chunks = refreshedChunks;
+        this.chunks = arrayWithRemoved(this.chunks, (chunk) => chunk.toDelete);
     }
     chunkIndexFromWorldCoords(x, z) {
         let x1 = x % CHUNK_WIDTH;
@@ -215,15 +183,22 @@ class Generator {
     }
 }
 
+class StructureGenerator extends Generator {
+    constructor(hillWidth, hillHeight, structureTemplate) {
+        super(hillWidth, hillHeight);
+        this.structureTemplate = structureTemplate;
+    }
+}
+
 class LoadedArea {
     constructor(terrain, index, radius, id) {
         this.id = id;
         this.terrain = terrain;
         this.radius = radius;
         this.centralIndex = { x : index.x, z : index.z };
-        this.physicalSpreadSource = new Spreader(terrain, this.centralIndex, 1);
-        this.graphicalSpreadSource = new Spreader(terrain, this.centralIndex, 4);
-        this.refreshSpreadSource = new Spreader(terrain, this.centralIndex, 1);
+        this.physicalSpreader = new Spreader(terrain, this.centralIndex, 1);
+        this.graphicalSpreader = new Spreader(terrain, this.centralIndex, 4);
+        this.refreshSpreader = new Spreader(terrain, this.centralIndex, 1);
         this.distanceFromPreviousCenter = 0;
         this.refreshCooldown = new Cooldown(500);
         this.refreshCooldown.setCurrentProgress(450);
@@ -236,32 +211,32 @@ class LoadedArea {
         if (cx != nx || cz != nz) {
             this.centralIndex = { x : nx, z : nz };
             console.log("loaded area moved");
-            this.physicalSpreadSource.restart(this.centralIndex);
+            this.physicalSpreader.restart(this.centralIndex);
             this.distanceFromPreviousCenter++;
         }
         if (Input.forceReloading() || this.distanceFromPreviousCenter > this.radius / 2) {
             console.log("graphical loading restart");
-            this.graphicalSpreadSource.restart(this.centralIndex);
+            this.graphicalSpreader.restart(this.centralIndex);
             this.distanceFromPreviousCenter = 0;
         }
         this.refreshCooldown.progress();
         if (this.refreshCooldown.reached()) {
             console.log("REFRESH START");
-            this.refreshSpreadSource.restart(this.centralIndex);
+            this.refreshSpreader.restart(this.centralIndex);
         }
     }
     update() {
-        this.physicalSpreadSource.update((index, chunk) => {
+        this.physicalSpreader.update((index, chunk) => {
             if (chunk === null) {
                 chunk = new Chunk(this.terrain, index.x, index.z);
                 this.terrain.chunks.push(chunk);
             }
         });
-        this.graphicalSpreadSource.update((index, chunk) => {
+        this.graphicalSpreader.update((index, chunk) => {
             if (chunk !== null)
                 chunk.acquireModel();
         });
-        this.refreshSpreadSource.update((index, chunk) => {
+        this.refreshSpreader.update((index, chunk) => {
             if (chunk !== null)
                 if (chunk.isToRefresh()) {
                     chunk.setToRefresh(false);
