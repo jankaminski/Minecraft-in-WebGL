@@ -12,7 +12,13 @@ import {
 } from './chunk.js';
 import { Input } from './input.js';
 import { Vec3 } from './math-utils.js';
-import { HUGE_BOX, OAK_TREE } from './structure.js';
+import { 
+    getCollidingChunkIndices, 
+    //getCollidingChunks, 
+    HUGE_BOX, 
+    OAK_TREE, 
+    StructureRoot 
+} from './structure.js';
 
 let RENDER_DISTANCE = 12;
 
@@ -25,6 +31,8 @@ class Terrain {
         this.structureGenerators = [];
         this.structureGenerators.push(new StructureGenerator(0.6, 20, OAK_TREE));
         this.structureGenerators.push(new StructureGenerator(0.3, 300, HUGE_BOX));
+
+        this.strucRoots = [];
     }
     getGenerator() {
         return this.generator;
@@ -57,7 +65,7 @@ class Terrain {
     }
     updateLoadingAreas() {
         for (let area of this.loadedAreas)
-            area.update();
+            area.update(this.structureGenerators);
     }
     update(level) {
         this.updateChunkEntities(level);
@@ -66,11 +74,14 @@ class Terrain {
         this.markOutOfSightChunks();
         this.deleteMarkedChunks();
         this.updateLoadingChunks();
+
+        console.log("stored roots: " + this.strucRoots.length);
     }
     updateLoadingChunks() {
+
         for (let chunk of this.chunks) {
             chunk.isHighlighted = false;
-            chunk.keepLoadingStructureIfNeeded();
+            //chunk.keepLoadingStructureIfNeeded();
         }
     }
     markOutOfSightChunks() {
@@ -202,6 +213,7 @@ class LoadedArea {
         this.distanceFromPreviousCenter = 0;
         this.refreshCooldown = new Cooldown(500);
         this.refreshCooldown.setCurrentProgress(450);
+        this.structureSpreader = new Spreader(terrain, this.centralIndex, 0);
     }
     move(newCentralIndex) {
         let cx = this.centralIndex.x;
@@ -222,27 +234,53 @@ class LoadedArea {
         this.refreshCooldown.progress();
         if (this.refreshCooldown.reached()) {
             console.log("REFRESH START");
+            this.structureSpreader.restart(this.centralIndex);
             this.refreshSpreader.restart(this.centralIndex);
         }
     }
-    update() {
+    update(generators) {
         this.physicalSpreader.update((index, chunk) => {
             if (chunk === null) {
                 chunk = new Chunk(this.terrain, index.x, index.z);
                 this.terrain.chunks.push(chunk);
             }
-        });
+        }, true);
         this.graphicalSpreader.update((index, chunk) => {
             if (chunk !== null)
                 chunk.acquireModel();
-        });
+        }, true);
         this.refreshSpreader.update((index, chunk) => {
             if (chunk !== null)
                 if (chunk.isToRefresh()) {
+                    //chunk.loadStructures();
                     chunk.setToRefresh(false);
                     chunk.acquireModel();
                 }
-        });
+        }, true);
+        this.structureSpreader.update((index) => {
+            for (let x = 0; x < CHUNK_WIDTH_IN_BLOCKS; x++) {
+                for (let z = 0; z < CHUNK_WIDTH_IN_BLOCKS; z++) {
+                    for (let generator of generators) {
+                        let y = Math.trunc(generator.evalHeight(index, x, z));
+                        if (y > Math.trunc(generator.hillHeight) - 2) {
+                            console.log("planted a struc: " + index.x + ", " + index.z);
+                            //let xx = Math.trunc((x + index.x * CHUNK_WIDTH_IN_BLOCKS) * generator.hillWidth);
+                            //let zz = Math.trunc((z + index.z * CHUNK_WIDTH_IN_BLOCKS * generator.hillWidth) * generator.hillHeight);
+                            let xx = index.x * CHUNK_WIDTH_IN_BLOCKS;
+                            let zz = index.z * CHUNK_WIDTH_IN_BLOCKS;
+                            let root = new StructureRoot(generator.structureTemplate, Vec3.make(xx, 100, zz), index);
+                            this.terrain.strucRoots.push(root);
+                            let collIndices = getCollidingChunkIndices(root);
+                            for (let collIndex of collIndices) {
+                                let xxx = Math.trunc((x + collIndex.x * CHUNK_WIDTH_IN_BLOCKS) * generator.hillWidth);
+                                let zzz = Math.trunc((z + collIndex.z * CHUNK_WIDTH_IN_BLOCKS * generator.hillWidth) * generator.hillHeight);
+                                this.terrain.strucRoots.push(new StructureRoot(generator.structureTemplate, Vec3.make(xxx, 80, zzz), collIndex));
+                            }
+                        }
+                    }
+                }
+            }
+        }, false);
     }
 }
 
@@ -277,7 +315,7 @@ class Spreader {
         this.noOfAlreadyLoadedChunks = 0;
         this.noOfChunksToLoad = this.currentLayerIndices.length;
     }
-    update(updateAction) {
+    update(updateAction, involvesLoading) {
         this.updateCooldown.progress();
         if (!this.updateCooldown.reached())
             return;
@@ -285,6 +323,10 @@ class Spreader {
             this.beginNewLoadingLayer();
         let index = this.currentLayerIndices[this.noOfAlreadyLoadedChunks];
         this.noOfAlreadyLoadedChunks++;
+        if (!involvesLoading) {
+            updateAction(index, null);
+            return;
+        }
         let chunk = this.terrain.getChunkByIndex(index);
         updateAction(index, chunk);
     }

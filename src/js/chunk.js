@@ -22,14 +22,15 @@ import { Vec3 } from "./math-utils.js";
 import { 
     HUGE_BOX,
     OAK_TREE, 
-    Structure 
+    //Structure, 
+    StructureRoot
 } from "./structure.js";
 import { 
     BLOCK_TEX_ATLAS_COLUMNS, 
     BLOCK_TEX_ATLAS_ROWS, 
     BLOCK_TEXTURE_ATLAS 
 } from "./textures.js";
-import { areAll } from "./misc-utils.js";
+import { areAll, arrayWithRemoved } from "./misc-utils.js";
 
 const CHUNK_HEIGHT_IN_BLOCKS = 128;
 const CHUNK_WIDTH_IN_BLOCKS = 16;
@@ -60,14 +61,36 @@ class Chunk extends VoxelBox {
         this.isHighlighted = false;
         this.highlightedBlockIndex = -1;
         this.blockBreakProgress = 0.0;
-        this.structures = [];
-        this.generateStructures(terrain.getGenerator(), terrain.getStructureGenerators());
+        this.strucRoots = [];
+        this.terrain.strucRoots = arrayWithRemoved(this.terrain.strucRoots, (root) => {
+            if (root.chunkIndex.x === indexX && root.chunkIndex.z === indexZ) {
+                //console.log("struc chop loaded");
+                this.strucRoots.push(root);
+                return true;
+            }
+            return false;
+        });
+        /*for (let root of this.terrain.strucRoots) {
+            if (root.chunkIndex.x === indexX && root.chunkIndex.z === indexZ) {
+                console.log("struc chop loaded");
+                this.strucRoots.push(root);
+            }
+        }*/
+        for (let root of this.strucRoots) {
+            this.loadStructureRoot(root);
+        }
+        //this.generateStructures(terrain.getGenerator(), terrain.getStructureGenerators());
     }
     isOnEdge() {
         let neighbors = this.getNeighborChunks(1, 1);
         return !areAll(neighbors, (neighbor) => neighbor !== null);
     }
-    keepLoadingStructureIfNeeded() {
+    /*keepLoadingStructureIfNeeded() {
+
+        for (let root of this.strucRoots) {
+
+        }
+
         for (let structure of this.structures) {
             if (structure.finished)
                 continue;
@@ -76,7 +99,7 @@ class Chunk extends VoxelBox {
         if (this.isOnEdge())
             for (let s of this.structures)
                 s.finished = false;
-    }
+    }*/
     loadBlockUpdateData(index, breakProgress) {
         this.highlightedBlockIndex = index;
         this.isHighlighted = true;
@@ -149,7 +172,7 @@ class Chunk extends VoxelBox {
             }
         }
     }
-    generateStructures(terrainGenerator, generators) {
+    /*generateStructures(terrainGenerator, generators) {
         for (let i = 0; i < TOTAL_BLOCKS_PER_CHUNK; i++) {
             let { x, y, z } = this.makeVoxelCoordsFromIndex(i);
             for (let generator of generators) {
@@ -159,13 +182,18 @@ class Chunk extends VoxelBox {
                 let height = Math.trunc(generator.evalHeight(this.index, x, z));
 
                 if (y === terrHeight && height > Math.trunc(generator.hillHeight) - 2) {
-                    let oak = new Structure(generator.structureTemplate, Vec3.make(x, y, z), this);
-                    this.structures.push(oak);
-                    this.loadStructure(oak, Vec3.make(x, y, z));
+
+                    let strucRoot = new StructureRoot(generator.structureTemplate, Vec3.make(x, y, z), this);
+                    this.strucRoots.push(strucRoot);
+                    this.loadStructureRoot(strucRoot);
+
+                    //let struc = new Structure(generator.structureTemplate, Vec3.make(x, y, z), this);
+                    //this.terrain.structures.push(struc);
+                    //this.loadStructure(struc, Vec3.make(x, y, z));
                 }
             }
         }
-    }
+    }*/
     getWorldPositionArray() { 
         let position = [
             this.index.x * CHUNK_WIDTH,
@@ -186,45 +214,57 @@ class Chunk extends VoxelBox {
         let worldZ = this.index.z * CHUNK_WIDTH + z * BLOCK_SIZE + (BLOCK_SIZE / 2);
         return { worldX, worldY, worldZ };
     }
-    coordsInsideChunk(x, y, z) {
-        if (x < CHUNK_WIDTH_IN_BLOCKS && 
-                y < CHUNK_HEIGHT_IN_BLOCKS && 
-                z < CHUNK_WIDTH_IN_BLOCKS && 
-                x >= 0 && 
-                y >= 0 && 
-                z >= 0)
-            return true;
-        else
-            return false;
+    coordsNotOutsideChunk(x, y, z) {
+        let notExceededX = x < CHUNK_WIDTH_IN_BLOCKS && x >= 0;
+        let notExceededY = y < CHUNK_HEIGHT_IN_BLOCKS && y >= 0;
+        let notExceededZ = z < CHUNK_WIDTH_IN_BLOCKS && z >= 0;
+        return { notExceededX, notExceededY, notExceededZ };
+    }
+    allCoordsInsideChunk(x, y, z) {
+        let { notExceededX, notExceededY, notExceededZ } = this.coordsNotOutsideChunk(x, y, z);
+        return notExceededX && notExceededY && notExceededZ;
     }
     getBlockByInChunkCoords(x, y, z, forceLoad) {
-        if (this.coordsInsideChunk(x, y, z)) {
-            let index = this.makeIndexFromVoxelCoords(x, y, z);
-            return this.blocks[index];
+        let { chunk, chunkIndex, blockCoords, exceededY } = this.getChunkAndBlockCoordsByInChunkBlockCoords(x, y, z);
+        if (exceededY)
+            return 0;
+        if (chunk === null) {
+            if (!forceLoad)
+                return 1;
+            chunk = new Chunk(this.terrain, chunkIndex.x, chunkIndex.z);
+            this.terrain.chunks.push(chunk);
         }
-        if (!forceLoad) 
-            return 1;
-        let { worldX, worldY, worldZ } = this.worldCoordsFromInChunkCoords(x, y, z);
-        let block = this.terrain.getBlockByWorldCoords(worldX, worldY, worldZ, forceLoad);
-        if (block === null)
-            return 1;
-        return block.id;
+        let blockIndex = chunk.makeIndexFromVoxelCoords(blockCoords.x, blockCoords.y, blockCoords.z);
+        return chunk.blocks[blockIndex];
     }
     setBlockByIndex(index, newBlockID) {
         this.blocks[index] = newBlockID;
     }
+    getChunkIndexByExceedingInChunkCoords(x, z) {
+        let chunkXOffset = Math.trunc(x / CHUNK_WIDTH_IN_BLOCKS);
+        let chunkZOffset = Math.trunc(z / CHUNK_WIDTH_IN_BLOCKS);
+        if (x < 0) {
+            chunkXOffset--;
+        }
+        if (z < 0) {
+            chunkZOffset--;
+        }
+        return { x : this.index.x + chunkXOffset, z : this.index.z + chunkZOffset };
+    }
     getChunkIndexAndBlockCoordsFromExceedingInChunkCoords(x, y, z) {
-        if (this.coordsInsideChunk(x, y, z)) {
+        let { notExceededX, notExceededY, notExceededZ } = this.coordsNotOutsideChunk(x, y, z);
+        if (notExceededX && notExceededY && notExceededZ) {
             return {
                 blockCoords : { x, y, z },
                 chunkIndex : { x : this.index.x, z : this.index.z },
+                exceededY : false, 
                 exceeded : false
             };
         }
         let bx = (x % CHUNK_WIDTH_IN_BLOCKS);
         let bz = (z % CHUNK_WIDTH_IN_BLOCKS);
-        let chunkXOffset = (x - bx) / CHUNK_WIDTH_IN_BLOCKS;
-        let chunkZOffset = (z - bz) / CHUNK_WIDTH_IN_BLOCKS;
+        let chunkXOffset = Math.trunc(x / CHUNK_WIDTH_IN_BLOCKS);
+        let chunkZOffset = Math.trunc(z / CHUNK_WIDTH_IN_BLOCKS);
         if (x < 0) {
             chunkXOffset--;
             bx = CHUNK_WIDTH_IN_BLOCKS + bx;
@@ -236,23 +276,59 @@ class Chunk extends VoxelBox {
         return {
             blockCoords : { x : bx, y, z : bz },
             chunkIndex : { x : this.index.x + chunkXOffset, z : this.index.z + chunkZOffset },
+            exceededY : !notExceededY,
             exceeded : true
         };
     }
-    setBlockByInChunkCoords(x, y, z, block) {
-        if (this.coordsInsideChunk(x, y, z)) {
-            let index = this.makeIndexFromVoxelCoords(x, y, z);
-            this.blocks[index] = block;
-        }
-        let { blockCoords, chunkIndex } = this.getChunkIndexAndBlockCoordsFromExceedingInChunkCoords(x, y, z);
-        let otherChunk = this.terrain.getChunkByIndex(chunkIndex);
-        if (otherChunk === null)
-            return;
-        let blockIndex = otherChunk.makeIndexFromVoxelCoords(blockCoords.x, blockCoords.y, blockCoords.z);
-        otherChunk.blocks[blockIndex] = block;
-        otherChunk.setToRefresh(true);
+    getChunkAndBlockCoordsByInChunkBlockCoords(x, y, z) {
+        let { blockCoords, chunkIndex, exceededY, exceeded } = this.getChunkIndexAndBlockCoordsFromExceedingInChunkCoords(x, y, z);
+        let chunk = null;
+        /*if (excceededY) {
+            return { chunk, chunkIndex, blockCoords, excceededY };
+        }*/
+        if (chunkIndex.x === this.index.x && chunkIndex.z === this.index.z)
+            chunk = this;
+        else 
+            chunk = this.terrain.getChunkByIndex(chunkIndex);
+        return { chunk, chunkIndex, blockCoords, exceededY };
     }
-    loadStructure(structure, relativeRoot) {
+    setBlockByInChunkCoords(x, y, z, block) {
+        let { chunk, chunkIndex, blockCoords, exceededY } = this.getChunkAndBlockCoordsByInChunkBlockCoords(x, y, z);
+        if (chunk === null)
+            return;
+        let blockIndex = chunk.makeIndexFromVoxelCoords(blockCoords.x, blockCoords.y, blockCoords.z);
+        chunk.blocks[blockIndex] = block;
+        chunk.setToRefresh(true);
+    }
+    /*loadStructures() {
+        for (let root of this.terrain.strucRoots) {
+            if (root.chunkIndex.x === this.index.x && root.chunkIndex.z === this.index.z) {
+                this.strucRoots.push(root);
+            }
+        }
+        for (let root of this.strucRoots) {
+            this.loadStructureRoot(root);
+        }
+    }*/
+    loadStructureRoot(root) {
+        let template = root.template;
+        let min = Vec3.sub(root.position, template.root);
+        let size = template.size;
+        for (let i = 0; i < template.noOfBlocks; i++) {
+            let { x, y, z } = template.makeVoxelCoordsFromIndex(i);
+            y = size.y - y;
+            let blockX = min.x + x;
+            let blockY = min.y + y;
+            let blockZ = min.z + z;
+            let block = template.blocks[i];
+            if (this.allCoordsInsideChunk(blockX, blockY, blockZ) && block !== 0) {
+                let index = this.makeIndexFromVoxelCoords(blockX, blockY, blockZ);
+                this.blocks[index] = block;
+            }
+        }
+        //console.log("struc chop loaded");
+    }
+    /*loadStructure(structure, relativeRoot) {
         let template = structure.template;
         let min = Vec3.sub(relativeRoot, template.root);
         let size = template.size;
@@ -264,7 +340,7 @@ class Chunk extends VoxelBox {
             let blockY = min.y + y;
             let blockZ = min.z + z;
             let block = template.blocks[i];
-            if (this.coordsInsideChunk(blockX, blockY, blockZ) && block !== 0) {
+            if (this.allCoordsInsideChunk(blockX, blockY, blockZ) && block !== 0) {
                 let index = this.makeIndexFromVoxelCoords(blockX, blockY, blockZ);
                 this.blocks[index] = block;
             }
@@ -284,7 +360,7 @@ class Chunk extends VoxelBox {
             return true;
         }))
             structure.finished = true;
-    }
+    }*/
 }
 
 class ChunkVertexBuffer {
