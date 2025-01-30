@@ -20,6 +20,7 @@ import {
 } from "./res-utils.js";
 import { Vec3 } from "./math-utils.js";
 import { 
+    getCollidingChunkIndices,
     HUGE_BOX,
     OAK_TREE, 
     //Structure, 
@@ -62,24 +63,24 @@ class Chunk extends VoxelBox {
         this.highlightedBlockIndex = -1;
         this.blockBreakProgress = 0.0;
         this.strucRoots = [];
-        this.terrain.strucRoots = arrayWithRemoved(this.terrain.strucRoots, (root) => {
+        /*this.terrain.strucRoots = arrayWithRemoved(this.terrain.strucRoots, (root) => {
             if (root.chunkIndex.x === indexX && root.chunkIndex.z === indexZ) {
                 //console.log("struc chop loaded");
                 this.strucRoots.push(root);
                 return true;
             }
             return false;
-        });
+        });*/
         /*for (let root of this.terrain.strucRoots) {
             if (root.chunkIndex.x === indexX && root.chunkIndex.z === indexZ) {
                 console.log("struc chop loaded");
                 this.strucRoots.push(root);
             }
-        }*/
+        }
         for (let root of this.strucRoots) {
             this.loadStructureRoot(root);
-        }
-        //this.generateStructures(terrain.getGenerator(), terrain.getStructureGenerators());
+        }*/
+        this.generateStructures(terrain.getGenerator(), terrain.getStructureGenerators());
     }
     isOnEdge() {
         let neighbors = this.getNeighborChunks(1, 1);
@@ -172,7 +173,7 @@ class Chunk extends VoxelBox {
             }
         }
     }
-    /*generateStructures(terrainGenerator, generators) {
+    generateStructures(terrainGenerator, generators) {
         for (let i = 0; i < TOTAL_BLOCKS_PER_CHUNK; i++) {
             let { x, y, z } = this.makeVoxelCoordsFromIndex(i);
             for (let generator of generators) {
@@ -183,17 +184,23 @@ class Chunk extends VoxelBox {
 
                 if (y === terrHeight && height > Math.trunc(generator.hillHeight) - 2) {
 
-                    let strucRoot = new StructureRoot(generator.structureTemplate, Vec3.make(x, y, z), this);
-                    this.strucRoots.push(strucRoot);
-                    this.loadStructureRoot(strucRoot);
-
-                    //let struc = new Structure(generator.structureTemplate, Vec3.make(x, y, z), this);
-                    //this.terrain.structures.push(struc);
-                    //this.loadStructure(struc, Vec3.make(x, y, z));
+                    let xx = x + this.index.x * CHUNK_WIDTH_IN_BLOCKS;
+                    let zz = z + this.index.z * CHUNK_WIDTH_IN_BLOCKS;
+                    let root = new StructureRoot(generator.structureTemplate, Vec3.make(xx, y, zz), this.index);
+                    this.strucRoots.push(root);
+                    let collIndices = getCollidingChunkIndices(root);
+                    for (let collIndex of collIndices) {
+                        let collChunk = this.terrain.getChunkByIndex(collIndex);
+                        if (collChunk !== null)
+                            collChunk.strucRoots.push(new StructureRoot(generator.structureTemplate, Vec3.make(xx, y, zz), collIndex));
+                    }
                 }
             }
         }
-    }*/
+        for (let root of this.strucRoots) {
+            this.loadStructureRoot(root);
+        }
+    }
     getWorldPositionArray() { 
         let position = [
             this.index.x * CHUNK_WIDTH,
@@ -300,19 +307,19 @@ class Chunk extends VoxelBox {
         chunk.blocks[blockIndex] = block;
         chunk.setToRefresh(true);
     }
-    /*loadStructures() {
-        for (let root of this.terrain.strucRoots) {
+    loadStructures() {
+        /*for (let root of this.terrain.strucRoots) {
             if (root.chunkIndex.x === this.index.x && root.chunkIndex.z === this.index.z) {
                 this.strucRoots.push(root);
             }
-        }
+        }*/
         for (let root of this.strucRoots) {
             this.loadStructureRoot(root);
         }
-    }*/
+    }
     loadStructureRoot(root) {
         let template = root.template;
-        let min = Vec3.sub(root.position, template.root);
+        let min = Vec3.sub(Vec3.sub(root.position, template.root), { x : this.index.x * CHUNK_WIDTH_IN_BLOCKS, y : 0, z: this.index.z * CHUNK_WIDTH_IN_BLOCKS });
         let size = template.size;
         for (let i = 0; i < template.noOfBlocks; i++) {
             let { x, y, z } = template.makeVoxelCoordsFromIndex(i);

@@ -87,7 +87,7 @@ function getChunkIndex(index, x, z) {
 
 function getCollidingChunkIndices(root) {
     let collidedChunkIndices = [];
-    let min = Vec3.sub(root.position, root.template.root);
+    let min = Vec3.sub(Vec3.sub(root.position, root.template.root), { x : root.chunkIndex.x * CHUNK_WIDTH_IN_BLOCKS, y : 0, z: root.chunkIndex.z * CHUNK_WIDTH_IN_BLOCKS });
     let max = Vec3.add(min, root.template.size);
     for (let x = min.x; x <= max.x; x++) {
         for (let y = min.y; y <= max.y; y++) {
