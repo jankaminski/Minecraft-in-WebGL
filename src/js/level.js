@@ -32,11 +32,11 @@ class Level {
         this.terrain.update(this);
         for (let entity of this.entities)
             entity.update(this);
-        this.camera.followTarget(this.entities[0].getCenter());
-        /*if (this.entities[0].firstPerson)
+        //this.camera.followTarget(this.entities[0].getCenter());
+        if (this.entities[0].firstPerson)
             this.camera.followInFirstPerson(this.entities[0]);
         else
-            this.camera.followInThirdPerson(this.entities[0], 10, 0.2);*/
+            this.camera.followInThirdPerson(this.entities[0], 10, 0.2);
         this.cleanDeadEntities();
         Input.refresh();
     }
