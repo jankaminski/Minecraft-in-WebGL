@@ -11,6 +11,7 @@ import {
     Hitbox 
 } from "./collision.js";
 import { castRay } from "./misc-utils.js";
+import { BlockUtils } from "./block-access-utils.js";
 
 class Player extends Creeper {
     static loadedAreaIDCount = 0;
@@ -83,9 +84,9 @@ class Player extends Creeper {
         }
     }
     breakOrPlaceABlock(level, breakCoord, raysOneStep) {
-        let blockToBreak = level.terrain.getBlockByWorldCoords(breakCoord.x, breakCoord.y, breakCoord.z, false);
+        let blockToBreak = BlockUtils.getBlockByWorldCoords(level.terrain, breakCoord.x, breakCoord.y, breakCoord.z);
         let placeCoord = Vec3.sub(breakCoord, raysOneStep);
-        let blockToPlace = level.terrain.getBlockByWorldCoords(placeCoord.x, placeCoord.y, placeCoord.z, false);
+        let blockToPlace = BlockUtils.getBlockByWorldCoords(level.terrain, placeCoord.x, placeCoord.y, placeCoord.z);
         if (blockToBreak === null || blockToPlace === null)
             return false;
         if (blockToBreak.getID() === Block.AIR || blockToPlace.getID() !== Block.AIR)
@@ -123,6 +124,7 @@ class Player extends Creeper {
     changeBlock(level, block, newBlockID) {
         level.terrain.setBlock(block, newBlockID);
         let chunk = block.chunk;
+        chunk.modifiedBlocks[block.getIndex()] = true;
         chunk.acquireModel();
         let neighbors = chunk.getNeighborChunks(1, 1);
         for (let neighbor of neighbors)
