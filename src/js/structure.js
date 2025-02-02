@@ -1,7 +1,7 @@
 import { VoxelBox } from "./voxel-box.js";
 import { loadMeshDataFromJSON } from "./res-utils.js";
 import { Vec3 } from "./math-utils.js";
-import { Chunk, CHUNK_WIDTH_IN_BLOCKS } from "./chunk.js";
+import { CHUNK_WIDTH_IN_BLOCKS } from "./chunk.js";
 import { BlockAccess } from "./block-access.js";
 import { areAll } from "./misc-utils.js";
 
@@ -45,10 +45,7 @@ class Structure {
             coords.x += this.min.x;
             coords.z += this.min.z;
             let chunkIndex = BlockAccess.getChunkIndexByBlockCoords(this.rootChunk, coords.x, coords.z);
-            let checks = [];
-            for (let index of this.collidingChunkIndices)
-                checks.push(index.equals(chunkIndex));
-            if (checks.every((value) => value === false))
+            if (areAll(this.collidingChunkIndices, (index) => !index.equals(chunkIndex)))
                 this.collidingChunkIndices.push(chunkIndex);
         }
     }
@@ -56,11 +53,9 @@ class Structure {
         for (let i = 0; i < this.collidingChunkIndices.length; i++) {
             let index = this.collidingChunkIndices[i];
             let chunk = BlockAccess.getChunkByIndex(this.rootChunk.terrain, index);
-            if (chunk !== null) {
-                if (chunk.loadedStructures.includes(this))
-                    continue;
-            }
             if (chunk === null)
+                continue;
+            if (chunk.loadedStructures.includes(this))
                 continue;
             chunk.loadStructure(this);
             chunk.acquireModel();

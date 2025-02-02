@@ -1,6 +1,4 @@
-import {
-    Vec3
-} from "./math-utils.js";
+import { Vec3 } from "./math-utils.js";
 
 const BLOCK_SIZE = 1.0;
 

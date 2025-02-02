@@ -19,18 +19,20 @@ import {
     VERTICES_PER_FACE 
 } from "./res-utils.js";
 import { Vec3 } from "./math-utils.js";
-import { 
-    HUGE_BOX,
-    OAK_TREE, 
-    Structure
-} from "./structure.js";
+import { Structure } from "./structure.js";
 import { 
     BLOCK_TEX_ATLAS_COLUMNS, 
     BLOCK_TEX_ATLAS_ROWS, 
     BLOCK_TEXTURE_ATLAS 
 } from "./textures.js";
-import { areAll, arrayWithRemoved } from "./misc-utils.js";
-import { BlockAccess, CHUNK_HEIGHT, CHUNK_HEIGHT_IN_BLOCKS, CHUNK_WIDTH, CHUNK_WIDTH_IN_BLOCKS, TOTAL_BLOCKS_PER_CHUNK } from "./block-access.js";
+import { 
+    BlockAccess, 
+    CHUNK_HEIGHT, 
+    CHUNK_HEIGHT_IN_BLOCKS, 
+    CHUNK_WIDTH, 
+    CHUNK_WIDTH_IN_BLOCKS, 
+    TOTAL_BLOCKS_PER_CHUNK 
+} from "./block-access.js";
 
 const FACES_IN_CUBE = 6; // oh really? 
 

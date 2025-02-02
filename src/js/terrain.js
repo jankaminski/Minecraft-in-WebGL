@@ -1,17 +1,19 @@
 import { noise } from './perlin-noise.js';
-import { areAll, arrayWithRemoved, Cooldown } from './misc-utils.js';
 import { 
-    Block, 
-    BLOCK_SIZE 
-} from './block.js';
+    areAll, 
+    arrayWithRemoved, 
+    Cooldown 
+} from './misc-utils.js';
 import { Chunk, ChunkIndex } from './chunk.js';
 import { Input } from './input.js';
-import { Vec3 } from './math-utils.js';
 import { 
     HUGE_BOX, 
     OAK_TREE
 } from './structure.js';
-import { BlockAccess, CHUNK_WIDTH_IN_BLOCKS } from './block-access.js';
+import { 
+    BlockAccess, 
+    CHUNK_WIDTH_IN_BLOCKS 
+} from './block-access.js';
 
 let RENDER_DISTANCE = 12;
 
