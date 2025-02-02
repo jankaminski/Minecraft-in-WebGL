@@ -9,7 +9,7 @@ const CHUNK_WIDTH = CHUNK_WIDTH_IN_BLOCKS * BLOCK_SIZE;
 const CHUNK_HEIGHT = CHUNK_HEIGHT_IN_BLOCKS * BLOCK_SIZE;
 const TOTAL_BLOCKS_PER_CHUNK = CHUNK_WIDTH_IN_BLOCKS * CHUNK_HEIGHT_IN_BLOCKS * CHUNK_WIDTH_IN_BLOCKS;
 
-class BlockUtils {
+class BlockAccess {
     static getChunkIndexByWorldCoords(x, z) {
         let x1 = x % CHUNK_WIDTH;
         let z1 = z % CHUNK_WIDTH;
@@ -47,35 +47,31 @@ class BlockUtils {
                 return chunk;
         return null;
     }
-    static getChunkByWorldCoords(terrain, x, z/*, forceLoad*/) {
+    static getChunkByWorldCoords(terrain, x, z) {
         let index = this.getChunkIndexByWorldCoords(x, z);
         let chunk = this.getChunkByIndex(terrain, index);
-        //if (!forceLoad)
-            return chunk;
-        /*if (chunk === null) {
-            chunk = new Chunk(this, index.x, index.z);
-            this.chunks.push(chunk);
-        }*/
         return chunk;
     }
-    static getBlockByWorldCoords(terrain, x, y, z/*, forceLoad*/) {
-        let chunk = this.getChunkByWorldCoords(terrain, x, z/*, forceLoad*/);
+    static getBlockCenterByWorldCoords(x, y, z) {
+        let center = Vec3.make(
+            (Math.trunc(x) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(x), 
+            (Math.trunc(y) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(y), 
+            (Math.trunc(z) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(z));
+        return center;
+    }
+    static getBlockByWorldCoords(terrain, x, y, z) {
+        let chunk = this.getChunkByWorldCoords(terrain, x, z);
         if (chunk === null) 
             return null;
         let blockPosInChunk = this.getInChunkBlockCoordsByWorldCoords(x, y, z);
         if (blockPosInChunk === null) 
             return null;
-        let blockID = chunk.getBlockByInChunkCoords(blockPosInChunk.x, blockPosInChunk.y, blockPosInChunk.z, false);
-        let center = Vec3.make(
-            (Math.trunc(x) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(x), 
-            (Math.trunc(y) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(y), 
-            (Math.trunc(z) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(z));
-        let blockIndex = chunk.makeIndexFromVoxelCoords(blockPosInChunk.x, blockPosInChunk.y, blockPosInChunk.z);
+        let { x : blockX, y : blockY, z : blockZ } = blockPosInChunk;
+        let blockIndex = chunk.makeIndexFromVoxelCoords(blockX, blockY, blockZ);
+        let center = this.getBlockCenterByWorldCoords(x, y, z);
+        let blockID = this.getBlockByInChunkCoords(chunk, blockX, blockY, blockZ);
         return new Block(chunk, blockPosInChunk, blockIndex, center, blockID);
     }
-
-
-
     static getWorldCoordsByInChunkBlockCoords(chunk, x, y, z) {
         let worldX = chunk.index.x * CHUNK_WIDTH + x * BLOCK_SIZE + (BLOCK_SIZE / 2);
         let worldY = y * BLOCK_SIZE;
@@ -95,12 +91,10 @@ class BlockUtils {
     static getChunkIndexByBlockCoords(origChunk, x, z) {
         let chunkXOffset = Math.trunc(x / CHUNK_WIDTH_IN_BLOCKS);
         let chunkZOffset = Math.trunc(z / CHUNK_WIDTH_IN_BLOCKS);
-        if (x < 0) {
+        if (x < 0)
             chunkXOffset--;
-        }
-        if (z < 0) {
+        if (z < 0)
             chunkZOffset--;
-        }
         return origChunk.index.clone().offset(chunkXOffset, chunkZOffset);
     }
     static getChunkIndexAndInChunkBlockCoordsByBlockCoords(origChunk, x, y, z) {
@@ -136,6 +130,15 @@ class BlockUtils {
             chunk = this.getChunkByIndex(origChunk.terrain, chunkIndex);
         return { chunk, chunkIndex, blockCoords, exceededY };
     }
+    static getBlockByInChunkCoords(origChunk, x, y, z) {
+        let { chunk, chunkIndex, blockCoords, exceededY } = this.getChunkAndInChunkBlockCoordsByBlockCoords(origChunk, x, y, z);
+        if (exceededY)
+            return 0;
+        if (chunk === null)
+            return 1;
+        let blockIndex = chunk.makeIndexFromVoxelCoords(blockCoords.x, blockCoords.y, blockCoords.z);
+        return chunk.blocks[blockIndex];
+    }
 }
 
 export { 
@@ -144,5 +147,5 @@ export {
     CHUNK_WIDTH,
     CHUNK_HEIGHT,
     TOTAL_BLOCKS_PER_CHUNK,
-    BlockUtils 
+    BlockAccess 
 };

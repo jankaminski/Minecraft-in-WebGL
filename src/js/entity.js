@@ -1,4 +1,4 @@
-import { BlockUtils } from "./block-access-utils.js";
+import { BlockAccess } from "./block-access.js";
 import { BLOCK_SIZE } from "./block.js";
 import { 
     detectCollision, 
@@ -163,7 +163,7 @@ class Entity {
         this.momentum = Vec3.add(this.momentum, push);
     }
     getChunksForEntityCollisionCheck(level) {
-        let chunk = BlockUtils.getChunkByWorldCoords(level.terrain, this.center.x, this.center.z);
+        let chunk = BlockAccess.getChunkByWorldCoords(level.terrain, this.center.x, this.center.z);
         if (chunk === null)
             return [null];
         let neighbors = chunk.getNeighborChunks();

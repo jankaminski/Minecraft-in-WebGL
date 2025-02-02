@@ -11,7 +11,7 @@ import {
     HUGE_BOX, 
     OAK_TREE
 } from './structure.js';
-import { BlockUtils, CHUNK_WIDTH_IN_BLOCKS } from './block-access-utils.js';
+import { BlockAccess, CHUNK_WIDTH_IN_BLOCKS } from './block-access.js';
 
 let RENDER_DISTANCE = 12;
 
@@ -45,7 +45,7 @@ class Terrain {
     moveLoadedAreas(level) {
         for (let player of level.players) {
             let playerPosition = player.getCenter();
-            let chunkIndex = BlockUtils.getChunkIndexByWorldCoords(playerPosition.x, playerPosition.z);
+            let chunkIndex = BlockAccess.getChunkIndexByWorldCoords(playerPosition.x, playerPosition.z);
             let areaID = player.getLoadedAreaID();
             let area = this.getLoadedAreaByID(areaID);
             if (area === null) {
@@ -100,16 +100,16 @@ class Terrain {
         this.chunks = arrayWithRemoved(this.chunks, (chunk) => chunk.toDelete);
     }
     setBlockByWorldCoords(x, y, z, block) {
-        let chunk = BlockUtils.getChunkByWorldCoords(this, x, z);
+        let chunk = BlockAccess.getChunkByWorldCoords(this, x, z);
         if (chunk === null) 
             return false;
-        let blockPosInChunk = BlockUtils.getInChunkBlockCoordsByWorldCoords(x, y, z);
+        let blockPosInChunk = BlockAccess.getInChunkBlockCoordsByWorldCoords(x, y, z);
         if (blockPosInChunk === null) 
             return false;
         chunk.setBlockByInChunkCoords(blockPosInChunk.x, blockPosInChunk.y, blockPosInChunk.z, block);
         return true;
     }
-    setBlock(oldBlock, newBlockID) {
+    setBlockByBlock(oldBlock, newBlockID) {
         let chunk = oldBlock.getChunk();
         let index = oldBlock.getIndex();
         chunk.setBlockByIndex(index, newBlockID);
@@ -146,8 +146,8 @@ class LoadedArea {
         this.graphicalSpreader = new Spreader(terrain, this.centralIndex, 2);
         this.refreshSpreader = new Spreader(terrain, this.centralIndex, 1);
         this.distanceFromPreviousCenter = 0;
-        this.refreshCooldown = new Cooldown(600);
-        this.refreshCooldown.setCurrentProgress(80);
+        this.refreshCooldown = new Cooldown(300);
+        this.refreshCooldown.setCurrentProgress(280);
     }
     move(newCentralIndex) {
         if (!this.centralIndex.equals(newCentralIndex)) {
@@ -156,13 +156,13 @@ class LoadedArea {
             this.physicalSpreader.restart(this.centralIndex);
             this.distanceFromPreviousCenter++;
         }
-        if (Input.forceReloading() || this.distanceFromPreviousCenter > this.radius / 2 || this.refreshCooldown.reached()) {
+        if (Input.forceReloading() || this.distanceFromPreviousCenter > this.radius / 4) {
             console.log("graphical loading restart");
             this.graphicalSpreader.restart(this.centralIndex);
             this.distanceFromPreviousCenter = 0;
         }
         this.refreshCooldown.progress();
-        if (this.refreshCooldown.getCurrentProgress() % 100 === 0) {
+        if (this.refreshCooldown.reached()) {
             console.log("REFRESH START");
             this.refreshSpreader.restart(this.centralIndex);
         }
@@ -226,7 +226,7 @@ class Spreader {
             this.beginNewLoadingLayer();
         let index = this.currentLayerIndices[this.noOfAlreadyLoadedChunks];
         this.noOfAlreadyLoadedChunks++;
-        let chunk = BlockUtils.getChunkByIndex(this.terrain, index);
+        let chunk = BlockAccess.getChunkByIndex(this.terrain, index);
         updateAction(index, chunk);
     }
 } 

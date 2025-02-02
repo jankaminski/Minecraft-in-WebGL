@@ -1,4 +1,4 @@
-import { BlockUtils } from "./block-access-utils.js";
+import { BlockAccess } from "./block-access.js";
 import { BLOCK_SIZE } from "./block.js";
 import { Vec3 } from "./math-utils.js";
 import { VoxelBox } from "./voxel-box.js";
@@ -64,7 +64,7 @@ function detectCollisionWithTerrain(entity, terrain) {
     let blocksToCheck = [];
     for (let i = 0; i < checkBox.totalVoxelCount; i++) {
         let { x, y, z } = checkBox.makeWorldCoordsFromIndex(i);
-        let block = BlockUtils.getBlockByWorldCoords(terrain, x, y, z);
+        let block = BlockAccess.getBlockByWorldCoords(terrain, x, y, z);
         if (block === null) 
             continue;
         if (!block.isSolid()) 
