@@ -36,6 +36,13 @@ class Input {
     static strafingRight() {
         return Input.actionMap.get(Input.keyBindings.StrafeRight);
     }
+    static moving() {
+        let forwards = this.movingForward();
+        let backwards = this.movingBackwards();
+        let left = this.strafingLeft();
+        let right = this.strafingRight();
+        return forwards || backwards || left || right;
+    }
     static jumping() {
         return Input.actionMap.get(Input.keyBindings.Jump);
     }

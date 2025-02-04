@@ -68,15 +68,11 @@ class Terrain {
         this.markOutOfSightChunks();
         this.deleteMarkedChunks();
         this.updateLoadingChunks();
+        this.updateStructures();
+    }
+    updateStructures() {
         //console.log("structs: " + this.structures.length);
-        
-        this.structures = arrayWithRemoved(this.structures, (structure) => {
-            if (structure.rootChunk.toDelete) {
-                //console.log("struct removed");
-                return true;
-            }
-            return false;
-        });
+        this.structures = arrayWithRemoved(this.structures, (structure) => structure.rootChunk.toDelete);
         for (let s of this.structures)
             s.reload();
     }

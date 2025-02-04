@@ -2,7 +2,7 @@ import { Vec3 } from "./math-utils.js";
 
 class Cooldown {
     constructor(rate) {
-        this.rate = rate;
+        this.rate = Math.round(rate);
         this.currentProgress = 0;
     }
     getRate() {
