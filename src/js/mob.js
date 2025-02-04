@@ -16,10 +16,6 @@ class Mob extends Entity {
     getLimbMatrices() { 
         return [Mat4.identity()];
     }
-    getAnimationExternalForces(level) {  }
-    onAfterUpdate(level) {
-        this.getAnimationExternalForces(level);
-    }
 }
 
 export { Mob };

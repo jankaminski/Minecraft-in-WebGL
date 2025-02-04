@@ -211,6 +211,7 @@ class Entity {
     }
     onBeforeUpdate(level) {}
     onAfterUpdate(level) {}
+    getAnimationExternalForces(level) {  }
     update(level) {
         this.onBeforeUpdate(level);
         // receive momentum
@@ -221,7 +222,7 @@ class Entity {
         // move
         this.move(level);
         this.onAfterUpdate(level);
-
+        this.getAnimationExternalForces(level);
         if (this.center.y < -10 * BLOCK_SIZE)
             this.toDelete = true; 
     }

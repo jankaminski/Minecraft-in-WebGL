@@ -14,7 +14,7 @@ class Creeper extends Mob {
         this.addJoint(Vec3.make(-0.125, -0.4375,  0.125));
         this.addJoint(Vec3.make( 0.125, -0.4375, -0.125));
         this.addJoint(Vec3.make(-0.125, -0.4375, -0.125));
-        this.animator = new Animator(Animation.CREEPER_WALK, 200);
+        this.animator = new Animator(Animation.CREEPER_IDLE);
     }
     getEyePos() {
         return Vec3.add(this.getCenter(), Vec3.make(0, 0.0625 * 9, 0));
@@ -38,11 +38,11 @@ class Creeper extends Mob {
     }
     getAnimationExternalForces(level) {
         this.target = level.camera.getPosition();
-        //let mom = this.getMomentum();
-//        if (Input.moving()/*mom.x !== 0 || mom.z !== 0*/)
-//            this.animator.changeAnimation(Animation.CREEPER_WALK);
-//        else
-//            this.animator.changeAnimation(Animation.CREEPER_IDLE);
+        let mom = this.getMomentum();
+        if (mom.x !== 0 || mom.z !== 0)
+            this.animator.changeAnimation(Animation.CREEPER_WALK);
+        else
+            this.animator.changeAnimation(Animation.CREEPER_IDLE);
         this.animator.update();
     }
     lookAt(target) {
@@ -56,6 +56,8 @@ class Creeper extends Mob {
         let worldMat = Mat4.multiply(posMat, yRotMat);
         worldMat = Mat4.translate(worldMat, joint);
         worldMat = Mat4.rotate(worldMat, this.animator.currentRotations[jointIndex].x, Vec3.make(1, 0, 0));
+        worldMat = Mat4.rotate(worldMat, this.animator.currentRotations[jointIndex].y, Vec3.make(0, 1, 0));
+        worldMat = Mat4.rotate(worldMat, this.animator.currentRotations[jointIndex].z, Vec3.make(0, 0, 1));
         return worldMat;
     }
     getLimbMatrix(joint, rotX, rotY) {
