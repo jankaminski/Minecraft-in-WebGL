@@ -3,17 +3,25 @@ import {
     Mat4, 
     Vec3
 } from "./math-utils.js";
-import { Animation, Animator } from "./animation.js";
-import { Input } from "./input.js";
+import { AnimatedSkeleton, AnimatedSkeletonJoint, Animation, Animator } from "./animation.js";
+
+const BODY            = 0;
+const HEAD            = 1;
+const FRONT_LEFT_LEG  = 2;
+const FRONT_RIGHT_LEG = 3;
+const BACK_LEFT_LEG   = 4;
+const BACK_RIGHT_LEG  = 5;
 
 class Creeper extends Mob {
     constructor(posX, posY, posZ, model) {
         super(posX, posY, posZ, 0.5, 1.625, 0.5, model);
-        this.addJoint(Vec3.make( 0,      0.318,  0));
-        this.addJoint(Vec3.make( 0.125, -0.4375,  0.125));
-        this.addJoint(Vec3.make(-0.125, -0.4375,  0.125));
-        this.addJoint(Vec3.make( 0.125, -0.4375, -0.125));
-        this.addJoint(Vec3.make(-0.125, -0.4375, -0.125));
+        this.animatedSkeleton = new AnimatedSkeleton()
+            .addJoint(BODY,            new AnimatedSkeletonJoint(Vec3.make( 0,      0,       0    )))
+            .addJoint(HEAD,            new AnimatedSkeletonJoint(Vec3.make( 0,      0.318,   0    )))
+            .addJoint(FRONT_LEFT_LEG,  new AnimatedSkeletonJoint(Vec3.make( 0.125, -0.4375,  0.125)))
+            .addJoint(FRONT_RIGHT_LEG, new AnimatedSkeletonJoint(Vec3.make(-0.125, -0.4375,  0.125)))
+            .addJoint(BACK_LEFT_LEG,   new AnimatedSkeletonJoint(Vec3.make( 0.125, -0.4375, -0.125)))
+            .addJoint(BACK_RIGHT_LEG,  new AnimatedSkeletonJoint(Vec3.make(-0.125, -0.4375, -0.125)));
         this.animator = new Animator(Animation.CREEPER_IDLE);
     }
     getEyePos() {
@@ -38,44 +46,45 @@ class Creeper extends Mob {
     }
     getAnimationExternalForces(level) {
         this.target = level.camera.getPosition();
-        let mom = this.getMomentum();
-        if (mom.x !== 0 || mom.z !== 0)
+        let absMom = Vec3.abs(this.getMomentum());
+        if (absMom.x > 0.0001 || absMom.z > 0.0001)
             this.animator.changeAnimation(Animation.CREEPER_WALK);
         else
             this.animator.changeAnimation(Animation.CREEPER_IDLE);
         this.animator.update();
+        this.animatedSkeleton.interpolateCurrentRotations(this.animator);
     }
     lookAt(target) {
-        let eye = Vec3.add(this.center, this.joints[1]);
+        let eye = Vec3.add(this.center, this.animatedSkeleton.joints[1].origRot);
         let lookMat = Mat4.targetTo(eye, target, Vec3.make(0, 1, 0));
         return lookMat;
     }
-    getAnimatedLimbMatrix(joint, jointIndex) {
-        let posMat = Mat4.translate(Mat4.identity(), this.getCenter());
-        let yRotMat = Mat4.rotate(Mat4.identity(), this.getRotY(), Vec3.make(0, 1, 0));
-        let worldMat = Mat4.multiply(posMat, yRotMat);
-        worldMat = Mat4.translate(worldMat, joint);
-        worldMat = Mat4.rotate(worldMat, this.animator.currentRotations[jointIndex].x, Vec3.make(1, 0, 0));
-        worldMat = Mat4.rotate(worldMat, this.animator.currentRotations[jointIndex].y, Vec3.make(0, 1, 0));
-        worldMat = Mat4.rotate(worldMat, this.animator.currentRotations[jointIndex].z, Vec3.make(0, 0, 1));
+    getAnimatedLimbMatrix(joint) {
+        let worldMat = Mat4.identity();
+        worldMat = Mat4.translate(worldMat, this.getCenter());
+        worldMat = Mat4.rotate(worldMat, this.getRotY(), Vec3.make(0, 1, 0));
+        worldMat = Mat4.translate(worldMat, joint.origRot);
+        worldMat = Mat4.rotate(worldMat, joint.actualRot.x, Vec3.make(1, 0, 0));
+        worldMat = Mat4.rotate(worldMat, joint.actualRot.y, Vec3.make(0, 1, 0));
+        worldMat = Mat4.rotate(worldMat, joint.actualRot.z, Vec3.make(0, 0, 1));
         return worldMat;
     }
-    getLimbMatrix(joint, rotX, rotY) {
-        let posMat = Mat4.translate(Mat4.identity(), this.getCenter());
-        let yRotMat = Mat4.rotate(Mat4.identity(), rotY, Vec3.make(0, 1, 0));
-        let worldMat = Mat4.multiply(posMat, yRotMat);
-        worldMat = Mat4.translate(worldMat, joint);
+    getRotatedLimbMatrix(joint, rotX, rotY) {
+        let worldMat = Mat4.identity();
+        worldMat = Mat4.translate(worldMat, this.getCenter());
+        worldMat = Mat4.rotate(worldMat, rotY, Vec3.make(0, 1, 0));
+        worldMat = Mat4.translate(worldMat, joint.origRot);
         worldMat = Mat4.rotate(worldMat, rotX, Vec3.make(1, 0, 0));
         return worldMat;
     }
     getLimbMatrices() {
         return [
-            this.getAnimatedLimbMatrix(this.joints[0], 0),//this.getLimbMatrix(this.joints[0],  0,              this.getRotY()),
-            this.getLimbMatrix(this.joints[1], -this.getRotX(), this.getRotY()),//this.lookAt(Vec3.makeS(0.0)),
-            this.getAnimatedLimbMatrix(this.joints[2], 2),//this.getLimbMatrix(this.joints[2], -this.getRotX(), this.getRotY()),
-            this.getAnimatedLimbMatrix(this.joints[3], 3),//this.getLimbMatrix(this.joints[3],  this.getRotX(), this.getRotY()),
-            this.getAnimatedLimbMatrix(this.joints[4], 4),//this.getLimbMatrix(this.joints[4],  this.getRotX(), this.getRotY()),
-            this.getAnimatedLimbMatrix(this.joints[5], 5)//this.getLimbMatrix(this.joints[5], -this.getRotX(), this.getRotY())
+            this.getAnimatedLimbMatrix(this.animatedSkeleton.getJoint(BODY           )),
+            this.getRotatedLimbMatrix( this.animatedSkeleton.getJoint(HEAD           ), -this.getRotX(), this.getRotY()),
+            this.getAnimatedLimbMatrix(this.animatedSkeleton.getJoint(FRONT_LEFT_LEG )),
+            this.getAnimatedLimbMatrix(this.animatedSkeleton.getJoint(FRONT_RIGHT_LEG)),
+            this.getAnimatedLimbMatrix(this.animatedSkeleton.getJoint(BACK_LEFT_LEG  )),
+            this.getAnimatedLimbMatrix(this.animatedSkeleton.getJoint(BACK_RIGHT_LEG ))
         ];
     }
 }

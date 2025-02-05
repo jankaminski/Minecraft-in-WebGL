@@ -1,6 +1,37 @@
 import { Vec3 } from "./math-utils.js";
 import { Cooldown } from "./misc-utils.js";
 
+class AnimatedSkeleton {
+    constructor() {
+        this.joints = new Map();
+    }
+    addJoint(index, joint) {
+        this.joints.set(index, joint);
+        return this;
+    }
+    interpolateCurrentRotations(animator) {
+        for (let i = 0; i < animator.currentFrame.noOfJoints; i++) {
+            let joint = this.joints.get(i);
+            let rotation = animator.currentFrame.rotations[i];
+            let duration = animator.animation.duration;
+            let targetRot = Vec3.add(rotation, joint.actualRot);
+            let originRot = joint.actualRot;
+            let add = Vec3.divS(targetRot, duration);
+            joint.actualRot = Vec3.sub(originRot, add);
+        }
+    }
+    getJoint(index) {
+        return this.joints.get(index);
+    }
+}
+
+class AnimatedSkeletonJoint {
+    constructor(origRot) {
+        this.origRot = origRot;
+        this.actualRot = Vec3.makeS(0.0);
+    }
+}
+
 class KeyFrame {
     constructor(timeStamp, ...rotations) {
         this.rotations = rotations;
@@ -85,13 +116,7 @@ class Animation {
 
 class Animator {
     constructor(animation) {
-        this.animation = animation;
-        this.progress = new Cooldown(animation.duration);
-        this.currentRotations = [];
-        for (let i = 0; i < animation.keyFrames[0].noOfJoints; i++)
-            this.currentRotations.push(Vec3.makeS(0.0));
-        this.currentFrame = animation.keyFrames[0];
-        this.cooldown = new Cooldown(1);
+        this.changeAnimation(animation);
     }
     changeAnimation(animation) {
         if (animation == this.animation)
@@ -109,21 +134,12 @@ class Animator {
                 this.currentFrame = keyFrame;
             }
         }
-        this.interpolateCurrentRotations();
-    }
-    interpolateCurrentRotations() {
-        this.cooldown.progress();
-        if (this.cooldown.reached())
-        for (let i = 0; i < this.currentFrame.noOfJoints; i++) {
-            let targetRot = Vec3.add(this.currentFrame.rotations[i], this.currentRotations[i]);
-            let originRot = this.currentRotations[i];
-            let add = Vec3.divS(targetRot, this.animation.duration);
-            this.currentRotations[i] = Vec3.sub(originRot, add);
-        }
     }
 }
 
 export {
     Animation,
+    AnimatedSkeleton,
+    AnimatedSkeletonJoint,
     Animator
 };
