@@ -44,27 +44,22 @@ class Terrain {
         for (let chunk of this.chunks)
             chunk.updateEntities(level);
     }
-    moveLoadedAreas(level) {
+    updateLoadedAreas(level) {
         for (let player of level.players) {
             let playerPosition = player.getCenter();
-            let chunkIndex = BlockAccess.getChunkIndexByWorldCoords(playerPosition.x, playerPosition.z);
+            let playerChunkIndex = BlockAccess.getChunkIndexByWorldCoords(playerPosition.x, playerPosition.z);
             let areaID = player.getLoadedAreaID();
             let area = this.getLoadedAreaByID(areaID);
             if (area === null) {
-                area = new LoadedArea(this, chunkIndex, RENDER_DISTANCE, areaID);
+                area = new LoadedArea(this, playerChunkIndex, RENDER_DISTANCE, areaID);
                 this.loadedAreas.push(area);
             }
-            area.move(chunkIndex);
+            area.update(playerChunkIndex);
         }
-    }
-    updateLoadingAreas() {
-        for (let area of this.loadedAreas)
-            area.update();
     }
     update(level) {
         this.updateChunkEntities(level);
-        this.moveLoadedAreas(level);
-        this.updateLoadingAreas()
+        this.updateLoadedAreas(level);
         this.markOutOfSightChunks();
         this.deleteMarkedChunks();
         this.updateLoadingChunks();
@@ -140,14 +135,14 @@ class LoadedArea {
         this.terrain = terrain;
         this.radius = radius;
         this.centralIndex = index.clone();
-        this.physicalSpreader = new Spreader(terrain, this.centralIndex, 1);
-        this.graphicalSpreader = new Spreader(terrain, this.centralIndex, 2);
-        this.refreshSpreader = new Spreader(terrain, this.centralIndex, 1);
+        this.physicalSpreader = new PhysicalLoadSpreader(terrain, this.centralIndex, 1);
+        this.graphicalSpreader = new GraphicalLoadSpreader(terrain, this.centralIndex, 2);
+        this.refreshSpreader = new RefreshSpreader(terrain, this.centralIndex, 1);
         this.distanceFromPreviousCenter = 0;
         this.refreshCooldown = new Cooldown(300);
         this.refreshCooldown.setCurrentProgress(280);
     }
-    move(newCentralIndex) {
+    update(newCentralIndex) {
         if (!this.centralIndex.equals(newCentralIndex)) {
             this.centralIndex = newCentralIndex.clone();
             console.log("loaded area moved");
@@ -164,28 +159,13 @@ class LoadedArea {
             console.log("REFRESH START");
             this.refreshSpreader.restart(this.centralIndex);
         }
-    }
-    update() {     
-        this.physicalSpreader.update((index, chunk) => {
-            if (chunk === null) {
-                chunk = new Chunk(this.terrain, index.x, index.z);
-                this.terrain.chunks.push(chunk);
-            }
-        });
-        this.graphicalSpreader.update((index, chunk) => {
-            if (chunk !== null)
-                chunk.acquireModel();
-        });
-        this.refreshSpreader.update((index, chunk) => {
-            if (chunk !== null) {
-                if (chunk.isToRefresh())
-                    chunk.acquireModel();
-            }
-        });
+        this.physicalSpreader.update();
+        this.graphicalSpreader.update();
+        this.refreshSpreader.update();
     }
 }
 
-class Spreader {
+class LoadSpreader {
     constructor(terrain, originIndex, updateRate) {
         this.terrain = terrain;
         this.updateCooldown = new Cooldown(updateRate);
@@ -216,17 +196,55 @@ class Spreader {
         this.noOfAlreadyLoadedChunks = 0;
         this.noOfChunksToLoad = this.currentLayerIndices.length;
     }
-    update(updateAction) {
+    update() {
         this.updateCooldown.progress();
         if (!this.updateCooldown.reached())
             return;
         if (this.noOfAlreadyLoadedChunks >= this.noOfChunksToLoad)
             this.beginNewLoadingLayer();
-        let index = this.currentLayerIndices[this.noOfAlreadyLoadedChunks];
+        this.onUpdate();
         this.noOfAlreadyLoadedChunks++;
-        let chunk = BlockAccess.getChunkByIndex(this.terrain, index);
-        updateAction(index, chunk);
     }
+    onUpdate() {  }
 } 
+
+class PhysicalLoadSpreader extends LoadSpreader {
+    constructor(terrain, originIndex, updateRate) {
+        super(terrain, originIndex, updateRate);
+    }
+    onUpdate() {
+        let index = this.currentLayerIndices[this.noOfAlreadyLoadedChunks];
+        let chunk = BlockAccess.getChunkByIndex(this.terrain, index);
+        if (chunk === null) {
+            chunk = new Chunk(this.terrain, index.x, index.z);
+            this.terrain.chunks.push(chunk);
+        }
+    }
+}
+
+class GraphicalLoadSpreader extends LoadSpreader {
+    constructor(terrain, originIndex, updateRate) {
+        super(terrain, originIndex, updateRate);
+    }
+    onUpdate() {
+        let index = this.currentLayerIndices[this.noOfAlreadyLoadedChunks];
+        let chunk = BlockAccess.getChunkByIndex(this.terrain, index);
+        if (chunk !== null)
+            chunk.acquireModel();
+    }
+}
+
+class RefreshSpreader extends LoadSpreader {
+    constructor(terrain, originIndex, updateRate) {
+        super(terrain, originIndex, updateRate);
+    }
+    onUpdate() {
+        let index = this.currentLayerIndices[this.noOfAlreadyLoadedChunks];
+        let chunk = BlockAccess.getChunkByIndex(this.terrain, index);
+        if (chunk !== null)
+            if (chunk.isToRefresh())
+                chunk.acquireModel();
+    }
+}
 
 export { Terrain };

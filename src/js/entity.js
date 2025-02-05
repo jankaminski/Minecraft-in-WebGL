@@ -10,11 +10,11 @@ import {
 } from "./math-utils.js";
 import { 
     makeAttrPtr, 
+    makeMeshIndices, 
     Mesh 
 } from "./model.js";
 import { 
-    loadShaderProgramFromFiles, 
-    makeMeshIndices 
+    loadShaderProgramFromFiles
 } from "./res-utils.js";
 
 const TERMINAL_VELOCITY = -0.4;

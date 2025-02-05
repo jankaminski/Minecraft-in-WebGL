@@ -10,13 +10,13 @@ import {
 } from "./collision.js";
 import { 
     makeAttrPtr,
+    makeOneFaceIndices,
     Mesh, 
-    Model
+    Model,
+    VERTICES_PER_FACE
 } from "./model.js";
 import { 
-    loadShaderProgramFromFiles, 
-    makeOneFaceIndices, 
-    VERTICES_PER_FACE 
+    loadShaderProgramFromFiles
 } from "./res-utils.js";
 import { Vec3 } from "./math-utils.js";
 import { Structure } from "./structure.js";

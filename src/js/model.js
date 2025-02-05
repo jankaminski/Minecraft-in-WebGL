@@ -70,8 +70,31 @@ class Model {
     }
 }
 
+const VERTICES_PER_FACE = 4;
+const INDICES_PER_FACE = 6;
+
+function makeOneFaceIndices(currentLength, indicesTemplate) {
+    let indices = [];
+    for (let i = 0; i < INDICES_PER_FACE; i++) {
+        let index = indicesTemplate[i] + (currentLength / INDICES_PER_FACE) * VERTICES_PER_FACE;
+        indices.push(index);
+    }
+    return indices;
+}
+
+function makeMeshIndices(noOfFaces, indicesTemplate) {
+    let indices = [];
+    for (let i = 0; i < noOfFaces; i++)
+        indices = indices.concat(makeOneFaceIndices(indices.length, indicesTemplate));
+    return indices;
+}
+
 export {
     Mesh,
     Model,
-    makeAttrPtr
+    makeAttrPtr,
+    VERTICES_PER_FACE,
+    INDICES_PER_FACE,
+    makeOneFaceIndices,
+    makeMeshIndices
 };

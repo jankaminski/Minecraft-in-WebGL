@@ -1,8 +1,9 @@
-import { Vec3 } from "./math-utils.js";
+import { Mat4, Vec3 } from "./math-utils.js";
 import { Cooldown } from "./misc-utils.js";
 
 class AnimatedSkeleton {
-    constructor() {
+    constructor(entity) {
+        this.entity = entity;
         this.joints = new Map();
     }
     addJoint(index, joint) {
@@ -23,12 +24,25 @@ class AnimatedSkeleton {
     getJoint(index) {
         return this.joints.get(index);
     }
+    getJointMatrix(index) {
+        return this.joints.get(index).getMatrix(this.entity);
+    }
 }
 
 class AnimatedSkeletonJoint {
     constructor(origRot) {
         this.origRot = origRot;
         this.actualRot = Vec3.makeS(0.0);
+    }
+    getMatrix(entity) {
+        let worldMat = Mat4.identity();
+        worldMat = Mat4.translate(worldMat, entity.getCenter());
+        worldMat = Mat4.rotate(worldMat, entity.getRotY(), Vec3.make(0, 1, 0));
+        worldMat = Mat4.translate(worldMat, this.origRot);
+        worldMat = Mat4.rotate(worldMat, this.actualRot.x, Vec3.make(1, 0, 0));
+        worldMat = Mat4.rotate(worldMat, this.actualRot.y, Vec3.make(0, 1, 0));
+        worldMat = Mat4.rotate(worldMat, this.actualRot.z, Vec3.make(0, 0, 1));
+        return worldMat;
     }
 }
 

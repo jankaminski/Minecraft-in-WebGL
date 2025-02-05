@@ -79,12 +79,21 @@ class Input {
         document.addEventListener("click", mouseClick, false);
         document.addEventListener("keydown", keyDown, false);
         document.addEventListener("keyup", keyUp, false);
+        document.addEventListener("pointerlockchange", pointerLockChange, false);
     }
     static refresh() {
         Input.mouse.delta.x = 0;
         Input.mouse.delta.y = 0;
         Input.mouse.position.x = 0;
         Input.mouse.position.y = 0;
+    }
+}
+
+function pointerLockChange(event) {
+    if (document.pointerLockElement) {
+        //console.log("The pointer is locked to: ", document.pointerLockElement);
+    } else {
+        //console.log("The pointer is not locked");
     }
 }
 
@@ -115,10 +124,10 @@ function mouseMove(event) {
 
 function mouseClick() {
     let canvas = document.getElementById("game-surface");
-    canvas.requestPointerLock = 
+    /*canvas.requestPointerLock = 
         canvas.requestPointerLock ||
         canvas.mozRequestPointerLock ||
-        canvas.webkitRequestPointerLock;
+        canvas.webkitRequestPointerLock;*/
     canvas.requestPointerLock();
 }
 

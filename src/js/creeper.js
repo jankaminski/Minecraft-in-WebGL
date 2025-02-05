@@ -15,7 +15,7 @@ const BACK_RIGHT_LEG  = 5;
 class Creeper extends Mob {
     constructor(posX, posY, posZ, model) {
         super(posX, posY, posZ, 0.5, 1.625, 0.5, model);
-        this.animatedSkeleton = new AnimatedSkeleton()
+        this.animatedSkeleton = new AnimatedSkeleton(this)
             .addJoint(BODY,            new AnimatedSkeletonJoint(Vec3.make( 0,      0,       0    )))
             .addJoint(HEAD,            new AnimatedSkeletonJoint(Vec3.make( 0,      0.318,   0    )))
             .addJoint(FRONT_LEFT_LEG,  new AnimatedSkeletonJoint(Vec3.make( 0.125, -0.4375,  0.125)))
@@ -59,16 +59,6 @@ class Creeper extends Mob {
         let lookMat = Mat4.targetTo(eye, target, Vec3.make(0, 1, 0));
         return lookMat;
     }
-    getAnimatedLimbMatrix(joint) {
-        let worldMat = Mat4.identity();
-        worldMat = Mat4.translate(worldMat, this.getCenter());
-        worldMat = Mat4.rotate(worldMat, this.getRotY(), Vec3.make(0, 1, 0));
-        worldMat = Mat4.translate(worldMat, joint.origRot);
-        worldMat = Mat4.rotate(worldMat, joint.actualRot.x, Vec3.make(1, 0, 0));
-        worldMat = Mat4.rotate(worldMat, joint.actualRot.y, Vec3.make(0, 1, 0));
-        worldMat = Mat4.rotate(worldMat, joint.actualRot.z, Vec3.make(0, 0, 1));
-        return worldMat;
-    }
     getRotatedLimbMatrix(joint, rotX, rotY) {
         let worldMat = Mat4.identity();
         worldMat = Mat4.translate(worldMat, this.getCenter());
@@ -79,12 +69,12 @@ class Creeper extends Mob {
     }
     getLimbMatrices() {
         return [
-            this.getAnimatedLimbMatrix(this.animatedSkeleton.getJoint(BODY           )),
-            this.getRotatedLimbMatrix( this.animatedSkeleton.getJoint(HEAD           ), -this.getRotX(), this.getRotY()),
-            this.getAnimatedLimbMatrix(this.animatedSkeleton.getJoint(FRONT_LEFT_LEG )),
-            this.getAnimatedLimbMatrix(this.animatedSkeleton.getJoint(FRONT_RIGHT_LEG)),
-            this.getAnimatedLimbMatrix(this.animatedSkeleton.getJoint(BACK_LEFT_LEG  )),
-            this.getAnimatedLimbMatrix(this.animatedSkeleton.getJoint(BACK_RIGHT_LEG ))
+            this.animatedSkeleton.getJointMatrix(BODY),
+            this.getRotatedLimbMatrix(this.animatedSkeleton.getJoint(HEAD), -this.getRotX(), this.getRotY()),
+            this.animatedSkeleton.getJointMatrix(FRONT_LEFT_LEG),
+            this.animatedSkeleton.getJointMatrix(FRONT_RIGHT_LEG),
+            this.animatedSkeleton.getJointMatrix(BACK_LEFT_LEG),
+            this.animatedSkeleton.getJointMatrix(BACK_RIGHT_LEG)
         ];
     }
 }
