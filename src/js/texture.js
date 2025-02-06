@@ -1,4 +1,4 @@
-import { gl } from "./webgl-init.js";
+import { canvas, gl } from "./webgl-init.js";
 
 class Texture {
     constructor(target, wrap, filter, format, type) {
@@ -64,7 +64,52 @@ function make2DTexFromImage(wrap, filter, image) {
     return tex;
 }
 
+class Framebuffer {
+    constructor(width, height) {
+        this.width = width;
+        this.height = height;
+        this.buf = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.buf);
+        gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+        this.tex = this.makeTextureAttachment();
+        let rbo = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, rbo); 
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, width, height);  
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, rbo);
+    }
+    makeTextureAttachment() {
+        let tex = new Texture2D(gl.CLAMP_TO_EDGE, gl.LINEAR, gl.RGBA, gl.UNSIGNED_BYTE, this.width, this.height);
+        tex.bind();
+        gl.texImage2D(tex.target, 0, tex.format, tex.width, tex.height, 0, tex.format, tex.type, null);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, tex.target, tex.id, 0);
+        return tex;
+    }
+    makeDepthAttachment() {
+        let tex = new Texture2D(gl.CLAMP_TO_EDGE, gl.LINEAR, gl.DEPTH_COMPONENT, gl.FLOAT, this.width, this.height);
+        tex.bind();
+        gl.texImage2D(tex.target, 0, gl.DEPTH_COMPONENT32, tex.width, tex.height, 0, tex.format, tex.type, null);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, tex.target, tex.id, 0);
+        return tex;
+    }
+    bindBuffer() {
+        gl.viewport(0, 0, this.width, this.height);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.buf);
+    }
+    unbindBuffer() {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight); // 1000 60000
+    }
+    bindTexture() {
+        this.tex.bind();
+    }
+    unbindTexture() {
+        this.tex.unbind();
+    }
+}
+
 export {
     make2DTexFromImage,
-    TextureAtlas
+    TextureAtlas,
+    Framebuffer
 };

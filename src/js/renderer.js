@@ -95,7 +95,17 @@ class EntityRenderBatch {
     }
 }
 
+class ScreenBufferRenderer extends Renderer {
+    constructor() {
+        super();
+    }
+    renderPass(level, shaderProgram) {
+
+    }
+}
+
 export {
     EntityRenderer,
-    TerrainRenderer
+    TerrainRenderer,
+    ScreenBufferRenderer
 };
