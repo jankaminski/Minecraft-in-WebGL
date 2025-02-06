@@ -60,13 +60,13 @@ class Terrain {
     update(level) {
         this.updateChunkEntities(level);
         this.updateLoadedAreas(level);
-        this.markOutOfSightChunks();
-        this.deleteMarkedChunks();
+        this.deleteOutOfSightChunks();
         this.updateLoadingChunks();
         this.updateStructures();
     }
     updateStructures() {
         //console.log("structs: " + this.structures.length);
+        //console.log("chunks: " + this.chunks.length);
         this.structures = arrayWithRemoved(this.structures, (structure) => structure.rootChunk.toDelete);
         for (let s of this.structures)
             s.reload();
@@ -76,7 +76,7 @@ class Terrain {
             chunk.isHighlighted = false;
         }
     }
-    markOutOfSightChunks() {
+    deleteOutOfSightChunks() {
         for (let chunk of this.chunks) {
             if (areAll(this.loadedAreas, (area) => {
                 let cx = chunk.index.x;
@@ -88,8 +88,6 @@ class Terrain {
                 chunk.toDelete = true;
             }
         }
-    }
-    deleteMarkedChunks() {
         this.chunks = arrayWithRemoved(this.chunks, (chunk) => chunk.toDelete);
     }
     setBlockByWorldCoords(x, y, z, block) {
