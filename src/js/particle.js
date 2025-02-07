@@ -6,16 +6,24 @@ class Particle {
     constructor(position) {
         this.position = Vec3.copy(position);
         this.remainingLife = 200;
-        let momX = Math.random() / 10;
+        let momX = (Math.random() - 0.5) / 10;
         let momY = Math.random() / 10;
-        let momZ = Math.random() / 10;
+        let momZ = (Math.random() - 0.5) / 10;
         this.momentum = Vec3.make(momX, momY, momZ);
     }
     getWorldMatrix(camera) {
         let matrix = Mat4.identity();
         matrix = Mat4.translate(matrix, this.position);
-        matrix = Mat4.rotate(matrix,  camera.rotV, Vec3.make(1, 0, 0));
-        matrix = Mat4.rotate(matrix, -camera.rotH, Vec3.make(0, 1, 0));
+        let viewMatrix = camera.getViewMatrix();
+        matrix[0] = viewMatrix[0];
+        matrix[1] = viewMatrix[4];
+        matrix[2] = viewMatrix[8];
+        matrix[4] = viewMatrix[1];
+        matrix[5] = viewMatrix[5];
+        matrix[6] = viewMatrix[9];
+        matrix[8] = viewMatrix[2];
+        matrix[9] = viewMatrix[6];
+        matrix[10] = viewMatrix[10];
         return matrix;
     }
     update(level) {

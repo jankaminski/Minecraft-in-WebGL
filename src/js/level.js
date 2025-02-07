@@ -20,7 +20,7 @@ class Level {
         this.players = [entities[0]];
         this.camera = new Camera(5, 500, 2);
         this.particles = [];
-        this.particleSpawnCooldown = new Cooldown(12);
+        this.particleSpawnCooldown = new Cooldown(1);
     }
     addEntity(entity) {
         this.entities.push(entity);
