@@ -10,6 +10,7 @@ class Block {
     static OAK_PLANKS = 4;
     static DIRT = 5;
     static GRASS = 6;
+    static OAK_LEAVES = 7;
     constructor(chunk, posInChunk, index, pos, id) {
         this.chunk = chunk;
         this.posInChunk = posInChunk;
@@ -64,6 +65,7 @@ registerBlock(blockList, Block.MOSSY_COBBLE, true,  false);
 registerBlock(blockList, Block.OAK_PLANKS,   true,  false);
 registerBlock(blockList, Block.DIRT,         true,  false);
 registerBlock(blockList, Block.GRASS,        true,  false);
+registerBlock(blockList, Block.OAK_LEAVES,   true,  true);
 
 function getBlockProperties(id) {
     return blockList[id];

@@ -40,6 +40,7 @@ const oakPlanksTexImage = await loadImage("./res/textures/oak_planks.png");
 const dirtTexImage = await loadImage("./res/textures/dirt.png");
 const grassSideTexImage = await loadImage("./res/textures/grass_block_side.png");
 const grassTopTexImage = await loadImage("./res/textures/grass_block_top.png");
+const oakLeavesTexImage = await loadImage("./res/textures/oak_leaves.png");
 
 const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas()
 .addBlock(
@@ -69,15 +70,23 @@ const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas()
     grassTopTexImage, 
     dirtTexImage, 
     grassSideTexImage, 
-    grassSideTexImage);
+    grassSideTexImage)
+.addBlock(
+    Block.OAK_LEAVES,
+    oakLeavesTexImage
+);
 
 const creeperTexImage = await loadImage("./res/textures/creeper.png");
 const CREEPER_TEXTURE = make2DTexFromImage(gl.CLAMP_TO_EDGE, gl.NEAREST, creeperTexImage);
+
+const particleImage = await loadImage("./res/textures/default.png");
+const particleTexture = make2DTexFromImage(gl.CLAMP_TO_EDGE, gl.NEAREST, particleImage);
 
 export {
     BLOCK_TEX_ATLAS_ROWS,
     BLOCK_TEX_ATLAS_COLUMNS,
     BLOCK_PIXELS,
     BLOCK_TEXTURE_ATLAS,
-    CREEPER_TEXTURE
+    CREEPER_TEXTURE,
+    particleTexture
 };

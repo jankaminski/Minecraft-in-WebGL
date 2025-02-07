@@ -1,3 +1,5 @@
+import { canvas } from "./webgl-init.js";
+
 class Input {
     static mouse = {
         leftButton : false,
@@ -22,7 +24,7 @@ class Input {
         SwitchPerspective : 'e',
         Quit :              'b',
         ForceReload :       'n'
-    } ;
+    };
     static actionMap = {};
     static movingForward() {
         return Input.actionMap.get(Input.keyBindings.MoveForward);
@@ -76,7 +78,7 @@ class Input {
         document.addEventListener("mousedown", mouseDown, false);
         document.addEventListener("mouseup", mouseUp, false);
         document.addEventListener("mousemove", mouseMove, false);
-        document.addEventListener("click", mouseClick, false);
+        canvas.addEventListener("click", mouseClick, false);
         document.addEventListener("keydown", keyDown, false);
         document.addEventListener("keyup", keyUp, false);
         document.addEventListener("pointerlockchange", pointerLockChange, false);
@@ -112,7 +114,7 @@ function mouseUp(event) {
 }
 
 function mouseMove(event) {
-    let canvas = document.getElementById("game-surface");
+    //let canvas = document.getElementById("game-surface");
     if (document.pointerLockElement !== canvas && document.mozPointerLockElement !== canvas && document.webkitPointerLockElement !== canvas) {
         return;
     }
@@ -123,7 +125,7 @@ function mouseMove(event) {
 }
 
 function mouseClick() {
-    let canvas = document.getElementById("game-surface");
+    //let canvas = document.getElementById("game-surface");
     /*canvas.requestPointerLock = 
         canvas.requestPointerLock ||
         canvas.mozRequestPointerLock ||

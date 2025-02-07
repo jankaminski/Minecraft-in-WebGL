@@ -20,7 +20,9 @@ void main()
     float y = (1.0 / texAtlasNoOfRows) * (blockID + fragTexCoord.y);
     vec2 texCoord = vec2(x, y);
     color = texture(sampler, texCoord);
-    if (blockID == 6.0 && faceID == 2.0) 
+    if (color.w == 0.0)
+        discard;
+    if ((blockID == 6.0 && faceID == 2.0) || blockID == 7.0) 
         color *= vec4(0.61f, 0.96f, 0.07f, 1.0f);
     color += vec4(highlight, highlight, highlight, 1.0f);
 }

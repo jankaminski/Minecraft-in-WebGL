@@ -9,5 +9,6 @@ start.addEventListener("click", () => {
     let canvas = document.getElementById("game-surface");
     canvas.style.display = "block";
     Input.init();
+    canvas.requestPointerLock();
     run();
 });

@@ -10,6 +10,7 @@ import { ShaderProgram } from "./shader-program.js";
 import { makeAttrPtr, Mesh } from "./model.js";
 import { Framebuffer } from "./texture.js";
 import { loadShaderProgramFromFiles } from "./res-utils.js";
+import { Input } from "./input.js";
 
 class FPSCounter {
     constructor() {
@@ -67,7 +68,7 @@ class ScreenBuffer {
         this.frameBuffer.unbindBuffer();
     }
     render(shaderProgram) {
-        clear();
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         shaderProgram.turnOn();
         this.mesh.bind();
         this.frameBuffer.bindTexture();
@@ -86,6 +87,11 @@ async function run() {
     let screenBufferProgram = await loadShaderProgramFromFiles("./src/shaders/frame-vert.glsl", "./src/shaders/frame-frag.glsl");
     let screenBuffer = new ScreenBuffer(1000, 600);
 
+    let particleProgram = await loadShaderProgramFromFiles("./src/shaders/particle-vert.glsl", "./src/shaders/particle-frag.glsl");
+    particleProgram.turnOn();
+    particleProgram.loadMatrix("mProj", PROJECTION_MATRIX);
+    particleProgram.turnOff();
+
     let level = new Level(
         new Player(2, 70, 2, CREEPER_MODEL), 
         new Creeper(14, 90, -14, CREEPER_MODEL),
@@ -103,7 +109,7 @@ async function run() {
     let loop = () => {
         level.update();
         screenBuffer.bind();
-        level.render(terrainProgram, entityProgram);
+        level.render(terrainProgram, entityProgram, particleProgram);
         screenBuffer.unbind();
         screenBuffer.render(screenBufferProgram);
         requestAnimationFrame(loop);

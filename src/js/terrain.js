@@ -24,8 +24,7 @@ class Terrain {
         this.loadedAreas = [];
         this.generator = new Generator(0.017, 2);
         this.structureGenerators = [];
-        this.structureGenerators.push(new StructureGenerator(0.6, 20, OAK_TREE));
-        this.structureGenerators.push(new StructureGenerator(0.3, 300, HUGE_BOX));
+        this.structureGenerators.push(new StructureGenerator(0.95, 20, OAK_TREE));
         this.structures = [];
     }
     getGenerator() {

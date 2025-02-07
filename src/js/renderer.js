@@ -1,3 +1,4 @@
+import { particleModel } from "./particle.js";
 import { gl } from "./webgl-init.js";
 
 class Renderer {
@@ -104,8 +105,28 @@ class ScreenBufferRenderer extends Renderer {
     }
 }
 
+class ParticleRenderer extends Renderer {
+    constructor() {
+        super();
+    }
+    renderPass(level, shaderProgram) {
+        let particles = level.particles;
+        let model = particleModel;
+        shaderProgram.turnOn();
+        shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
+        model.bind();
+        for (let particle of particles) {
+            shaderProgram.loadMatrix("mWorld", particle.getWorldMatrix(level.camera));
+            gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
+        }
+        model.unbind();
+        shaderProgram.turnOff();
+    }
+}
+
 export {
     EntityRenderer,
     TerrainRenderer,
-    ScreenBufferRenderer
+    ScreenBufferRenderer,
+    ParticleRenderer
 };

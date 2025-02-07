@@ -237,7 +237,7 @@ class ChunkVertexBuffer {
             for (let faceIndex = 0; faceIndex < FACES_IN_CUBE; faceIndex++) { 
                 let thisBlockProperties = getBlockProperties(thisBlockID);
                 let neighborProperties = getBlockProperties(neighbors[faceIndex]);
-                if (thisBlockProperties.transparent || !neighborProperties.transparent) 
+                if (thisBlockProperties.id === Block.AIR || !neighborProperties.transparent) 
                     continue;
                 vertices = vertices.concat(this.makeOneFaceVertices(faceIndex, blockIndex, thisBlockID));
                 indices = indices.concat(makeOneFaceIndices(indices.length, INDICES_TEMPLATE));
