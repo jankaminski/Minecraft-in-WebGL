@@ -30,6 +30,14 @@ class Entity {
         this.feetOnGround = false;
         this.toDelete = false;
     }
+    getLimbMatrices() {
+        let worldMat = Mat4.identity();
+        worldMat = Mat4.translate(worldMat, this.getCenter());
+        worldMat = Mat4.rotate(worldMat, this.rotation.x, Vec3.make(1, 0, 0));
+        worldMat = Mat4.rotate(worldMat, this.rotation.y, Vec3.make(0, 1, 0));
+        worldMat = Mat4.rotate(worldMat, this.rotation.z, Vec3.make(0, 0, 1));
+        return [worldMat];
+    }
     getEyePos() {
         return Vec3.copy(this.center);
     }

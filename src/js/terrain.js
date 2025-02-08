@@ -44,6 +44,8 @@ class Terrain {
             chunk.updateEntities(level);
     }
     updateLoadedAreas(level) {
+        if (level.players.length === 0)
+            return;
         for (let player of level.players) {
             let playerPosition = player.getCenter();
             let playerChunkIndex = BlockAccess.getChunkIndexByWorldCoords(playerPosition.x, playerPosition.z);

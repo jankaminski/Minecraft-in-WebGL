@@ -60,11 +60,11 @@ const particleVertices = [
 const particleIndices = [
     0, 1, 3, 3, 2, 0
 ];
-let particleMesh = new Mesh(particleVertices, particleIndices, makeAttrPtr(0, 3, 3, 0));
-let particleModel = new Model(particleMesh, BLOCK_TEXTURE_ATLAS);
+const BLOCK_BREAK_PARTICLE_MESH = new Mesh(particleVertices, particleIndices, makeAttrPtr(0, 3, 3, 0));
+const BLOCK_BREAK_PARTICLE_MODEL = new Model(BLOCK_BREAK_PARTICLE_MESH, BLOCK_TEXTURE_ATLAS);
 
 async function makeParticleShaderProgram(projectionMatrix) {
-    let particleProgram = await loadShaderProgramFromFiles("./src/shaders/particle-vert.glsl", "./src/shaders/particle-frag.glsl");
+    let particleProgram = await loadShaderProgramFromFiles("./src/shaders/break-particle-vert.glsl", "./src/shaders/break-particle-frag.glsl");
     particleProgram.turnOn();
     particleProgram.loadMatrix("mProj", projectionMatrix);
     particleProgram.loadFloat("texAtlasNoOfRows", BLOCK_TEX_ATLAS_ROWS);
@@ -73,4 +73,4 @@ async function makeParticleShaderProgram(projectionMatrix) {
     return particleProgram;
 }
 
-export { Particle, BlockBreakParticle, particleModel, makeParticleShaderProgram };
+export { Particle, BlockBreakParticle, BLOCK_BREAK_PARTICLE_MODEL, makeParticleShaderProgram };

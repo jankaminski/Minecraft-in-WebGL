@@ -1,15 +1,24 @@
-import { particleModel } from "./particle.js";
+import { arrayWithRemoved } from "./misc-utils.js";
+import { BLOCK_BREAK_PARTICLE_MODEL } from "./particle.js";
 import { gl } from "./webgl-init.js";
 
 class Renderer {
+    constructor(shaderProgram) {
+        this.shaderProgram = shaderProgram;
+    }
     renderPass(level, shaderProgram) {  }
+    setShaderProgram(shaderProgram) {
+        this.shaderProgram = shaderProgram;
+    }
 }
 
 class TerrainRenderer extends Renderer {
-    constructor() { super(); }
-    renderPass(level, shaderProgram) {
-        shaderProgram.turnOn();
-        shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
+    constructor(shaderProgram) { 
+        super(shaderProgram); 
+    }
+    renderPass(level) {
+        this.shaderProgram.turnOn();
+        this.shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
         for (let chunk of level.terrain.chunks) {
             if (chunk === null)
                 continue;
@@ -20,46 +29,24 @@ class TerrainRenderer extends Renderer {
             let highlightedBlockIndex = -1;
             if (chunk.isHighlighted)
                 highlightedBlockIndex = chunk.highlightedBlockIndex;
-            shaderProgram.loadInt("highlightedBlockIndex", highlightedBlockIndex);
-            shaderProgram.loadFloat("blockBreakProgress", chunk.blockBreakProgress);
-            shaderProgram.loadVec3("chunkPosition", chunk.getWorldPositionArray());
+            this.shaderProgram.loadInt("highlightedBlockIndex", highlightedBlockIndex);
+            this.shaderProgram.loadFloat("blockBreakProgress", chunk.blockBreakProgress);
+            this.shaderProgram.loadVec3("chunkPosition", chunk.getWorldPositionArray());
             gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
             model.unbind();
         }
-        shaderProgram.turnOff();
+        this.shaderProgram.turnOff();
     }
 }
 
 class EntityRenderer extends Renderer {
-    constructor(level) {
-        super();
-        this.models = [];
-        for (let entity of level.entities) {
-            let model = entity.getModel();
-            if (!this.models.includes(model))
-                this.models.push(model);
-        }      
-        this.entityRenderBatches = [];
-        for (let model of this.models) {
-            this.entityRenderBatches.push(new EntityRenderBatch(model, level.entities));
-        }
+    constructor(shaderProgram) {
+        super(shaderProgram);
     }
-    addEntity(entity) {
-        let model = entity.getModel();
-        if (!this.models.includes(model)) {
-            this.entityRenderBatches.push(new EntityRenderBatch(model, [entity]));
-            return;
-        }
-        for (let batch of this.entityRenderBatches) {
-            if (batch.model === model) {
-                batch.add(entity);
-            }
-        }
-    }
-    renderPass(level, shaderProgram) {
-        shaderProgram.turnOn();
-        shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
-        for (let batch of this.entityRenderBatches) {
+    renderPass(level) {
+        this.shaderProgram.turnOn();
+        this.shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
+        for (let batch of level.entityRenderBatches) {
             let model = batch.model;
             let entities = batch.entities;
             model.bind();
@@ -68,61 +55,50 @@ class EntityRenderer extends Renderer {
                     continue;
                 let limbMatrices = entity.getLimbMatrices();
                 for (let i = 0; i < limbMatrices.length; i++)
-                    shaderProgram.loadMatrix("limbMatrices[" + i + "]", limbMatrices[i]);
+                    this.shaderProgram.loadMatrix("limbMatrices[" + i + "]", limbMatrices[i]);
                 gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
             }
             model.unbind();
         }
-        shaderProgram.turnOff();
-    }
-}
-
-class EntityRenderBatch {
-    constructor(model, entities) {
-        let batchEntities = [];
-        for (let entity of entities) {
-            if (entity.getModel() === model)
-                batchEntities.push(entity);
-        }
-        this.model = model;
-        this.entities = batchEntities;
-    }
-    add(entity) {
-        if (entity.getModel() != this.model) {
-            console.log("tried to push wrong entity into batch!");
-            return;
-        }
-        this.entities.push(entity);
+        this.shaderProgram.turnOff();
     }
 }
 
 class ScreenBufferRenderer extends Renderer {
-    constructor() {
-        super();
+    constructor(shaderProgram, screenBuffer) {
+        super(shaderProgram);
+        this.screenBuffer = screenBuffer;
     }
-    renderPass(level, shaderProgram) {
-
+    renderPass(level) {
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        this.shaderProgram.turnOn();
+        this.screenBuffer.mesh.bind();
+        this.screenBuffer.frameBuffer.bindTexture();
+        gl.drawElements(gl.TRIANGLES, this.screenBuffer.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
+        this.screenBuffer.mesh.unbind();
+        this.shaderProgram.turnOff();
+        this.screenBuffer.frameBuffer.unbindTexture();
     }
 }
 
-class ParticleRenderer extends Renderer {
-    constructor() {
-        super();
+class BlockBreakParticleRenderer extends Renderer {
+    constructor(shaderProgram) {
+        super(shaderProgram);
     }
-    renderPass(level, shaderProgram) {
+    renderPass(level) {
         let particles = level.particles;
-        let model = particleModel;
-        shaderProgram.turnOn();
-        shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
+        let model = BLOCK_BREAK_PARTICLE_MODEL;
+        this.shaderProgram.turnOn();
+        this.shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
         model.bind();
         for (let particle of particles) {
-            shaderProgram.loadFloat("blockID", particle.blockID);
-            shaderProgram.loadVec2("pixel", [particle.pixel.x, particle.pixel.y]);
-            shaderProgram.loadMatrix("mWorld", particle.getWorldMatrix(level.camera));
+            this.shaderProgram.loadFloat("blockID", particle.blockID);
+            this.shaderProgram.loadVec2("pixel", [particle.pixel.x, particle.pixel.y]);
+            this.shaderProgram.loadMatrix("mWorld", particle.getWorldMatrix(level.camera));
             gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
         }
         model.unbind();
-        shaderProgram.turnOff();
+        this.shaderProgram.turnOff();
     }
 }
 
@@ -130,5 +106,5 @@ export {
     EntityRenderer,
     TerrainRenderer,
     ScreenBufferRenderer,
-    ParticleRenderer
+    BlockBreakParticleRenderer
 };

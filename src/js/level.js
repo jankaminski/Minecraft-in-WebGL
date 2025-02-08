@@ -2,7 +2,7 @@ import { Terrain } from "./terrain.js";
 import {
     TerrainRenderer,
     EntityRenderer,
-    ParticleRenderer
+    BlockBreakParticleRenderer
 } from "./renderer.js";
 import { Camera } from "./camera.js";
 import { Input } from "./input.js";
@@ -14,24 +14,50 @@ import { Vec3 } from "./math-utils.js";
 const TERMINAL_VELOCITY = -0.4;
 const GRAVITY_CONSTANT = 0.003;
 
+class EntityRenderBatch {
+    constructor(model, entities) {
+        let batchEntities = [];
+        for (let entity of entities) {
+            if (entity.getModel() === model)
+                batchEntities.push(entity);
+        }
+        this.model = model;
+        this.entities = batchEntities;
+    }
+    add(entity) {
+        if (entity.getModel() != this.model) {
+            console.log("tried to push wrong entity into batch!");
+            return;
+        }
+        this.entities.push(entity);
+    }
+}
+
 class Level {
-    constructor(...entities) {
-        this.entities = entities;
+    constructor() {
+        this.entities = [];
         this.terrain = new Terrain();
-        this.terrainRenderer = new TerrainRenderer();
-        this.entityRenderer = new EntityRenderer(this);
-        this.particleRenderer = new ParticleRenderer();
-        this.players = [entities[0]];
         this.camera = new Camera(5, 500, 2);
         this.particles = [];
-        //this.particleSpawnCooldown = new Cooldown(1);
+        this.entityRenderBatches = [];
+        this.players = [];
+    }
+    addPlayer(player) {
+        this.players.push(player);
     }
     addEntity(entity) {
         this.entities.push(entity);
-        this.entityRenderer.addEntity(entity);
+        let model = entity.getModel();
+        for (let batch of this.entityRenderBatches) {
+            if (batch.model === model) {
+                batch.add(entity);
+                return;
+            }
+        }
+        this.entityRenderBatches.push(new EntityRenderBatch(model, [entity]));
     }
     cleanDeadEntities() {
-        for (let batch of this.entityRenderer.entityRenderBatches)
+        for (let batch of this.entityRenderBatches)
             batch.entities = arrayWithRemoved(batch.entities, (entity) => entity.toDelete);
         this.entities = arrayWithRemoved(this.entities, (entity) => entity.toDelete);
     }
@@ -41,32 +67,18 @@ class Level {
         this.terrain.update(this);
         for (let entity of this.entities)
             entity.update(this);
-        //this.camera.followTarget(this.entities[0].getCenter());
-        if (this.entities[0].firstPerson)
-            this.camera.followInFirstPerson(this.entities[0]);
+        //this.camera.followTarget(this.players[0].getCenter());
+        if (this.players[0].firstPerson)
+            this.camera.followInFirstPerson(this.players[0]);
         else
-            this.camera.followInThirdPerson(this.entities[0], 10, 0.2);
+            this.camera.followInThirdPerson(this.players[0], 10, 0.2);
         this.cleanDeadEntities();
 
-        /*this.particleSpawnCooldown.progress();
-        if (this.particleSpawnCooldown.reached()) {
-            let momX = (Math.random() - 0.5) / 10;
-            let momY = Math.random() / 10;
-            let momZ = (Math.random() - 0.5) / 10;
-            this.particles.push(new Particle(this.entities[0].getCenter(), Vec3.make(momX, momY, momZ), 50));
-        }*/
         for (let particle of this.particles)
             particle.update(this);
         this.particles = arrayWithRemoved(this.particles, (particle) => particle.remainingLife <= 0);
 
         Input.refresh();
-    }
-    render(terrainProgram, entityProgram, particleProgram) {
-        gl.clearColor(0.0, 0.1, 1.0, 0.2);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        this.terrainRenderer.renderPass(this, terrainProgram);
-        this.entityRenderer.renderPass(this, entityProgram);
-        this.particleRenderer.renderPass(this, particleProgram);
     }
 }
 
