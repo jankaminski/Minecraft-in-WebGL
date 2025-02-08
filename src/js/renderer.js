@@ -116,6 +116,8 @@ class ParticleRenderer extends Renderer {
         shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
         model.bind();
         for (let particle of particles) {
+            shaderProgram.loadFloat("blockID", particle.blockID);
+            shaderProgram.loadVec2("pixel", [particle.pixel.x, particle.pixel.y]);
             shaderProgram.loadMatrix("mWorld", particle.getWorldMatrix(level.camera));
             gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
         }

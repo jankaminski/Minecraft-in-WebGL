@@ -65,6 +65,12 @@ class Vec3 {
 }
 
 class Vec2 {
+    static make(x, y) {
+        return { x, y };
+    }
+    static copy(vec) {
+        return { x : vec.x, y : vec.y };
+    }
     static normalize(vec) {
         var len = vec.x * vec.x + vec.y * vec.y;
         if (len > 0) {

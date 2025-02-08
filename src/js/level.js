@@ -9,6 +9,10 @@ import { Input } from "./input.js";
 import { gl } from "./webgl-init.js";
 import { arrayWithRemoved, Cooldown } from "./misc-utils.js";
 import { Particle } from "./particle.js";
+import { Vec3 } from "./math-utils.js";
+
+const TERMINAL_VELOCITY = -0.4;
+const GRAVITY_CONSTANT = 0.003;
 
 class Level {
     constructor(...entities) {
@@ -20,7 +24,7 @@ class Level {
         this.players = [entities[0]];
         this.camera = new Camera(5, 500, 2);
         this.particles = [];
-        this.particleSpawnCooldown = new Cooldown(1);
+        //this.particleSpawnCooldown = new Cooldown(1);
     }
     addEntity(entity) {
         this.entities.push(entity);
@@ -44,10 +48,13 @@ class Level {
             this.camera.followInThirdPerson(this.entities[0], 10, 0.2);
         this.cleanDeadEntities();
 
-        this.particleSpawnCooldown.progress();
+        /*this.particleSpawnCooldown.progress();
         if (this.particleSpawnCooldown.reached()) {
-            this.particles.push(new Particle(this.entities[0].getCenter()));
-        }
+            let momX = (Math.random() - 0.5) / 10;
+            let momY = Math.random() / 10;
+            let momZ = (Math.random() - 0.5) / 10;
+            this.particles.push(new Particle(this.entities[0].getCenter(), Vec3.make(momX, momY, momZ), 50));
+        }*/
         for (let particle of this.particles)
             particle.update(this);
         this.particles = arrayWithRemoved(this.particles, (particle) => particle.remainingLife <= 0);
@@ -63,4 +70,4 @@ class Level {
     }
 }
 
-export { Level };
+export { Level, TERMINAL_VELOCITY, GRAVITY_CONSTANT };

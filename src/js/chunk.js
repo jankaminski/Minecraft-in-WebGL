@@ -274,6 +274,8 @@ export {
     CHUNK_HEIGHT,
     CHUNK_WIDTH_IN_BLOCKS,
     CHUNK_HEIGHT_IN_BLOCKS,
+    BLOCK_TEX_ATLAS_ROWS,
+    BLOCK_TEX_ATLAS_COLUMNS,
     Chunk,
     ChunkIndex,
     makeChunkShaderProgram 

@@ -12,6 +12,7 @@ import {
 } from "./collision.js";
 import { castRay } from "./misc-utils.js";
 import { BlockAccess } from "./block-access.js";
+import { BlockBreakParticle, Particle } from "./particle.js";
 
 class Player extends Creeper {
     static loadedAreaIDCount = 0;
@@ -106,6 +107,12 @@ class Player extends Creeper {
         this.blockBreakCooldown.progress();
         if (!this.blockBreakCooldown.reached())
             return;
+        for (let i = 0; i < 50; i++) {
+            let momX = (Math.random() - 0.5) / 15;
+            let momY = Math.random() / 15;
+            let momZ = (Math.random() - 0.5) / 15;
+            level.particles.push(new BlockBreakParticle(blockToBreak.getCenter(), Vec3.make(momX, momY, momZ), 50, blockToBreak.getID(), Vec2.make(Math.random(), Math.random())));
+        }
         this.changeBlock(level, blockToBreak, Block.AIR);
     }
     placeBlock(level, blockToPlace) {

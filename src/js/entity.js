@@ -4,6 +4,7 @@ import {
     detectCollision, 
     detectCollisionWithTerrain 
 } from "./collision.js";
+import { GRAVITY_CONSTANT, TERMINAL_VELOCITY } from "./level.js";
 import { 
     Mat4, 
     Vec3 
@@ -16,9 +17,6 @@ import {
 import { 
     loadShaderProgramFromFiles
 } from "./res-utils.js";
-
-const TERMINAL_VELOCITY = -0.4;
-const GRAVITY_CONSTANT = 0.003;
 
 class Entity {
     constructor(posX, posY, posZ, sizeX, sizeY, sizeZ, model) {

@@ -79,7 +79,7 @@ const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas()
 const creeperTexImage = await loadImage("./res/textures/creeper.png");
 const CREEPER_TEXTURE = make2DTexFromImage(gl.CLAMP_TO_EDGE, gl.NEAREST, creeperTexImage);
 
-const particleImage = await loadImage("./res/textures/default.png");
+const particleImage = await loadImage("./res/textures/leaves.png");
 const particleTexture = make2DTexFromImage(gl.CLAMP_TO_EDGE, gl.NEAREST, particleImage);
 
 export {

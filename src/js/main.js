@@ -11,6 +11,7 @@ import { makeAttrPtr, Mesh } from "./model.js";
 import { Framebuffer } from "./texture.js";
 import { loadShaderProgramFromFiles } from "./res-utils.js";
 import { Input } from "./input.js";
+import { makeParticleShaderProgram } from "./particle.js";
 
 class FPSCounter {
     constructor() {
@@ -83,14 +84,11 @@ async function run() {
     
     let terrainProgram = await makeChunkShaderProgram(PROJECTION_MATRIX);
     let entityProgram = await makeEntityShaderProgram(PROJECTION_MATRIX);
+    let particleProgram = await makeParticleShaderProgram(PROJECTION_MATRIX);
 
     let screenBufferProgram = await loadShaderProgramFromFiles("./src/shaders/frame-vert.glsl", "./src/shaders/frame-frag.glsl");
     let screenBuffer = new ScreenBuffer(1000, 600);
 
-    let particleProgram = await loadShaderProgramFromFiles("./src/shaders/particle-vert.glsl", "./src/shaders/particle-frag.glsl");
-    particleProgram.turnOn();
-    particleProgram.loadMatrix("mProj", PROJECTION_MATRIX);
-    particleProgram.turnOff();
 
     let level = new Level(
         new Player(2, 70, 2, CREEPER_MODEL), 
