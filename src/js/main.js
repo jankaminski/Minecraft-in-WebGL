@@ -101,11 +101,29 @@ async function run() {
 
     //let running = true;
     //let menu = new GUI(Vec2.make(-0.7, -0.7), Vec2.make(0.7, 0.7));
+    let mainMenu = document.getElementById("main-menu");
+    let pauseMenu = document.getElementById("pause-menu");
+
+    let quitButton = document.getElementById("quit");
+    let resumeButton = document.getElementById("resume");
+
+    let quittingGame = false;
+
+    quitButton.addEventListener("click", () => {
+        pauseMenu.style.display = "none";
+        canvas.style.display = "none";
+        mainMenu.style.display = "flex";
+        mainMenu.style.flexDirection = "column";
+        quittingGame = true;
+    });
+    resumeButton.addEventListener("click", () => {
+        canvas.requestPointerLock();
+        pauseMenu.style.display = "none";
+    });
 
     let loop = () => {
-
-        let pauseMenu = document.getElementById("pause-menu");
-        //let mainMenu = document.getElementById("main-menu");
+        if (quittingGame)
+            return;
 
         if (Input.quitting()) {
             document.exitPointerLock();
