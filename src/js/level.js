@@ -25,7 +25,7 @@ class EntityRenderBatch {
         this.entities = batchEntities;
     }
     add(entity) {
-        if (entity.getModel() != this.model) {
+        if (entity.getModel() !== this.model) {
             console.log("tried to push wrong entity into batch!");
             return;
         }
@@ -62,8 +62,6 @@ class Level {
         this.entities = arrayWithRemoved(this.entities, (entity) => entity.toDelete);
     }
     update() {
-        if (Input.quitting())
-            throw "QUIT";
         this.terrain.update(this);
         for (let entity of this.entities)
             entity.update(this);
@@ -77,8 +75,6 @@ class Level {
         for (let particle of this.particles)
             particle.update(this);
         this.particles = arrayWithRemoved(this.particles, (particle) => particle.remainingLife <= 0);
-
-        Input.refresh();
     }
 }
 

@@ -63,9 +63,21 @@ function arrayWithRemoved(array, condition) {
     return newArray;
 }
 
+const QUAD_VERTICES = [
+    -1, -1, 0, 0,
+     1, -1, 1, 0,
+    -1,  1, 0, 1,
+     1,  1, 1, 1
+];
+const QUAD_INDICES = [
+    0, 1, 3, 3, 2, 0
+];
+
 export {
     Cooldown,
     castRay,
     areAll,
-    arrayWithRemoved
+    arrayWithRemoved,
+    QUAD_VERTICES,
+    QUAD_INDICES
 };

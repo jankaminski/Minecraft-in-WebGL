@@ -6,7 +6,6 @@ class Renderer {
     constructor(shaderProgram) {
         this.shaderProgram = shaderProgram;
     }
-    renderPass(level, shaderProgram) {  }
     setShaderProgram(shaderProgram) {
         this.shaderProgram = shaderProgram;
     }
@@ -65,19 +64,18 @@ class EntityRenderer extends Renderer {
 }
 
 class ScreenBufferRenderer extends Renderer {
-    constructor(shaderProgram, screenBuffer) {
+    constructor(shaderProgram) {
         super(shaderProgram);
-        this.screenBuffer = screenBuffer;
     }
-    renderPass(level) {
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    renderPass(screenBuffer) {
+        //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         this.shaderProgram.turnOn();
-        this.screenBuffer.mesh.bind();
-        this.screenBuffer.frameBuffer.bindTexture();
-        gl.drawElements(gl.TRIANGLES, this.screenBuffer.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
-        this.screenBuffer.mesh.unbind();
+        screenBuffer.mesh.bind();
+        screenBuffer.frameBuffer.bindTexture();
+        gl.drawElements(gl.TRIANGLES, screenBuffer.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
+        screenBuffer.mesh.unbind();
+        screenBuffer.frameBuffer.unbindTexture();
         this.shaderProgram.turnOff();
-        this.screenBuffer.frameBuffer.unbindTexture();
     }
 }
 
@@ -102,9 +100,24 @@ class BlockBreakParticleRenderer extends Renderer {
     }
 }
 
+class GUIRenderer extends Renderer {
+    constructor(shaderProgram) {
+        super(shaderProgram);
+    }
+    renderPass(gui) {
+        let mesh = gui.mesh;
+        this.shaderProgram.turnOn();
+        mesh.bind();
+        gl.drawElements(gl.TRIANGLES, mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
+        mesh.unbind();
+        this.shaderProgram.turnOff();
+    }
+}
+
 export {
     EntityRenderer,
     TerrainRenderer,
     ScreenBufferRenderer,
-    BlockBreakParticleRenderer
+    BlockBreakParticleRenderer,
+    GUIRenderer
 };

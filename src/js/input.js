@@ -23,8 +23,10 @@ class Input {
         Sprint :            'Control',
         SwitchPerspective : 'e',
         Quit :              'b',
+        Resume :            'v',
         ForceReload :       'n'
     };
+    static running = false;
     static actionMap = {};
     static movingForward() {
         return Input.actionMap.get(Input.keyBindings.MoveForward);
@@ -60,6 +62,9 @@ class Input {
     static quitting() {
         return Input.actionMap.get(Input.keyBindings.Quit);
     }
+    static resuming() {
+        return Input.actionMap.get(Input.keyBindings.Resume);
+    }
     static forceReloading() {
         return Input.actionMap.get(Input.keyBindings.ForceReload);
     }
@@ -74,11 +79,12 @@ class Input {
         Input.actionMap.set(Input.keyBindings.Sprint, false);
         Input.actionMap.set(Input.keyBindings.SwitchPerspective, false);
         Input.actionMap.set(Input.keyBindings.Quit, false);
+        Input.actionMap.set(Input.keyBindings.Resume, false);
         Input.actionMap.set(Input.keyBindings.ForceReload, false);
         document.addEventListener("mousedown", mouseDown, false);
         document.addEventListener("mouseup", mouseUp, false);
         document.addEventListener("mousemove", mouseMove, false);
-        canvas.addEventListener("click", mouseClick, false);
+        //canvas.addEventListener("click", mouseClick, false);
         document.addEventListener("keydown", keyDown, false);
         document.addEventListener("keyup", keyUp, false);
         document.addEventListener("pointerlockchange", pointerLockChange, false);
@@ -93,9 +99,9 @@ class Input {
 
 function pointerLockChange(event) {
     if (document.pointerLockElement) {
-        //console.log("The pointer is locked to: ", document.pointerLockElement);
+        Input.running = true;
     } else {
-        //console.log("The pointer is not locked");
+        Input.running = false;
     }
 }
 
@@ -130,7 +136,7 @@ function mouseClick() {
         canvas.requestPointerLock ||
         canvas.mozRequestPointerLock ||
         canvas.webkitRequestPointerLock;*/
-    canvas.requestPointerLock();
+    //canvas.requestPointerLock();
 }
 
 function keyDown(event) {

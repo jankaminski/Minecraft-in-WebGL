@@ -1,5 +1,5 @@
 import { canvas, gl } from "./webgl-init.js";
-import { Mat4 } from "./math-utils.js";
+import { Mat4, Vec2 } from "./math-utils.js";
 import { Entity, makeEntityShaderProgram } from "./entity.js";
 import { makeChunkShaderProgram } from "./chunk.js";
 import { Creeper } from "./creeper.js";
@@ -13,7 +13,9 @@ import { loadShaderProgramFromFiles } from "./res-utils.js";
 import { Input } from "./input.js";
 import { makeParticleShaderProgram } from "./particle.js";
 //import { ENTITY_PROGRAM, PARTICLE_PROGRAM, SCREEN_BUFFER_PROGRAM, TERRAIN_PROGRAM } from "./shader-programs.js";
-import { BlockBreakParticleRenderer, EntityRenderer, ScreenBufferRenderer, TerrainRenderer } from "./renderer.js";
+import { BlockBreakParticleRenderer, EntityRenderer, GUIRenderer, ScreenBufferRenderer, TerrainRenderer } from "./renderer.js";
+import { QUAD_INDICES, QUAD_VERTICES } from "./misc-utils.js";
+import { GUI } from "./gui.js";
 
 class FPSCounter {
     constructor() {
@@ -41,24 +43,15 @@ class FPSCounter {
     }
 }
 
-function clear() {
-    gl.clearColor(0.0, 0.1, 1.0, 0.2);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+function paintSky(red, green, blue) {
+    gl.clearColor(red, green, blue, 1.0);
 }
 
 class ScreenBuffer {
     constructor(width, height) {
-        const screenBufferVertices = [
-            -1, -1, 0, 0,
-             1, -1, 1, 0,
-            -1,  1, 0, 1,
-             1,  1, 1, 1
-        ];
-        const screenBufferIndices = [
-            0, 1, 3, 3, 2, 0
-        ];
-        this.mesh = new Mesh(screenBufferVertices, screenBufferIndices, makeAttrPtr(0, 2, 4, 0), makeAttrPtr(1, 2, 4, 2));
+        this.mesh = new Mesh(QUAD_VERTICES, QUAD_INDICES, makeAttrPtr(0, 2, 4, 0), makeAttrPtr(1, 2, 4, 2));
         this.frameBuffer = new Framebuffer(width, height);
+        this.unbind();
     }
     bind() {
         this.frameBuffer.bindBuffer();
@@ -76,6 +69,7 @@ async function run() {
     let ENTITY_PROGRAM = await makeEntityShaderProgram(PROJECTION_MATRIX);
     let PARTICLE_PROGRAM = await makeParticleShaderProgram(PROJECTION_MATRIX);
     let SCREEN_BUFFER_PROGRAM = await loadShaderProgramFromFiles("./src/shaders/frame-vert.glsl", "./src/shaders/frame-frag.glsl");
+    //let GUI_PROGRAM = await loadShaderProgramFromFiles("./src/shaders/gui-vert.glsl", "./src/shaders/gui-frag.glsl");
     
     let screenBuffer = new ScreenBuffer(1000, 600);
     
@@ -98,28 +92,56 @@ async function run() {
     level.addEntity(new Entity(4, 80, 4, 1, 1, 1, LEAF_MODEL));
     level.addEntity(new Entity(4, 80, 4, 1, 1, 1, LEAF_MODEL));
     
-    let screenBufferRenderer = new ScreenBufferRenderer(SCREEN_BUFFER_PROGRAM, screenBuffer);
+    let screenBufferRenderer = new ScreenBufferRenderer(SCREEN_BUFFER_PROGRAM);
     let terrainRenderer = new TerrainRenderer(TERRAIN_PROGRAM);
     let entityRenderer = new EntityRenderer(ENTITY_PROGRAM);
     let blockBreakParticleRenderer = new BlockBreakParticleRenderer(PARTICLE_PROGRAM);
+    //let guiRenderer = new GUIRenderer(GUI_PROGRAM);
     let fpsCounter = new FPSCounter();
 
+    //let running = true;
+    //let menu = new GUI(Vec2.make(-0.7, -0.7), Vec2.make(0.7, 0.7));
+
     let loop = () => {
-        level.update();
+
+        let pauseMenu = document.getElementById("pause-menu");
+        //let mainMenu = document.getElementById("main-menu");
+
+        if (Input.quitting()) {
+            document.exitPointerLock();
+            pauseMenu.style.display = "flex";
+            pauseMenu.style.flexDirection = "column";
+            pauseMenu.style.justifyContent = "center";
+            //pauseMenu.style.alignItems = "center";
+        }
+        if (Input.resuming()) {
+            canvas.requestPointerLock();
+            pauseMenu.style.display = "none";
+        }
+        //console.log(Input.running);
+        SCREEN_BUFFER_PROGRAM.turnOn();
+        SCREEN_BUFFER_PROGRAM.loadInt("menuHidden", Input.running ? 0 : 1);
+        SCREEN_BUFFER_PROGRAM.turnOff();
+        
+        if (Input.running) {
+            
+            level.update();
+        } else {
+            
+        }
         screenBuffer.bind();
-        gl.clearColor(0.0, 0.1, 1.0, 0.2);
+        paintSky(0.0, 0.8, 0.8);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         terrainRenderer.renderPass(level);
         entityRenderer.renderPass(level);
         blockBreakParticleRenderer.renderPass(level);
         screenBuffer.unbind();
-        screenBufferRenderer.renderPass(level);
-        requestAnimationFrame(loop);
+        screenBufferRenderer.renderPass(screenBuffer);
+        //if (!running)
+            //guiRenderer.renderPass(menu);
         fpsCounter.update();
-        for (let i = 0; i < level.entityRenderBatches.length; i++) {
-            console.log("batch " + i + ": " + level.entityRenderBatches[i].entities.length);
-
-        }
+        requestAnimationFrame(loop);
+        Input.refresh();
     };
     setInterval(() => {
         console.log(fpsCounter.framesPassed());

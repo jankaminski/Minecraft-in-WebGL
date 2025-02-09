@@ -19,7 +19,9 @@ class Texture {
         gl.bindTexture(this.target, this.id);
         gl.activeTexture(gl.TEXTURE0); 
     }
-    unbind() { gl.bindTexture(this.target, null); }
+    unbind() { 
+        gl.bindTexture(this.target, null); 
+    }
 }
 
 class Texture2D extends Texture {
@@ -83,13 +85,6 @@ class Framebuffer {
         tex.bind();
         gl.texImage2D(tex.target, 0, tex.format, tex.width, tex.height, 0, tex.format, tex.type, null);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, tex.target, tex.id, 0);
-        return tex;
-    }
-    makeDepthAttachment() {
-        let tex = new Texture2D(gl.CLAMP_TO_EDGE, gl.LINEAR, gl.DEPTH_COMPONENT, gl.FLOAT, this.width, this.height);
-        tex.bind();
-        gl.texImage2D(tex.target, 0, gl.DEPTH_COMPONENT32, tex.width, tex.height, 0, tex.format, tex.type, null);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, tex.target, tex.id, 0);
         return tex;
     }
     bindBuffer() {
