@@ -8,7 +8,7 @@ import { Camera } from "./camera.js";
 import { Input } from "./input.js";
 import { gl } from "./webgl-init.js";
 import { arrayWithRemoved, Cooldown } from "./misc-utils.js";
-import { Particle } from "./particle.js";
+import { AnimatedParticle, Particle } from "./particle.js";
 import { Vec3 } from "./math-utils.js";
 
 const TERMINAL_VELOCITY = -0.4;
@@ -38,9 +38,11 @@ class Level {
         this.entities = [];
         this.terrain = new Terrain();
         this.camera = new Camera(5, 500, 2);
-        this.particles = [];
+        this.blockBreakParticles = [];
+        this.animatedParticles = [];
         this.entityRenderBatches = [];
         this.players = [];
+        this.pc = new Cooldown(100);
     }
     addPlayer(player) {
         this.players.push(player);
@@ -72,9 +74,16 @@ class Level {
             this.camera.followInThirdPerson(this.players[0], 10, 0.2);
         this.cleanDeadEntities();
 
-        for (let particle of this.particles)
+        this.pc.progress();
+        if (this.pc.reached())
+            this.animatedParticles.push(new AnimatedParticle(this.players[0].getCenter(), Vec3.make(0.05, 0.1, 0.05), 80, 1, 4));
+
+        for (let particle of this.blockBreakParticles)
             particle.update(this);
-        this.particles = arrayWithRemoved(this.particles, (particle) => particle.remainingLife <= 0);
+        this.blockBreakParticles = arrayWithRemoved(this.blockBreakParticles, (particle) => particle.remainingLife <= 0);
+        for (let particle of this.animatedParticles)
+            particle.update(this);
+        this.animatedParticles = arrayWithRemoved(this.animatedParticles, (particle) => particle.remainingLife <= 0);
     }
 }
 

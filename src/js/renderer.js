@@ -1,5 +1,6 @@
 import { arrayWithRemoved } from "./misc-utils.js";
-import { BLOCK_BREAK_PARTICLE_MODEL } from "./particle.js";
+import { BLOCK_BREAK_PARTICLE_MODEL, ANIMATED_PARTICLE_MODEL } from "./models.js";
+import { ANIMATED_PARTICLE_TEXTURE_ATLAS } from "./textures.js";
 import { gl } from "./webgl-init.js";
 
 class Renderer {
@@ -84,7 +85,7 @@ class BlockBreakParticleRenderer extends Renderer {
         super(shaderProgram);
     }
     renderPass(level) {
-        let particles = level.particles;
+        let particles = level.blockBreakParticles;
         let model = BLOCK_BREAK_PARTICLE_MODEL;
         this.shaderProgram.turnOn();
         this.shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
@@ -114,10 +115,34 @@ class GUIRenderer extends Renderer {
     }
 }
 
+class AnimatedParticleRenderer extends Renderer {
+    constructor(shaderProgram) {
+        super(shaderProgram);
+    }
+    renderPass(level) {
+        let particles = level.animatedParticles;
+        let model = ANIMATED_PARTICLE_MODEL;
+        this.shaderProgram.turnOn();
+        this.shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
+        model.bind();
+        for (let particle of particles) {
+            this.shaderProgram.loadFloat("particleID", particle.id);
+            this.shaderProgram.loadFloat("remainingLife", particle.remainingLife);
+            this.shaderProgram.loadFloat("lifespan", particle.lifespan);
+            this.shaderProgram.loadFloat("noOfFrames", particle.noOfFrames);
+            this.shaderProgram.loadMatrix("mWorld", particle.getWorldMatrix(level.camera));
+            gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
+        }
+        model.unbind();
+        this.shaderProgram.turnOff();
+    }
+}
+
 export {
     EntityRenderer,
     TerrainRenderer,
     ScreenBufferRenderer,
     BlockBreakParticleRenderer,
+    AnimatedParticleRenderer,
     GUIRenderer
 };

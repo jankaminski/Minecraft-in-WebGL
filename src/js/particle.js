@@ -1,13 +1,13 @@
 import { BlockAccess } from "./block-access.js";
 import { GRAVITY_CONSTANT, TERMINAL_VELOCITY } from "./level.js";
 import { Mat4, Vec2, Vec3 } from "./math-utils.js";
-import { makeAttrPtr, Mesh, Model } from "./model.js";
 import { loadShaderProgramFromFiles } from "./res-utils.js";
-import { BLOCK_TEX_ATLAS_COLUMNS, BLOCK_TEX_ATLAS_ROWS, BLOCK_TEXTURE_ATLAS, particleTexture } from "./textures.js";
+import { BLOCK_TEX_ATLAS_COLUMNS, BLOCK_TEX_ATLAS_ROWS } from "./textures.js";
 
 class Particle {
-    constructor(position, momentum, remainingLife) {
+    constructor(position, size, momentum, remainingLife) {
         this.position = Vec3.copy(position);
+        this.size = Vec2.copy(size);
         this.momentum = Vec3.copy(momentum);
         this.remainingLife = remainingLife;
         this.affectedByGravity = true;
@@ -25,46 +25,42 @@ class Particle {
         matrix[8] = viewMatrix[2];
         matrix[9] = viewMatrix[6];
         matrix[10] = viewMatrix[10];
+        matrix = Mat4.scale(matrix, Vec3.make(this.size.x, this.size.y, 1));
         return matrix;
     }
     update(level) {
         if (this.remainingLife > 0)
             this.remainingLife--;
-
         if (this.affectedByGravity && this.momentum.y > TERMINAL_VELOCITY) 
             this.momentum.y -= GRAVITY_CONSTANT;
-
         let block = BlockAccess.getBlockByWorldCoords(level.terrain, this.position.x, this.position.y, this.position.z);
         if (block !== null)
             if (block.isSolid())
                 this.momentum = Vec3.makeS(0.0);
-
         this.position = Vec3.add(this.position, this.momentum);
     }
 }
 
 class BlockBreakParticle extends Particle {
     constructor(position, momentum, remainingLife, blockID, pixel) {
-        super(position, momentum, remainingLife);
+        super(position, Vec2.make(0.08, 0.08), momentum, remainingLife);
         this.blockID = blockID;
         this.pixel = Vec2.copy(pixel);
     }
 }
 
-const particleVertices = [
-    -0.08, -0.08, 0,
-     0.08, -0.08, 0,
-    -0.08,  0.08, 0,
-     0.08,  0.08, 0
-];
-const particleIndices = [
-    0, 1, 3, 3, 2, 0
-];
-const BLOCK_BREAK_PARTICLE_MESH = new Mesh(particleVertices, particleIndices, makeAttrPtr(0, 3, 3, 0));
-const BLOCK_BREAK_PARTICLE_MODEL = new Model(BLOCK_BREAK_PARTICLE_MESH, BLOCK_TEXTURE_ATLAS);
+class AnimatedParticle extends Particle {
+    static EXPLOSION = 0;
+    constructor(position, momentum, remainingLife, id, noOfFrames) {
+        super(position, Vec2.make(0.5, 0.5), momentum, remainingLife);
+        this.id = id;
+        this.lifespan = remainingLife;
+        this.noOfFrames = noOfFrames;
+    }
+}
 
-async function makeParticleShaderProgram(projectionMatrix) {
-    let particleProgram = await loadShaderProgramFromFiles("./src/shaders/break-particle-vert.glsl", "./src/shaders/break-particle-frag.glsl");
+async function makeBlockBreakParticleShaderProgram(projectionMatrix) {
+    let particleProgram = await loadShaderProgramFromFiles("./src/shaders/block-break-particle-vert.glsl", "./src/shaders/block-break-particle-frag.glsl");
     particleProgram.turnOn();
     particleProgram.loadMatrix("mProj", projectionMatrix);
     particleProgram.loadFloat("texAtlasNoOfRows", BLOCK_TEX_ATLAS_ROWS);
@@ -73,4 +69,14 @@ async function makeParticleShaderProgram(projectionMatrix) {
     return particleProgram;
 }
 
-export { Particle, BlockBreakParticle, BLOCK_BREAK_PARTICLE_MODEL, makeParticleShaderProgram };
+async function makeAnimatedParticleShaderProgram(projectionMatrix) {
+    let particleProgram = await loadShaderProgramFromFiles("./src/shaders/animated-particle-vert.glsl", "./src/shaders/animated-particle-frag.glsl");
+    particleProgram.turnOn();
+    particleProgram.loadMatrix("mProj", projectionMatrix);
+    particleProgram.loadFloat("texAtlasNoOfRows", BLOCK_TEX_ATLAS_ROWS);
+    particleProgram.loadFloat("texAtlasNoOfColumns", BLOCK_TEX_ATLAS_COLUMNS);
+    particleProgram.turnOff();
+    return particleProgram;
+}
+
+export { Particle, BlockBreakParticle, AnimatedParticle, makeBlockBreakParticleShaderProgram, makeAnimatedParticleShaderProgram };

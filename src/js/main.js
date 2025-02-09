@@ -6,16 +6,13 @@ import { Creeper } from "./creeper.js";
 import { Player } from "./player.js";
 import { Level } from "./level.js";
 import { CREEPER_MODEL, LEAF_MODEL } from "./models.js";
-import { ShaderProgram } from "./shader-program.js";
 import { makeAttrPtr, Mesh } from "./model.js";
 import { Framebuffer } from "./texture.js";
 import { loadShaderProgramFromFiles } from "./res-utils.js";
 import { Input } from "./input.js";
-import { makeParticleShaderProgram } from "./particle.js";
-//import { ENTITY_PROGRAM, PARTICLE_PROGRAM, SCREEN_BUFFER_PROGRAM, TERRAIN_PROGRAM } from "./shader-programs.js";
-import { BlockBreakParticleRenderer, EntityRenderer, GUIRenderer, ScreenBufferRenderer, TerrainRenderer } from "./renderer.js";
+import { makeAnimatedParticleShaderProgram, makeBlockBreakParticleShaderProgram } from "./particle.js";
+import { AnimatedParticleRenderer, BlockBreakParticleRenderer, EntityRenderer, GUIRenderer, ScreenBufferRenderer, TerrainRenderer } from "./renderer.js";
 import { QUAD_INDICES, QUAD_VERTICES } from "./misc-utils.js";
-import { GUI } from "./gui.js";
 
 class FPSCounter {
     constructor() {
@@ -67,7 +64,8 @@ async function run() {
     
     let TERRAIN_PROGRAM = await makeChunkShaderProgram(PROJECTION_MATRIX);
     let ENTITY_PROGRAM = await makeEntityShaderProgram(PROJECTION_MATRIX);
-    let PARTICLE_PROGRAM = await makeParticleShaderProgram(PROJECTION_MATRIX);
+    let PARTICLE_PROGRAM = await makeBlockBreakParticleShaderProgram(PROJECTION_MATRIX);
+    let animatedParticleProgram = await makeAnimatedParticleShaderProgram(PROJECTION_MATRIX);
     let SCREEN_BUFFER_PROGRAM = await loadShaderProgramFromFiles("./src/shaders/frame-vert.glsl", "./src/shaders/frame-frag.glsl");
     //let GUI_PROGRAM = await loadShaderProgramFromFiles("./src/shaders/gui-vert.glsl", "./src/shaders/gui-frag.glsl");
     
@@ -96,11 +94,9 @@ async function run() {
     let terrainRenderer = new TerrainRenderer(TERRAIN_PROGRAM);
     let entityRenderer = new EntityRenderer(ENTITY_PROGRAM);
     let blockBreakParticleRenderer = new BlockBreakParticleRenderer(PARTICLE_PROGRAM);
-    //let guiRenderer = new GUIRenderer(GUI_PROGRAM);
+    let animatedParticleRenderer = new AnimatedParticleRenderer(animatedParticleProgram);
     let fpsCounter = new FPSCounter();
 
-    //let running = true;
-    //let menu = new GUI(Vec2.make(-0.7, -0.7), Vec2.make(0.7, 0.7));
     let mainMenu = document.getElementById("main-menu");
     let pauseMenu = document.getElementById("pause-menu");
 
@@ -109,50 +105,49 @@ async function run() {
 
     let quittingGame = false;
 
-    quitButton.addEventListener("click", () => {
+    let pause = () => {
+        document.exitPointerLock();
+        pauseMenu.style.display = "flex";
+        pauseMenu.style.flexDirection = "column";
+        pauseMenu.style.justifyContent = "center";
+    };
+
+    let resume = () => {
+        canvas.requestPointerLock();
+        pauseMenu.style.display = "none";
+    };
+
+    let quit = () => {
         pauseMenu.style.display = "none";
         canvas.style.display = "none";
         mainMenu.style.display = "flex";
         mainMenu.style.flexDirection = "column";
         quittingGame = true;
-    });
-    resumeButton.addEventListener("click", () => {
-        canvas.requestPointerLock();
-        pauseMenu.style.display = "none";
-    });
+    };
+
+    quitButton.addEventListener("click", quit);
+    resumeButton.addEventListener("click", resume);
 
     let loop = () => {
         if (quittingGame)
             return;
-
-        if (Input.quitting()) {
-            document.exitPointerLock();
-            pauseMenu.style.display = "flex";
-            pauseMenu.style.flexDirection = "column";
-            pauseMenu.style.justifyContent = "center";
-            //pauseMenu.style.alignItems = "center";
-        }
-        if (Input.resuming()) {
-            canvas.requestPointerLock();
-            pauseMenu.style.display = "none";
-        }
+        if (Input.pausing())
+            pause();
+        if (Input.resuming())
+            resume();
         //console.log(Input.running);
         SCREEN_BUFFER_PROGRAM.turnOn();
-        SCREEN_BUFFER_PROGRAM.loadInt("menuHidden", Input.running ? 0 : 1);
+        SCREEN_BUFFER_PROGRAM.loadInt("menuHidden", Input.cursorLocked ? 0 : 1);
         SCREEN_BUFFER_PROGRAM.turnOff();
-        
-        if (Input.running) {
-            
+        if (Input.cursorLocked)
             level.update();
-        } else {
-            
-        }
         screenBuffer.bind();
         paintSky(0.0, 0.8, 0.8);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         terrainRenderer.renderPass(level);
         entityRenderer.renderPass(level);
         blockBreakParticleRenderer.renderPass(level);
+        animatedParticleRenderer.renderPass(level);
         screenBuffer.unbind();
         screenBufferRenderer.renderPass(screenBuffer);
         //if (!running)

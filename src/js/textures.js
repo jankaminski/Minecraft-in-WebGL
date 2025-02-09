@@ -2,6 +2,7 @@ import { make2DTexFromImage, TextureAtlas } from "./texture.js";
 import { gl } from "./webgl-init.js";
 import { loadImage } from "./res-utils.js";
 import { Block } from "./block.js";
+//import { AnimatedParticle } from "./particle.js";
 
 const BLOCK_TEX_ATLAS_ROWS = 100;
 const BLOCK_TEX_ATLAS_COLUMNS = 6;
@@ -27,6 +28,26 @@ class BlockTextureAtlas extends TextureAtlas {
             else
                 image = images[i];
             this.addTile(image, i, blockID);
+        }
+        return this;
+    }
+}
+
+class AnimatedParticleTextureAtlas extends TextureAtlas {
+    constructor() {
+        super(
+            gl.CLAMP_TO_EDGE, 
+            gl.NEAREST, 
+            BLOCK_PIXELS, 
+            BLOCK_PIXELS, 
+            BLOCK_TEX_ATLAS_COLUMNS, 
+            BLOCK_TEX_ATLAS_ROWS);
+    }
+    addParticle(particleID, noOfFrames, ...images) {
+        if (images.length != noOfFrames) 
+            throw "BLEH";
+        for (let i = 0; i < noOfFrames; i++) {
+            this.addTile(images[i], i, particleID);
         }
         return this;
     }
@@ -76,6 +97,16 @@ const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas()
     oakLeavesTexImage
 );
 
+const ANIMATED_PARTICLE_TEXTURE_ATLAS = new AnimatedParticleTextureAtlas()
+.addParticle(
+    1,
+    4,
+    oakLeavesTexImage,
+    oakLogTopTexImage,
+    oakLogTexImage,
+    oakPlanksTexImage
+);
+
 const creeperTexImage = await loadImage("./res/textures/creeper.png");
 const CREEPER_TEXTURE = make2DTexFromImage(gl.CLAMP_TO_EDGE, gl.NEAREST, creeperTexImage);
 
@@ -88,5 +119,6 @@ export {
     BLOCK_PIXELS,
     BLOCK_TEXTURE_ATLAS,
     CREEPER_TEXTURE,
-    particleTexture
+    particleTexture,
+    ANIMATED_PARTICLE_TEXTURE_ATLAS
 };

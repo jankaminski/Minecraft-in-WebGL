@@ -111,7 +111,7 @@ class Player extends Creeper {
             let momX = (Math.random() - 0.5) / 15;
             let momY = Math.random() / 15;
             let momZ = (Math.random() - 0.5) / 15;
-            level.particles.push(new BlockBreakParticle(blockToBreak.getCenter(), Vec3.make(momX, momY, momZ), 50, blockToBreak.getID(), Vec2.make(Math.random(), Math.random())));
+            level.blockBreakParticles.push(new BlockBreakParticle(blockToBreak.getCenter(), Vec3.make(momX, momY, momZ), 50, blockToBreak.getID(), Vec2.make(Math.random(), Math.random())));
         }
         this.changeBlock(level, blockToBreak, Block.AIR);
     }

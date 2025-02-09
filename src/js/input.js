@@ -22,11 +22,11 @@ class Input {
         Sneak :             'Shift',
         Sprint :            'Control',
         SwitchPerspective : 'e',
-        Quit :              'b',
+        Pause :              'b',
         Resume :            'v',
         ForceReload :       'n'
     };
-    static running = false;
+    static cursorLocked = false;
     static actionMap = {};
     static movingForward() {
         return Input.actionMap.get(Input.keyBindings.MoveForward);
@@ -59,8 +59,8 @@ class Input {
     static switchingPerspective() {
         return Input.actionMap.get(Input.keyBindings.SwitchPerspective);
     }
-    static quitting() {
-        return Input.actionMap.get(Input.keyBindings.Quit);
+    static pausing() {
+        return Input.actionMap.get(Input.keyBindings.Pause);
     }
     static resuming() {
         return Input.actionMap.get(Input.keyBindings.Resume);
@@ -78,13 +78,12 @@ class Input {
         Input.actionMap.set(Input.keyBindings.Sneak, false);
         Input.actionMap.set(Input.keyBindings.Sprint, false);
         Input.actionMap.set(Input.keyBindings.SwitchPerspective, false);
-        Input.actionMap.set(Input.keyBindings.Quit, false);
+        Input.actionMap.set(Input.keyBindings.Pause, false);
         Input.actionMap.set(Input.keyBindings.Resume, false);
         Input.actionMap.set(Input.keyBindings.ForceReload, false);
         document.addEventListener("mousedown", mouseDown, false);
         document.addEventListener("mouseup", mouseUp, false);
         document.addEventListener("mousemove", mouseMove, false);
-        //canvas.addEventListener("click", mouseClick, false);
         document.addEventListener("keydown", keyDown, false);
         document.addEventListener("keyup", keyUp, false);
         document.addEventListener("pointerlockchange", pointerLockChange, false);
@@ -99,9 +98,9 @@ class Input {
 
 function pointerLockChange(event) {
     if (document.pointerLockElement) {
-        Input.running = true;
+        Input.cursorLocked = true;
     } else {
-        Input.running = false;
+        Input.cursorLocked = false;
     }
 }
 
@@ -120,23 +119,12 @@ function mouseUp(event) {
 }
 
 function mouseMove(event) {
-    //let canvas = document.getElementById("game-surface");
-    if (document.pointerLockElement !== canvas && document.mozPointerLockElement !== canvas && document.webkitPointerLockElement !== canvas) {
+    if (document.pointerLockElement !== canvas)
         return;
-    }
     Input.mouse.delta.x = event.movementX;
     Input.mouse.delta.y = event.movementY;
     Input.mouse.position.x  = event.pageX;
     Input.mouse.position.y  = event.pageY;
-}
-
-function mouseClick() {
-    //let canvas = document.getElementById("game-surface");
-    /*canvas.requestPointerLock = 
-        canvas.requestPointerLock ||
-        canvas.mozRequestPointerLock ||
-        canvas.webkitRequestPointerLock;*/
-    //canvas.requestPointerLock();
 }
 
 function keyDown(event) {
