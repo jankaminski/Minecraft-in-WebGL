@@ -1,8 +1,9 @@
 import { BlockAccess } from "./block-access.js";
 import { GRAVITY_CONSTANT, TERMINAL_VELOCITY } from "./level.js";
 import { Mat4, Vec2, Vec3 } from "./math-utils.js";
+import { PARTICLE_ANIMATION_MAX_SIZE } from "./particle-animation.js";
 import { loadShaderProgramFromFiles } from "./res-utils.js";
-import { BLOCK_TEX_ATLAS_COLUMNS, BLOCK_TEX_ATLAS_ROWS } from "./textures.js";
+import { BLOCK_PIXELS, BLOCK_TEX_ATLAS_COLUMNS, BLOCK_TEX_ATLAS_ROWS, PARTICLE_TEX_ATLAS_COLUMNS, PARTICLE_TEX_ATLAS_ROWS } from "./textures.js";
 
 class Particle {
     constructor(position, size, momentum, remainingLife) {
@@ -50,12 +51,10 @@ class BlockBreakParticle extends Particle {
 }
 
 class AnimatedParticle extends Particle {
-    static EXPLOSION = 0;
-    constructor(position, momentum, remainingLife, id, noOfFrames) {
-        super(position, Vec2.make(0.5, 0.5), momentum, remainingLife);
-        this.id = id;
+    constructor(position, momentum, remainingLife, animation) {
+        super(position, Vec2.divS(PARTICLE_ANIMATION_MAX_SIZE, 2 * BLOCK_PIXELS), momentum, remainingLife);
         this.lifespan = remainingLife;
-        this.noOfFrames = noOfFrames;
+        this.animation = animation;
     }
 }
 
@@ -73,8 +72,8 @@ async function makeAnimatedParticleShaderProgram(projectionMatrix) {
     let particleProgram = await loadShaderProgramFromFiles("./src/shaders/animated-particle-vert.glsl", "./src/shaders/animated-particle-frag.glsl");
     particleProgram.turnOn();
     particleProgram.loadMatrix("mProj", projectionMatrix);
-    particleProgram.loadFloat("texAtlasNoOfRows", BLOCK_TEX_ATLAS_ROWS);
-    particleProgram.loadFloat("texAtlasNoOfColumns", BLOCK_TEX_ATLAS_COLUMNS);
+    particleProgram.loadFloat("texAtlasNoOfRows", PARTICLE_TEX_ATLAS_ROWS);
+    particleProgram.loadFloat("texAtlasNoOfColumns", PARTICLE_TEX_ATLAS_COLUMNS);
     particleProgram.turnOff();
     return particleProgram;
 }

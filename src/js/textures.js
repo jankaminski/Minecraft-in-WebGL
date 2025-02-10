@@ -2,11 +2,14 @@ import { make2DTexFromImage, TextureAtlas } from "./texture.js";
 import { gl } from "./webgl-init.js";
 import { loadImage } from "./res-utils.js";
 import { Block } from "./block.js";
-//import { AnimatedParticle } from "./particle.js";
+import { ParticleAnimation, PARTICLE_ANIMATION_MAX_SIZE } from "./particle-animation.js";
 
 const BLOCK_TEX_ATLAS_ROWS = 100;
 const BLOCK_TEX_ATLAS_COLUMNS = 6;
 const BLOCK_PIXELS = 16;
+
+const PARTICLE_TEX_ATLAS_ROWS = 20;
+const PARTICLE_TEX_ATLAS_COLUMNS = 30;
 
 class BlockTextureAtlas extends TextureAtlas {
     constructor() {
@@ -38,16 +41,16 @@ class AnimatedParticleTextureAtlas extends TextureAtlas {
         super(
             gl.CLAMP_TO_EDGE, 
             gl.NEAREST, 
-            BLOCK_PIXELS, 
-            BLOCK_PIXELS, 
-            BLOCK_TEX_ATLAS_COLUMNS, 
-            BLOCK_TEX_ATLAS_ROWS);
+            PARTICLE_ANIMATION_MAX_SIZE.x, 
+            PARTICLE_ANIMATION_MAX_SIZE.y, 
+            PARTICLE_TEX_ATLAS_COLUMNS, 
+            PARTICLE_TEX_ATLAS_ROWS);
     }
-    addParticle(particleID, noOfFrames, ...images) {
-        if (images.length != noOfFrames) 
+    addParticle(animation, ...images) {
+        if (images.length !== animation.noOfFrames) 
             throw "BLEH";
-        for (let i = 0; i < noOfFrames; i++) {
-            this.addTile(images[i], i, particleID);
+        for (let i = 0; i < animation.noOfFrames; i++) {
+            this.addTile(images[i], i, animation.id);
         }
         return this;
     }
@@ -99,8 +102,7 @@ const BLOCK_TEXTURE_ATLAS = new BlockTextureAtlas()
 
 const ANIMATED_PARTICLE_TEXTURE_ATLAS = new AnimatedParticleTextureAtlas()
 .addParticle(
-    1,
-    4,
+    ParticleAnimation.EXPLOSION,
     oakLeavesTexImage,
     oakLogTopTexImage,
     oakLogTexImage,
@@ -120,5 +122,7 @@ export {
     BLOCK_TEXTURE_ATLAS,
     CREEPER_TEXTURE,
     particleTexture,
+    PARTICLE_TEX_ATLAS_ROWS,
+    PARTICLE_TEX_ATLAS_COLUMNS,
     ANIMATED_PARTICLE_TEXTURE_ATLAS
 };

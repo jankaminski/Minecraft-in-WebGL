@@ -45,15 +45,25 @@ class TextureAtlas extends Texture2D {
         this.unbind();
     }
     addTile(image, xOffset, yOffset) {
-        if (image.width != this.tileWidth || 
-            image.height != this.tileHeight || 
+        if (image.width > this.tileWidth || 
+            image.height > this.tileHeight || 
             xOffset > this.xTilesCapacity || 
             yOffset > this.yTilesCapacity) { 
             throw "BLEH";
         }
+        let xDiff = Math.trunc((this.tileWidth - image.width) / 2);
+        let yDiff = Math.trunc((this.tileHeight - image.height) / 2);
         this.bind();
-        gl.texSubImage2D(this.target, 0, xOffset * this.tileWidth, yOffset * this.tileHeight, 
-            this.tileWidth, this.tileHeight, this.format, this.type, image);
+        gl.texSubImage2D(
+            this.target, 
+            0, 
+            xOffset * this.tileWidth + xDiff, 
+            yOffset * this.tileHeight + yDiff, 
+            image.width, 
+            image.height, 
+            this.format, 
+            this.type, 
+            image);
         this.unbind(); 
     }
 }

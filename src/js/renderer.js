@@ -126,10 +126,11 @@ class AnimatedParticleRenderer extends Renderer {
         this.shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
         model.bind();
         for (let particle of particles) {
-            this.shaderProgram.loadFloat("particleID", particle.id);
+            let animation = particle.animation;
+            this.shaderProgram.loadFloat("particleID", animation.id);
             this.shaderProgram.loadFloat("remainingLife", particle.remainingLife);
             this.shaderProgram.loadFloat("lifespan", particle.lifespan);
-            this.shaderProgram.loadFloat("noOfFrames", particle.noOfFrames);
+            this.shaderProgram.loadFloat("noOfFrames", animation.noOfFrames);
             this.shaderProgram.loadMatrix("mWorld", particle.getWorldMatrix(level.camera));
             gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
         }

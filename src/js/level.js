@@ -10,6 +10,7 @@ import { gl } from "./webgl-init.js";
 import { arrayWithRemoved, Cooldown } from "./misc-utils.js";
 import { AnimatedParticle, Particle } from "./particle.js";
 import { Vec3 } from "./math-utils.js";
+import { ParticleAnimation } from "./particle-animation.js";
 
 const TERMINAL_VELOCITY = -0.4;
 const GRAVITY_CONSTANT = 0.003;
@@ -42,7 +43,7 @@ class Level {
         this.animatedParticles = [];
         this.entityRenderBatches = [];
         this.players = [];
-        this.pc = new Cooldown(100);
+        this.pc = new Cooldown(60);
     }
     addPlayer(player) {
         this.players.push(player);
@@ -76,7 +77,7 @@ class Level {
 
         this.pc.progress();
         if (this.pc.reached())
-            this.animatedParticles.push(new AnimatedParticle(this.players[0].getCenter(), Vec3.make(0.05, 0.1, 0.05), 80, 1, 4));
+            this.animatedParticles.push(new AnimatedParticle(this.players[0].getCenter(), Vec3.make(0.05, 0.1, 0.05), 80, ParticleAnimation.EXPLOSION));
 
         for (let particle of this.blockBreakParticles)
             particle.update(this);

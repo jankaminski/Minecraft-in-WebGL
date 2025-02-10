@@ -71,6 +71,9 @@ class Vec2 {
     static copy(vec) {
         return { x : vec.x, y : vec.y };
     }
+    static divS(vec, scalar) {
+        return { x : vec.x / scalar, y : vec.y / scalar };
+    }
     static normalize(vec) {
         var len = vec.x * vec.x + vec.y * vec.y;
         if (len > 0) {
