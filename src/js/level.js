@@ -7,10 +7,12 @@ import {
 import { Camera } from "./camera.js";
 import { Input } from "./input.js";
 import { gl } from "./webgl-init.js";
-import { arrayWithRemoved, Cooldown } from "./misc-utils.js";
+import { arrayWithRemoved, castRay, Cooldown } from "./misc-utils.js";
 import { AnimatedParticle, Particle } from "./particle.js";
 import { Vec3 } from "./math-utils.js";
 import { ParticleAnimation } from "./particle-animation.js";
+import { BlockAccess } from "./block-access.js";
+import { Block } from "./block.js";
 
 const TERMINAL_VELOCITY = -0.4;
 const GRAVITY_CONSTANT = 0.003;
@@ -43,7 +45,6 @@ class Level {
         this.animatedParticles = [];
         this.entityRenderBatches = [];
         this.players = [];
-        this.pc = new Cooldown(60);
     }
     addPlayer(player) {
         this.players.push(player);
@@ -64,6 +65,40 @@ class Level {
             batch.entities = arrayWithRemoved(batch.entities, (entity) => entity.toDelete);
         this.entities = arrayWithRemoved(this.entities, (entity) => entity.toDelete);
     }
+    explosion(position, strength) {
+        let affectedChunks = [];
+        for (let i = 0; i < strength * 20; i++) {
+            let rv = (Math.random() * 2 - 1) * (Math.PI * 4);
+            let rh = (Math.random() * 2 - 1) * (Math.PI * 4);
+            let rayTip = Vec3.copy(position);
+            for (let j = 0; j < strength; j++) {
+                if (i % 10 === 0 && j % 2 === 0) {
+                    let mx = (Math.random() - 0.5) / 10;
+                    let my = (Math.random() - 0.5) / 10;
+                    let mz = (Math.random() - 0.5) / 10;
+                    let p = new AnimatedParticle(
+                        rayTip, 
+                        Vec3.make(mx, my, mz), 
+                        20, 
+                        ParticleAnimation.EXPLOSION
+                    );
+                    p.affectedByGravity = false;
+                    this.animatedParticles.push(p);
+                }
+                let currentTip = castRay(rayTip, rv, rh, 1).tip;
+                rayTip = Vec3.copy(currentTip);
+                let block = BlockAccess.getBlockByWorldCoords(this.terrain, currentTip.x, currentTip.y, currentTip.z);
+                if (block === null)
+                    continue;
+                if (j < strength - 1)
+                    this.terrain.setBlockByBlock(block, Block.AIR);
+                if (!affectedChunks.includes(block.chunk))
+                    affectedChunks.push(block.chunk);
+            }
+        }
+        for (let chunk of affectedChunks)
+            chunk.acquireModel();
+    }
     update() {
         this.terrain.update(this);
         for (let entity of this.entities)
@@ -72,13 +107,11 @@ class Level {
         if (this.players[0].firstPerson)
             this.camera.followInFirstPerson(this.players[0]);
         else
-            this.camera.followInThirdPerson(this.players[0], 10, 0.2);
+            this.camera.followInThirdPerson(this.players[0], 40, 0.2);
         this.cleanDeadEntities();
 
-        this.pc.progress();
-        if (this.pc.reached())
-            this.animatedParticles.push(new AnimatedParticle(this.players[0].getCenter(), Vec3.make(0.05, 0.1, 0.05), 80, ParticleAnimation.EXPLOSION));
-
+        if (Input.sneaking())
+            this.explosion(this.players[0].getCenter(), 4);
         for (let particle of this.blockBreakParticles)
             particle.update(this);
         this.blockBreakParticles = arrayWithRemoved(this.blockBreakParticles, (particle) => particle.remainingLife <= 0);
