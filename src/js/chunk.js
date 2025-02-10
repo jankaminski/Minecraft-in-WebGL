@@ -134,7 +134,7 @@ class Chunk extends VoxelBox {
     generateTerrain(generator) {
         for (let i = 0; i < TOTAL_BLOCKS_PER_CHUNK; i++) {
             let { x, y, z } = this.makeVoxelCoordsFromIndex(i);
-            let height = 40 + generator.evalHeight(this.index, x, z);
+            let height = 90 + generator.evalHeight(this.index, x, z);
             height = Math.trunc(height);
             this.terrainHeightMap[i] = height;
             if (y < height) {

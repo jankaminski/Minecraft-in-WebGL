@@ -72,7 +72,7 @@ async function run() {
     let screenBuffer = new ScreenBuffer(1000, 600);
     
     let level = new Level();
-    let player = new Player(2, 70, 2, CREEPER_MODEL);
+    let player = new Player(2, 170, 2, CREEPER_MODEL);
     level.addEntity(player);
     level.addPlayer(player);
     level.addEntity(new Creeper(14, 90, -14, CREEPER_MODEL));
@@ -83,12 +83,12 @@ async function run() {
     level.addEntity(new Creeper(-17, 80, 28, CREEPER_MODEL));
     level.addEntity(new Creeper(-22, 80, 30, CREEPER_MODEL));
     level.addEntity(new Creeper(-20, 80, 24, CREEPER_MODEL));
-    level.addEntity(new Entity(4, 80, 4, 1, 1, 1, LEAF_MODEL));
-    level.addEntity(new Entity(4, 80, 4, 1, 1, 1, LEAF_MODEL));
-    level.addEntity(new Entity(4, 80, 4, 1, 1, 1, LEAF_MODEL));
-    level.addEntity(new Entity(4, 80, 4, 1, 1, 1, LEAF_MODEL));
-    level.addEntity(new Entity(4, 80, 4, 1, 1, 1, LEAF_MODEL));
-    level.addEntity(new Entity(4, 80, 4, 1, 1, 1, LEAF_MODEL));
+    level.addEntity(new Entity(4, 186, 4, 1, 1, 1, LEAF_MODEL));
+    level.addEntity(new Entity(4, 185, 4, 1, 1, 1, LEAF_MODEL));
+    level.addEntity(new Entity(4, 184, 4, 1, 1, 1, LEAF_MODEL));
+    level.addEntity(new Entity(4, 183, 4, 1, 1, 1, LEAF_MODEL));
+    level.addEntity(new Entity(4, 182, 4, 1, 1, 1, LEAF_MODEL));
+    level.addEntity(new Entity(4, 181, 4, 1, 1, 1, LEAF_MODEL));
     
     let screenBufferRenderer = new ScreenBufferRenderer(SCREEN_BUFFER_PROGRAM);
     let terrainRenderer = new TerrainRenderer(TERRAIN_PROGRAM);

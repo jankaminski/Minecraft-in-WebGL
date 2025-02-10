@@ -16,4 +16,8 @@ void main()
     float y = (1.0 / texAtlasNoOfRows) * (blockID + pixel.y);
     vec2 texCoord = vec2(x, y);
     color = texture(sampler, texCoord);
+    if (color.w == 0.0)
+        discard;
+    if (blockID == 7.0) 
+        color *= vec4(0.61f, 0.96f, 0.07f, 1.0f);
 }

@@ -45,27 +45,28 @@ class Block {
 }
 
 class BlockProperties {
-    constructor(id, solid, transparent) {
+    constructor(id, solid, transparent, blastResistance) {
         this.id = id;
         this.solid = solid;
         this.transparent = transparent;
+        this.blastResistance = blastResistance;
     }
 }
 
 let blockList = [];
 
-function registerBlock(blockList, id, solid, transparent) {
-    blockList[id] = new BlockProperties(id, solid, transparent);
+function registerBlock(blockList, id, solid, transparent, blastResistance) {
+    blockList[id] = new BlockProperties(id, solid, transparent, blastResistance);
 }
 
-registerBlock(blockList, Block.AIR,          false, true);
-registerBlock(blockList, Block.OAK_LOG,      true,  false);
-registerBlock(blockList, Block.COBBLESTONE,  true,  false);
-registerBlock(blockList, Block.MOSSY_COBBLE, true,  false);
-registerBlock(blockList, Block.OAK_PLANKS,   true,  false);
-registerBlock(blockList, Block.DIRT,         true,  false);
-registerBlock(blockList, Block.GRASS,        true,  false);
-registerBlock(blockList, Block.OAK_LEAVES,   true,  true);
+registerBlock(blockList, Block.AIR,          false, true, 0.0);
+registerBlock(blockList, Block.OAK_LOG,      true,  false, 2.0);
+registerBlock(blockList, Block.COBBLESTONE,  true,  false, 40.9);
+registerBlock(blockList, Block.MOSSY_COBBLE, true,  false, 3.9);
+registerBlock(blockList, Block.OAK_PLANKS,   true,  false, 2.0);
+registerBlock(blockList, Block.DIRT,         true,  false, 38);
+registerBlock(blockList, Block.GRASS,        true,  false, 38);
+registerBlock(blockList, Block.OAK_LEAVES,   true,  true, 0.1);
 
 function getBlockProperties(id) {
     return blockList[id];
