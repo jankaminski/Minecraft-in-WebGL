@@ -1,4 +1,7 @@
 class Vec3 {
+    static length(v) {
+        return Math.hypot(v.x, v.y, v.z);
+    }
     static compare(v1, v2) {
         return v1.x === v2.x && v1.y === v2.y && v1.z === v2.z;
     }
