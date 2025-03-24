@@ -1,7 +1,6 @@
 import { noise } from './perlin-noise.js';
 import { 
     areAll, 
-    arrayWithRemoved, 
     Cooldown 
 } from './misc-utils.js';
 import { Chunk, ChunkIndex } from './chunk.js';
@@ -68,7 +67,7 @@ class Terrain {
     updateStructures() {
         //console.log("structs: " + this.structures.length);
         //console.log("chunks: " + this.chunks.length);
-        this.structures = arrayWithRemoved(this.structures, (structure) => structure.rootChunk.toDelete);
+        this.structures = this.structures.filter((structure) => !structure.rootChunk.toDelete);
         for (let s of this.structures)
             s.reload();
     }
@@ -89,7 +88,13 @@ class Terrain {
                 chunk.toDelete = true;
             }
         }
-        this.chunks = arrayWithRemoved(this.chunks, (chunk) => chunk.toDelete);
+        this.chunks = this.chunks.filter((chunk) => !chunk.toDelete);
+    }
+    delete() {
+        for (let chunk of this.chunks) {
+            chunk.shredEntities();
+        }
+        this.chunks = [];
     }
     setBlockByWorldCoords(x, y, z, block) {
         let chunk = BlockAccess.getChunkByWorldCoords(this, x, z);

@@ -54,15 +54,6 @@ function areAll(array, condition) {
     return (checks.every((value) => value === true)) ? true : false;
 }
 
-function arrayWithRemoved(array, condition) {
-    let newArray = [];
-    for (let elem of array) {
-        if (!condition(elem))
-            newArray.push(elem);
-    }
-    return newArray;
-}
-
 const QUAD_VERTICES = [
     -1, -1, 0, 0,
      1, -1, 1, 0,
@@ -77,7 +68,6 @@ export {
     Cooldown,
     castRay,
     areAll,
-    arrayWithRemoved,
     QUAD_VERTICES,
     QUAD_INDICES
 };

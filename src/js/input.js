@@ -24,7 +24,8 @@ class Input {
         SwitchPerspective : 'e',
         Pause :              'b',
         Resume :            'v',
-        ForceReload :       'n'
+        ForceReload :       'n',
+        Inventory :         'r'
     };
     static cursorLocked = false;
     static actionMap = {};
@@ -68,6 +69,9 @@ class Input {
     static forceReloading() {
         return Input.actionMap.get(Input.keyBindings.ForceReload);
     }
+    static gettingInventory() {
+        return Input.actionMap.get(Input.keyBindings.Inventory);
+    }
     static init() {
         Input.actionMap = new Map();
         Input.actionMap.set(Input.keyBindings.MoveForward, false);
@@ -81,6 +85,7 @@ class Input {
         Input.actionMap.set(Input.keyBindings.Pause, false);
         Input.actionMap.set(Input.keyBindings.Resume, false);
         Input.actionMap.set(Input.keyBindings.ForceReload, false);
+        Input.actionMap.set(Input.keyBindings.Inventory, false);
         document.addEventListener("mousedown", mouseDown, false);
         document.addEventListener("mouseup", mouseUp, false);
         document.addEventListener("mousemove", mouseMove, false);

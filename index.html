@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./src/css/style.css">
-    <script type="module" src="./src/js/launch.js"></script>
+    <script type="module" src="./src/js/main.js" defer></script>
     <title>Minecraft w WebGL</title>
 </head>
 <body>
@@ -14,6 +14,18 @@
         <button id="options">Options</button>
     </div>
     <canvas id="game-surface" width="1000" height="600"></canvas>
+    <div class="ingame-ui hide" id="hotbar">
+        <div class="ingame-ui hotbar-slot"></div>
+        <div class="ingame-ui hotbar-slot"></div>
+        <div class="ingame-ui hotbar-slot"></div>
+        <div class="ingame-ui hotbar-slot"></div>
+        <div class="ingame-ui hotbar-slot"></div>
+        <div class="ingame-ui hotbar-slot"></div>
+        <div class="ingame-ui hotbar-slot"></div>
+        <div class="ingame-ui hotbar-slot"></div>
+        <div class="ingame-ui hotbar-slot"></div>
+        <div class="ingame-ui hotbar-slot"></div>
+    </div>
     <div id="pause-menu">
         <button id="resume">Resume</button>
         <button id="quit">Quit</button>

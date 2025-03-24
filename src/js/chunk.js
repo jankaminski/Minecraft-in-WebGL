@@ -111,6 +111,9 @@ class Chunk extends VoxelBox {
             getMaxZ : () => max.z
         };
     }
+    shredEntities() {
+        this.entitiesForCollision = [];
+    }
     updateEntities(level) {
         this.entitiesForCollision = [];
         for (let entity of level.entities) {

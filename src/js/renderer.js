@@ -1,6 +1,4 @@
-import { arrayWithRemoved } from "./misc-utils.js";
 import { BLOCK_BREAK_PARTICLE_MODEL, ANIMATED_PARTICLE_MODEL } from "./models.js";
-import { ANIMATED_PARTICLE_TEXTURE_ATLAS } from "./textures.js";
 import { gl } from "./webgl-init.js";
 
 class Renderer {
@@ -101,19 +99,23 @@ class BlockBreakParticleRenderer extends Renderer {
     }
 }
 
-class GUIRenderer extends Renderer {
+/*class GUIRenderer extends Renderer {
     constructor(shaderProgram) {
         super(shaderProgram);
     }
-    renderPass(gui) {
-        let mesh = gui.mesh;
+    renderPass(guis) {
         this.shaderProgram.turnOn();
-        mesh.bind();
-        gl.drawElements(gl.TRIANGLES, mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
-        mesh.unbind();
+        for (let gui of guis) {
+            if (!gui.active)
+                continue;
+            let mesh = gui.mesh;
+            mesh.bind();
+            gl.drawElements(gl.TRIANGLES, mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
+            mesh.unbind();
+        }
         this.shaderProgram.turnOff();
     }
-}
+}*/
 
 class AnimatedParticleRenderer extends Renderer {
     constructor(shaderProgram) {
@@ -144,6 +146,6 @@ export {
     TerrainRenderer,
     ScreenBufferRenderer,
     BlockBreakParticleRenderer,
-    AnimatedParticleRenderer,
-    GUIRenderer
+    AnimatedParticleRenderer//,
+    //GUIRenderer
 };

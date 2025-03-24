@@ -8,6 +8,7 @@ out vec4 color;
 
 uniform sampler2D screenTexture;
 uniform int menuHidden;
+uniform int guiActive;
 
 vec4 drawCrosshair(vec4 origColor) {
     vec4 pixelCoord = gl_FragCoord;
@@ -25,7 +26,8 @@ vec4 drawCrosshair(vec4 origColor) {
 void main()
 { 
     color = texture(screenTexture, fragTexCoord);
-    color = drawCrosshair(color);
-    if (menuHidden == 1)
+    if (guiActive == 0) 
+        color = drawCrosshair(color);
+    if (menuHidden == 1) 
         color /= vec4(2.0, 2.0, 2.0, 1.0);
 }

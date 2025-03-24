@@ -4,6 +4,14 @@ div, canvas {
     float: left;
 }
 
+#game-surface {
+    display: none;
+}
+
+#game-surface.show {
+    display: block;
+}
+
 #title {
     text-align: center;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
@@ -18,6 +26,37 @@ div, canvas {
     flex-direction: column;
 }
 
+#main-menu.hide {
+    display : none;
+}
+
+.ingame-ui {
+    border-width: 0px;
+}
+
+#hotbar {
+    position: absolute;
+    width: 500px;
+    height: 50px;
+    background-color: lightgray;
+    top: 560px;
+    left: 200px;
+    display: flex;
+}
+
+.hotbar-slot {
+    flex-grow: 1;
+    border-width: 5px;
+}
+
+#hotbar.pause {
+    background-color: rgb(70, 70, 70);
+}
+
+#hotbar.hide {
+    display: none;
+}
+
 #pause-menu {
     position: absolute;
     border-style: none;
@@ -26,6 +65,12 @@ div, canvas {
     margin-top: 100px;
     margin-left: 100px;
     display: none;
+}
+
+#pause-menu.pause {
+    display : flex;
+    flex-direction : column;
+    justify-content : center;
 }
 
 button {

@@ -2,7 +2,7 @@ import { Vec2 } from "./math-utils.js";
 import { QUAD_INDICES, QUAD_VERTICES } from "./misc-utils.js";
 import { makeAttrPtr, Mesh } from "./model.js";
 
-class GUI {
+/*class GUI {
     constructor(min, max) {
         this.min = Vec2.copy(min);
         this.max = Vec2.copy(max);
@@ -12,8 +12,9 @@ class GUI {
             min.x,  max.y, 
             max.x,  max.y
         ];
-        this.mesh = new Mesh(vertices, QUAD_INDICES, makeAttrPtr(0, 2, 4, 0));
+        this.mesh = new Mesh(vertices, QUAD_INDICES, makeAttrPtr(0, 2, 2, 0));
+        this.active = false;
     }
 }
 
-export { GUI };
+export { GUI };*/
