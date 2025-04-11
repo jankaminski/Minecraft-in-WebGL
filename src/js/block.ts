@@ -1,4 +1,4 @@
-import { Vec3 } from "./math-utils.js";
+import { Vec3 } from "./math-utils.ts";
 
 const BLOCK_SIZE = 1.0;
 
@@ -11,11 +11,16 @@ class Block {
     static DIRT = 5;
     static GRASS = 6;
     static OAK_LEAVES = 7;
-    constructor(chunk, posInChunk, index, pos, id) {
+    chunk: Chunk;
+    posInChunk: Vec3;
+    index: number;
+    center: Vec3;
+    id: number;
+    constructor(chunk: Chunk, posInChunk: Vec3, index: number, pos: Vec3, id: number) {
         this.chunk = chunk;
         this.posInChunk = posInChunk;
         this.index = index;
-        this.center = Vec3.copy(pos);
+        this.center = pos.clone();
         this.id = id;
     }
     getID() {
@@ -31,10 +36,10 @@ class Block {
         return this.index;
     }
     getCenter() {
-        return Vec3.copy(this.center);
+        return this.center.clone();
     }
     getSize() {
-        return Vec3.makeS(BLOCK_SIZE);
+        return new Vec3(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
     }
     isSolid() {
         return getBlockProperties(this.id).solid;
@@ -45,6 +50,10 @@ class Block {
 }
 
 class BlockProperties {
+    id: number;
+    solid: boolean;
+    transparent: boolean;
+    blastResistance: number;
     constructor(id, solid, transparent, blastResistance) {
         this.id = id;
         this.solid = solid;

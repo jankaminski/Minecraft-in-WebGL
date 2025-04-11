@@ -59,7 +59,7 @@ class TerrainCollisionCheckBox extends VoxelBox {
     }
 }
 
-function detectCollisionWithTerrain(entity, terrain) {
+function detectCollisionWithTerrain(entity, currentMomentum, terrain) {
     let checkBox = new TerrainCollisionCheckBox(entity, BLOCK_SIZE * 2);
     let blocksToCheck = [];
     for (let i = 0; i < checkBox.totalVoxelCount; i++) {
@@ -71,20 +71,20 @@ function detectCollisionWithTerrain(entity, terrain) {
             continue;
         blocksToCheck.push(block);
     }
-    let entityMomentumBuf = entity.getMomentum();
+    let newMomentum = Vec3.copy(currentMomentum);
     let collision;
     for (let block of blocksToCheck) {
         collision = detectCollision(entity, block);
         if (collision.onX) 
-            entityMomentumBuf.x = 0.0;
+            newMomentum.x = 0.0;
         if (collision.onY) 
-            entityMomentumBuf.y = 0.0;
+            newMomentum.y = 0.0;
         if (collision.onZ) 
-            entityMomentumBuf.z = 0.0;
-        if (Vec3.isZero(entityMomentumBuf)) 
+            newMomentum.z = 0.0;
+        if (Vec3.isZero(newMomentum)) 
             break;
     }
-    return { collision, entityMomentumBuf };
+    return { collision, newMomentum };
 }
 
 function detectCollision(entity, obstacle) {

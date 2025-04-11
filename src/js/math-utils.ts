@@ -1,97 +1,134 @@
 class Vec3 {
-    static length(v) {
-        return Math.hypot(v.x, v.y, v.z);
+    x: number;
+    y: number;
+    z: number;
+    constructor(x: number, y: number, z: number) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
-    static compare(v1, v2) {
-        return v1.x === v2.x && v1.y === v2.y && v1.z === v2.z;
+    length() {
+        return Math.hypot(this.x, this.y, this.z);
     }
-    static isZero(vec) {
-        return vec.x === 0 && vec.y === 0 && vec.z === 0;
+    equals(other: Vec3) {
+        return this.x === other.x && this.y === other.y && this.z === other.z;
     }
-    static abs(vec) {
-        return { x : Math.abs(vec.x), y : Math.abs(vec.y), z : Math.abs(vec.z) };
+    isZero() {
+        return this.x === 0 && this.y === 0 && this.z === 0;
     }
-    static make(x, y, z) {
-        return { x, y, z };
+    abs() {
+        return new Vec3(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));
     }
-    static makeS(scalar) {
-        return { x : scalar, y : scalar, z : scalar };
+    clone() {
+        return new Vec3(this.x, this.y, this.z);
     }
-    static copy(vec) {
-        return { x : vec.x, y : vec.y, z : vec.z };
+    negated() {
+        return new Vec3(-this.x, -this.y, -this.z);
     }
-    static negated(vec) {
-        return { x : -vec.x, y : -vec.y, z : -vec.z };
+    xyzScalarProduct() {
+        return this.x * this.y * this.z;
     }
-    static xyzScalarProduct(vec) {
-        return vec.x * vec.y * vec.z;
+    withAdded(vector: Vec3) {
+        return new Vec3(
+            this.x + vector.x, 
+            this.y + vector.y, 
+            this.z + vector.z
+        );
     }
-    static add(v1, v2) {
-        return { x : v1.x + v2.x, y : v1.y + v2.y, z : v1.z + v2.z };
+    withAddedScalar(scalar: number) {
+        return new Vec3(
+            this.x + scalar, 
+            this.y + scalar, 
+            this.z + scalar
+        );
     }
-    static addS(vec, scalar) {
-        return { x : vec.x + scalar, y : vec.y + scalar, z : vec.z + scalar };
+    subtractedWith(vector: Vec3) {
+        return new Vec3(
+            this.x - vector.x, 
+            this.y - vector.y, 
+            this.z - vector.z
+        );
     }
-    static mul(v1, v2) {
-        return { x : v1.x * v2.x, y : v1.y * v2.y, z : v1.z * v2.z };
+    subtractedWithScalar(scalar: number) {
+        return new Vec3(
+            this.x - scalar, 
+            this.y - scalar, 
+            this.z - scalar
+        );
     }
-    static mulS(vec, scalar) {
-        return { x : vec.x * scalar, y : vec.y * scalar, z : vec.z * scalar };
+    multipliedBy(vector: Vec3) {
+        return new Vec3(
+            this.x * vector.x, 
+            this.y * vector.y, 
+            this.z * vector.z
+        );
     }
-    static div(v1, v2) {
-        return { x : v1.x / v2.x, y : v1.y / v2.y, z : v1.z / v2.z };
+    multipliedByScalar(scalar: number) {
+        return new Vec3(
+            this.x * scalar, 
+            this.y * scalar, 
+            this.z * scalar
+        );
     }
-    static divS(vec, scalar) {
-        return { x : vec.x / scalar, y : vec.y / scalar, z : vec.z / scalar };
+    dividedBy(vector: Vec3) {
+        return new Vec3(
+            this.x / vector.x, 
+            this.y / vector.y, 
+            this.z / vector.z
+        );
     }
-    static sub(v1, v2) {
-        return { x : v1.x - v2.x, y : v1.y - v2.y, z : v1.z - v2.z };
+    dividedByScalar(scalar: number) {
+        return new Vec3(
+            this.x / scalar, 
+            this.y / scalar, 
+            this.z / scalar
+        );
     }
-    static subS(vec, scalar) {
-        return { x : vec.x - scalar, y : vec.y - scalar, z : vec.z - scalar };
-    }
-    static normalize(vec) {
-        let len = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+    normalized() {
+        let len = this.x * this.x + this.y * this.y + this.z * this.z;
         if (len > 0) {
             len = 1 / Math.sqrt(len);
         }
-        let result = {
-            x : vec.x * len,
-            y : vec.y * len,
-            z : vec.z * len
-        };
+        let result = new Vec3(
+            this.x * len,
+            this.y * len,
+            this.z * len
+        );
         return result;
     }
-    static sign(vec) {
-        return { x : Math.sign(vec.x), y : Math.sign(vec.y), z : Math.sign(vec.z) };
+    sign() {
+        return new Vec3(Math.sign(this.x), Math.sign(this.y), Math.sign(this.z));
     }
 }
 
 class Vec2 {
-    static make(x, y) {
-        return { x, y };
+    x: number;
+    y: number;
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
     }
-    static copy(vec) {
-        return { x : vec.x, y : vec.y };
+    clone() {
+        return new Vec2(this.x, this.y);
     }
-    static divS(vec, scalar) {
-        return { x : vec.x / scalar, y : vec.y / scalar };
+    dividedByScalar(scalar: number) {
+        return new Vec2(this.x / scalar, this.y / scalar);
     }
-    static normalize(vec) {
-        var len = vec.x * vec.x + vec.y * vec.y;
+    normalized() {
+        var len = this.x * this.x + this.y * this.y;
         if (len > 0) {
             len = 1 / Math.sqrt(len);
         }
-        let result = {
-            x : vec.x * len,
-            y : vec.y * len
-        }
+        let result = new Vec2(
+            this.x * len,
+            this.y * len
+        )
         return result;
     }
 }
 
 class Mat4 {
-    static identity() {
+    static identity(): Float32Array {
         let out = new Float32Array(16);
         out[0] = 1;
         out[1] = 0;
@@ -111,7 +148,7 @@ class Mat4 {
         out[15] = 1;
         return out;
     }
-    static perspective(fovy, width, height, near, far) {
+    static perspective(fovy: number, width: number, height: number, near: number, far: number): Float32Array {
         let out = new Float32Array(16);
         let f = 1.0 / Math.tan(fovy / 2);
         out[0] = f / (width / height);
@@ -138,7 +175,7 @@ class Mat4 {
         }
         return out;
     }
-    static translate(a, v) {
+    static translate(a: Float32Array, v: Vec3): Float32Array {
         let x = v.x,
             y = v.y,
             z = v.z;
@@ -162,7 +199,7 @@ class Mat4 {
         return out;
     }
     static EPSILON = 0.000001;
-    static rotate(a, rad, axis) {
+    static rotate(a: Float32Array, rad: number, axis: Vec3): Float32Array | null {
         let x = axis.x,
             y = axis.y,
             z = axis.z;
@@ -205,7 +242,7 @@ class Mat4 {
         out[15] = a[15];
         return out;
     }
-    static scale(a, v) {
+    static scale(a: Float32Array, v: Vec3): Float32Array {
         let x = v.x,
             y = v.y,
             z = v.z;
@@ -228,7 +265,7 @@ class Mat4 {
         out[15] = a[15];
         return out;
     }
-    static multiply(a, b) {
+    static multiply(a: Float32Array, b: Float32Array): Float32Array {
         let out = new Float32Array(16);
         out[0] =  b[0]  * a[0] + b[1]  * a[4] + b[2]  * a[8]  + b[3]  * a[12];
         out[1] =  b[0]  * a[1] + b[1]  * a[5] + b[2]  * a[9]  + b[3]  * a[13];
@@ -248,7 +285,7 @@ class Mat4 {
         out[15] = b[12] * a[3] + b[13] * a[7] + b[14] * a[11] + b[15] * a[15];
         return out;
     }
-    static lookAt(eye, center, up) {
+    static lookAt(eye: Vec3, center: Vec3, up: Vec3): Float32Array {
         if (Math.abs(eye.x - center.x) < Mat4.EPSILON && 
             Math.abs(eye.y - center.y) < Mat4.EPSILON && 
             Math.abs(eye.z - center.z) < Mat4.EPSILON) {
@@ -308,7 +345,7 @@ class Mat4 {
         out[15] = 1;
         return out;
     }
-    static targetTo(eye, target, up) {
+    static targetTo(eye: Vec3, target: Vec3, up: Vec3): Float32Array {
         let z0 = target.x - eye.x,
             z1 = target.y - eye.y,
             z2 = target.z - eye.z;

@@ -192,14 +192,14 @@ class Entity {
         }
     }
     manageCollisionsWithTerrain(level) {
-        let { collision, entityMomentumBuf } = detectCollisionWithTerrain(this, level.terrain);
+        let { collision, newMomentum } = detectCollisionWithTerrain(this, this.momentum, level.terrain);
         if (collision != null) {
             if (collision.sank) 
                 this.unsinkInBlock();
             //this.onCollision(collision);
         }
-        this.setFeetOnGround(this.momentum.y != entityMomentumBuf.y);
-        this.momentum = entityMomentumBuf;
+        this.setFeetOnGround(this.momentum.y != newMomentum.y);
+        this.momentum = newMomentum;
     }
     onBeforeMove(level) {}
     onAfterMove(level) {}
@@ -209,10 +209,10 @@ class Entity {
     }
     move(level) {
         this.onBeforeMove(level);
-        this.center = Vec3.add(this.center, this.momentum);
         if (this.feetOnGround) {
             this.applyFriction();
         }
+        this.center = Vec3.add(this.center, this.momentum);
         this.onAfterMove(level);
     }
     onBeforeUpdate(level) {}

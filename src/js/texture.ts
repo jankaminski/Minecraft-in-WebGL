@@ -1,7 +1,13 @@
-import { canvas, gl } from "./webgl-init.js";
+import { canvas, gl } from "./webgl-init.ts";
 
 class Texture {
-    constructor(target, wrap, filter, format, type) {
+    target: GLenum;
+    wrap: GLint;
+    filter: GLint;
+    format: GLenum;
+    type: GLenum;
+    id: WebGLTexture;
+    constructor(target: GLenum, wrap: GLint, filter: GLint, format: GLenum, type: GLenum) {
         this.target = target;
         this.wrap = wrap;
         this.filter = filter;
@@ -25,7 +31,9 @@ class Texture {
 }
 
 class Texture2D extends Texture {
-    constructor(wrap, filter, format, type, width, height) {
+    width: number;
+    height: number;
+    constructor(wrap: GLint, filter: GLint, format: GLenum, type: GLenum, width: number, height: number) {
         super(gl.TEXTURE_2D, wrap, filter, format, type);
         this.width = width;
         this.height = height;
@@ -33,7 +41,11 @@ class Texture2D extends Texture {
 }
 
 class TextureAtlas extends Texture2D {
-    constructor(wrap, filter, tileWidth, tileHeight, xTilesCapacity, yTilesCapacity) {
+    tileWidth: number;
+    tileHeight: number;
+    xTilesCapacity: number;
+    yTilesCapacity: number;
+    constructor(wrap: GLint, filter: GLint, tileWidth: number, tileHeight: number, xTilesCapacity: number, yTilesCapacity: number) {
         super(wrap, filter, gl.RGBA, gl.UNSIGNED_BYTE, tileWidth * xTilesCapacity, tileHeight * yTilesCapacity);
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
@@ -44,12 +56,12 @@ class TextureAtlas extends Texture2D {
         gl.generateMipmap(this.target);
         this.unbind();
     }
-    addTile(image, xOffset, yOffset) {
+    addTile(image: HTMLImageElement, xOffset: number, yOffset: number) {
         if (image.width > this.tileWidth || 
             image.height > this.tileHeight || 
             xOffset > this.xTilesCapacity || 
             yOffset > this.yTilesCapacity) { 
-            throw "BLEH";
+            throw new Error("ERROR: Invalid dimensions of tile in a texture atlas!");
         }
         let xDiff = Math.trunc((this.tileWidth - image.width) / 2);
         let yDiff = Math.trunc((this.tileHeight - image.height) / 2);
@@ -68,7 +80,7 @@ class TextureAtlas extends Texture2D {
     }
 }
 
-function make2DTexFromImage(wrap, filter, image) {
+function make2DTexFromImage(wrap: GLint, filter: GLint, image: HTMLImageElement) {
     let tex = new Texture2D(wrap, filter, gl.RGBA, gl.UNSIGNED_BYTE, image.width, image.height);
     tex.bind();
     gl.texImage2D(tex.target, 0, tex.format, tex.format, tex.type, image);
@@ -77,7 +89,11 @@ function make2DTexFromImage(wrap, filter, image) {
 }
 
 class Framebuffer {
-    constructor(width, height) {
+    width: number;
+    height: number;
+    buf: WebGLFramebuffer;
+    tex: Texture2D;
+    constructor(width: number, height: number) {
         this.width = width;
         this.height = height;
         this.buf = gl.createFramebuffer();
@@ -90,7 +106,7 @@ class Framebuffer {
         gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, rbo);
     }
-    makeTextureAttachment() {
+    makeTextureAttachment(): Texture2D {
         let tex = new Texture2D(gl.CLAMP_TO_EDGE, gl.LINEAR, gl.RGBA, gl.UNSIGNED_BYTE, this.width, this.height);
         tex.bind();
         gl.texImage2D(tex.target, 0, tex.format, tex.width, tex.height, 0, tex.format, tex.type, null);
