@@ -14,19 +14,20 @@
  *
  */
 
-var noise = {};
-  
-function Grad(x, y, z) {
-  this.x = x; this.y = y; this.z = z;
+class Grad {
+  x: number;
+  y: number;
+  z: number;
+  constructor(x: number, y: number, z: number) {
+    this.x = x; this.y = y; this.z = z;
+  }
+  dot2(x: number, y: number) {
+    return this.x*x + this.y*y;
+  }
+  dot3(x: number, y: number, z: number) {
+    return this.x*x + this.y*y + this.z*z;
+  }
 }
-
-Grad.prototype.dot2 = function(x, y) {
-  return this.x*x + this.y*y;
-};
-
-Grad.prototype.dot3 = function(x, y, z) {
-  return this.x*x + this.y*y + this.z*z;
-};
 
 var grad3 = [new Grad(1,1,0),new Grad(-1,1,0),new Grad(1,-1,0),new Grad(-1,-1,0),
              new Grad(1,0,1),new Grad(-1,0,1),new Grad(1,0,-1),new Grad(-1,0,-1),
@@ -51,7 +52,7 @@ var gradP = new Array(512);
 
 // This isn't a very good seeding function, but it works ok. It supports 2^16
 // different seed values. Write something better if you need more seeds.
-noise.seed = function(seed) {
+let noiseSeed = function(seed: number) {
   if(seed > 0 && seed < 1) {
     // Scale the seed out
     seed *= 65536;
@@ -75,7 +76,7 @@ noise.seed = function(seed) {
   }
 };
 
-noise.seed(0);
+noiseSeed(0);
 
 /*
 for(var i=0; i<256; i++) {
@@ -91,7 +92,7 @@ var F3 = 1/3;
 var G3 = 1/6;
 
 // 2D simplex noise
-noise.simplex2 = function(xin, yin) {
+let noiseSimplex2 = function(xin: number, yin: number) {
   var n0, n1, n2; // Noise contributions from the three corners
   // Skew the input space to determine which simplex cell we're in
   var s = (xin+yin)*F2; // Hairy factor for 2D
@@ -149,7 +150,7 @@ noise.simplex2 = function(xin, yin) {
 };
 
 // 3D simplex noise
-noise.simplex3 = function(xin, yin, zin) {
+let noiseSimplex3 = function(xin: number, yin: number, zin: number) {
   var n0, n1, n2, n3; // Noise contributions from the four corners
 
   // Skew the input space to determine which simplex cell we're in
@@ -238,16 +239,16 @@ noise.simplex3 = function(xin, yin, zin) {
 
 // ##### Perlin noise stuff
 
-function fade(t) {
+function fade(t: number) {
   return t*t*t*(t*(t*6-15)+10);
 }
 
-function lerp(a, b, t) {
+function lerp(a: number, b: number, t: number) {
   return (1-t)*a + t*b;
 }
 
 // 2D Perlin Noise
-noise.perlin2 = function(x, y) {
+let noisePerlin2 = function(x: number, y: number) {
   // Find unit grid cell containing point
   var X = Math.floor(x), Y = Math.floor(y);
   // Get relative xy coordinates of point within that cell
@@ -272,7 +273,7 @@ noise.perlin2 = function(x, y) {
 };
 
 // 3D Perlin Noise
-noise.perlin3 = function(x, y, z) {
+let noisePerlin3 = function(x: number, y: number, z: number) {
   // Find unit grid cell containing point
   var X = Math.floor(x), Y = Math.floor(y), Z = Math.floor(z);
   // Get relative xyz coordinates of point within that cell
@@ -306,4 +307,4 @@ noise.perlin3 = function(x, y, z) {
      v);
 };
 
-export { noise };
+export { noiseSeed, noiseSimplex2 };

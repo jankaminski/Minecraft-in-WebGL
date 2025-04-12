@@ -128,7 +128,7 @@ class Vec2 {
 }
 
 class Mat4 {
-    static identity(): Float32Array {
+    static identity(): Float32Array<ArrayBufferLike> {
         let out = new Float32Array(16);
         out[0] = 1;
         out[1] = 0;
@@ -148,7 +148,7 @@ class Mat4 {
         out[15] = 1;
         return out;
     }
-    static perspective(fovy: number, width: number, height: number, near: number, far: number): Float32Array {
+    static perspective(fovy: number, width: number, height: number, near: number, far: number): Float32Array<ArrayBufferLike> {
         let out = new Float32Array(16);
         let f = 1.0 / Math.tan(fovy / 2);
         out[0] = f / (width / height);
@@ -175,7 +175,7 @@ class Mat4 {
         }
         return out;
     }
-    static translate(a: Float32Array, v: Vec3): Float32Array {
+    static translate(a: Float32Array, v: Vec3): Float32Array<ArrayBufferLike> {
         let x = v.x,
             y = v.y,
             z = v.z;
@@ -199,13 +199,13 @@ class Mat4 {
         return out;
     }
     static EPSILON = 0.000001;
-    static rotate(a: Float32Array, rad: number, axis: Vec3): Float32Array | null {
+    static rotate(a: Float32Array, rad: number, axis: Vec3): Float32Array<ArrayBufferLike> {
         let x = axis.x,
             y = axis.y,
             z = axis.z;
         let len = Math.hypot(x, y, z);
         if (len < Mat4.EPSILON)
-            return null;
+            return a;
         len = 1 / len;
         x *= len;
         y *= len;
@@ -242,7 +242,7 @@ class Mat4 {
         out[15] = a[15];
         return out;
     }
-    static scale(a: Float32Array, v: Vec3): Float32Array {
+    static scale(a: Float32Array, v: Vec3): Float32Array<ArrayBufferLike> {
         let x = v.x,
             y = v.y,
             z = v.z;
@@ -265,7 +265,7 @@ class Mat4 {
         out[15] = a[15];
         return out;
     }
-    static multiply(a: Float32Array, b: Float32Array): Float32Array {
+    static multiply(a: Float32Array, b: Float32Array): Float32Array<ArrayBufferLike> {
         let out = new Float32Array(16);
         out[0] =  b[0]  * a[0] + b[1]  * a[4] + b[2]  * a[8]  + b[3]  * a[12];
         out[1] =  b[0]  * a[1] + b[1]  * a[5] + b[2]  * a[9]  + b[3]  * a[13];
@@ -285,7 +285,7 @@ class Mat4 {
         out[15] = b[12] * a[3] + b[13] * a[7] + b[14] * a[11] + b[15] * a[15];
         return out;
     }
-    static lookAt(eye: Vec3, center: Vec3, up: Vec3): Float32Array {
+    static lookAt(eye: Vec3, center: Vec3, up: Vec3): Float32Array<ArrayBufferLike> {
         if (Math.abs(eye.x - center.x) < Mat4.EPSILON && 
             Math.abs(eye.y - center.y) < Mat4.EPSILON && 
             Math.abs(eye.z - center.z) < Mat4.EPSILON) {
@@ -345,7 +345,7 @@ class Mat4 {
         out[15] = 1;
         return out;
     }
-    static targetTo(eye: Vec3, target: Vec3, up: Vec3): Float32Array {
+    static targetTo(eye: Vec3, target: Vec3, up: Vec3): Float32Array<ArrayBufferLike> {
         let z0 = target.x - eye.x,
             z1 = target.y - eye.y,
             z2 = target.z - eye.z;

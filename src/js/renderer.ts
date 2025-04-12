@@ -1,20 +1,26 @@
+import { Level } from "./level.js";
+import { QUAD_INDICES, QUAD_VERTICES } from "./misc-utils.js";
+import { Mesh, VertexAttribute } from "./model.js";
 import { BLOCK_BREAK_PARTICLE_MODEL, ANIMATED_PARTICLE_MODEL } from "./models.js";
+import { ShaderProgram } from "./shader-program.js";
+import { Framebuffer } from "./texture.js";
 import { gl } from "./webgl-init.js";
 
 class Renderer {
-    constructor(shaderProgram) {
+    shaderProgram: ShaderProgram
+    constructor(shaderProgram: ShaderProgram) {
         this.shaderProgram = shaderProgram;
     }
-    setShaderProgram(shaderProgram) {
+    setShaderProgram(shaderProgram: ShaderProgram) {
         this.shaderProgram = shaderProgram;
     }
 }
 
 class TerrainRenderer extends Renderer {
-    constructor(shaderProgram) { 
+    constructor(shaderProgram: ShaderProgram) { 
         super(shaderProgram); 
     }
-    renderPass(level) {
+    renderPass(level: Level) {
         this.shaderProgram.turnOn();
         this.shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
         for (let chunk of level.terrain.chunks) {
@@ -38,10 +44,10 @@ class TerrainRenderer extends Renderer {
 }
 
 class EntityRenderer extends Renderer {
-    constructor(shaderProgram) {
+    constructor(shaderProgram: ShaderProgram) {
         super(shaderProgram);
     }
-    renderPass(level) {
+    renderPass(level: Level) {
         this.shaderProgram.turnOn();
         this.shaderProgram.loadMatrix("mView", level.camera.getViewMatrix());
         for (let batch of level.entityRenderBatches) {
@@ -62,11 +68,27 @@ class EntityRenderer extends Renderer {
     }
 }
 
+class ScreenBuffer {
+    mesh: Mesh;
+    frameBuffer: Framebuffer;
+    constructor(width: number, height: number) {
+        this.mesh = new Mesh(QUAD_VERTICES, QUAD_INDICES, new VertexAttribute(0, 2, 4, 0), new VertexAttribute(1, 2, 4, 2));
+        this.frameBuffer = new Framebuffer(width, height);
+        this.unbind();
+    }
+    bind() {
+        this.frameBuffer.bindBuffer();
+    }
+    unbind() {
+        this.frameBuffer.unbindBuffer();
+    }
+}
+
 class ScreenBufferRenderer extends Renderer {
-    constructor(shaderProgram) {
+    constructor(shaderProgram: ShaderProgram) {
         super(shaderProgram);
     }
-    renderPass(screenBuffer) {
+    renderPass(screenBuffer: ScreenBuffer) {
         //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         this.shaderProgram.turnOn();
         screenBuffer.mesh.bind();
@@ -79,10 +101,10 @@ class ScreenBufferRenderer extends Renderer {
 }
 
 class BlockBreakParticleRenderer extends Renderer {
-    constructor(shaderProgram) {
+    constructor(shaderProgram: ShaderProgram) {
         super(shaderProgram);
     }
-    renderPass(level) {
+    renderPass(level: Level) {
         let particles = level.blockBreakParticles;
         let model = BLOCK_BREAK_PARTICLE_MODEL;
         this.shaderProgram.turnOn();
@@ -90,7 +112,7 @@ class BlockBreakParticleRenderer extends Renderer {
         model.bind();
         for (let particle of particles) {
             this.shaderProgram.loadFloat("blockID", particle.blockID);
-            this.shaderProgram.loadVec2("pixel", [particle.pixel.x, particle.pixel.y]);
+            this.shaderProgram.loadVec2("pixel", new Float32Array([particle.pixel.x, particle.pixel.y]));
             this.shaderProgram.loadMatrix("mWorld", particle.getWorldMatrix(level.camera));
             gl.drawElements(gl.TRIANGLES, model.mesh.indicesCount, gl.UNSIGNED_SHORT, 0);
         }
@@ -118,10 +140,10 @@ class BlockBreakParticleRenderer extends Renderer {
 }*/
 
 class AnimatedParticleRenderer extends Renderer {
-    constructor(shaderProgram) {
+    constructor(shaderProgram: ShaderProgram) {
         super(shaderProgram);
     }
-    renderPass(level) {
+    renderPass(level: Level) {
         let particles = level.animatedParticles;
         let model = ANIMATED_PARTICLE_MODEL;
         this.shaderProgram.turnOn();
@@ -142,6 +164,7 @@ class AnimatedParticleRenderer extends Renderer {
 }
 
 export {
+    ScreenBuffer,
     EntityRenderer,
     TerrainRenderer,
     ScreenBufferRenderer,

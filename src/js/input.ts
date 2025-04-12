@@ -28,7 +28,7 @@ class Input {
         Inventory :         'r'
     };
     static cursorLocked = false;
-    static actionMap = {};
+    static actionMap: Map<string, boolean>;
     static movingForward() {
         return Input.actionMap.get(Input.keyBindings.MoveForward);
     }
@@ -73,7 +73,7 @@ class Input {
         return Input.actionMap.get(Input.keyBindings.Inventory);
     }
     static init() {
-        Input.actionMap = new Map();
+        Input.actionMap = new Map<string, boolean>();
         Input.actionMap.set(Input.keyBindings.MoveForward, false);
         Input.actionMap.set(Input.keyBindings.MoveBackwards, false);
         Input.actionMap.set(Input.keyBindings.StrafeLeft, false);
@@ -101,7 +101,7 @@ class Input {
     }
 }
 
-function pointerLockChange(event) {
+function pointerLockChange(event: Event) {
     if (document.pointerLockElement) {
         Input.cursorLocked = true;
     } else {
@@ -109,21 +109,21 @@ function pointerLockChange(event) {
     }
 }
 
-function mouseDown(event) {
+function mouseDown(event: MouseEvent) {
     if (event.button === 0)
         Input.mouse.leftButton = true;
     if (event.button === 2)
         Input.mouse.rightButton = true;
 }
 
-function mouseUp(event) {
+function mouseUp(event: MouseEvent) {
     if (event.button === 0)
         Input.mouse.leftButton = false;
     if (event.button === 2)
         Input.mouse.rightButton = false;
 }
 
-function mouseMove(event) {
+function mouseMove(event: MouseEvent) {
     if (document.pointerLockElement !== canvas)
         return;
     Input.mouse.delta.x = event.movementX;
@@ -132,11 +132,11 @@ function mouseMove(event) {
     Input.mouse.position.y  = event.pageY;
 }
 
-function keyDown(event) {
+function keyDown(event: KeyboardEvent) {
     Input.actionMap.set(event.key, true);
 }
 
-function keyUp(event) {
+function keyUp(event: KeyboardEvent) {
     Input.actionMap.set(event.key, false);
 }
 

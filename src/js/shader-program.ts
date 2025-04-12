@@ -1,4 +1,4 @@
-import { gl } from "./webgl-init.ts";
+import { gl } from "./webgl-init.js";
 
 class ShaderProgram {
     program: WebGLProgram;

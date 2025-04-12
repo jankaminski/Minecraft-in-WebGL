@@ -1,19 +1,25 @@
 import { BlockAccess } from "./block-access.js";
-import { GRAVITY_CONSTANT, TERMINAL_VELOCITY } from "./level.js";
+import { Camera } from "./camera.js";
+import { GRAVITY_CONSTANT, Level, TERMINAL_VELOCITY } from "./level.js";
 import { Mat4, Vec2, Vec3 } from "./math-utils.js";
-import { PARTICLE_ANIMATION_MAX_SIZE } from "./particle-animation.js";
+import { PARTICLE_ANIMATION_MAX_SIZE, ParticleAnimation } from "./particle-animation.js";
 import { loadShaderProgramFromFiles } from "./res-utils.js";
 import { BLOCK_PIXELS, BLOCK_TEX_ATLAS_COLUMNS, BLOCK_TEX_ATLAS_ROWS, PARTICLE_TEX_ATLAS_COLUMNS, PARTICLE_TEX_ATLAS_ROWS } from "./textures.js";
 
 class Particle {
-    constructor(position, size, momentum, remainingLife) {
-        this.position = Vec3.copy(position);
-        this.size = Vec2.copy(size);
-        this.momentum = Vec3.copy(momentum);
+    position: Vec3;
+    size: Vec2;
+    momentum: Vec3;
+    remainingLife: number;
+    affectedByGravity: boolean;
+    constructor(position: Vec3, size: Vec2, momentum: Vec3, remainingLife: number) {
+        this.position = position.clone();
+        this.size = size.clone();
+        this.momentum = momentum.clone();
         this.remainingLife = remainingLife;
         this.affectedByGravity = true;
     }
-    getWorldMatrix(camera) {
+    getWorldMatrix(camera: Camera) {
         let matrix = Mat4.identity();
         matrix = Mat4.translate(matrix, this.position);
         let viewMatrix = camera.getViewMatrix();
@@ -26,10 +32,10 @@ class Particle {
         matrix[8] = viewMatrix[2];
         matrix[9] = viewMatrix[6];
         matrix[10] = viewMatrix[10];
-        matrix = Mat4.scale(matrix, Vec3.make(this.size.x, this.size.y, 1));
+        matrix = Mat4.scale(matrix, new Vec3(this.size.x, this.size.y, 1));
         return matrix;
     }
-    update(level) {
+    update(level: Level) {
         if (this.remainingLife > 0)
             this.remainingLife--;
         if (this.affectedByGravity && this.momentum.y > TERMINAL_VELOCITY) 
@@ -37,28 +43,32 @@ class Particle {
         let block = BlockAccess.getBlockByWorldCoords(level.terrain, this.position.x, this.position.y, this.position.z);
         if (block !== null)
             if (block.isSolid())
-                this.momentum = Vec3.makeS(0.0);
-        this.position = Vec3.add(this.position, this.momentum);
+                this.momentum = new Vec3(0.0, 0.0, 0.0);
+        this.position = this.position.withAdded(this.momentum);
     }
 }
 
 class BlockBreakParticle extends Particle {
-    constructor(position, momentum, remainingLife, blockID, pixel) {
-        super(position, Vec2.make(0.08, 0.08), momentum, remainingLife);
+    blockID: number;
+    pixel: Vec2;
+    constructor(position: Vec3, momentum: Vec3, remainingLife: number, blockID: number, pixel: Vec2) {
+        super(position, new Vec2(0.08, 0.08), momentum, remainingLife);
         this.blockID = blockID;
-        this.pixel = Vec2.copy(pixel);
+        this.pixel = pixel.clone();
     }
 }
 
 class AnimatedParticle extends Particle {
-    constructor(position, momentum, remainingLife, animation) {
-        super(position, Vec2.divS(PARTICLE_ANIMATION_MAX_SIZE, 2 * BLOCK_PIXELS), momentum, remainingLife);
+    lifespan: number;
+    animation: ParticleAnimation;
+    constructor(position: Vec3, momentum: Vec3, remainingLife: number, animation: ParticleAnimation) {
+        super(position, PARTICLE_ANIMATION_MAX_SIZE.dividedByScalar(2 * BLOCK_PIXELS), momentum, remainingLife);
         this.lifespan = remainingLife;
         this.animation = animation;
     }
 }
 
-async function makeBlockBreakParticleShaderProgram(projectionMatrix) {
+async function makeBlockBreakParticleShaderProgram(projectionMatrix: Float32Array<ArrayBufferLike>) {
     let particleProgram = await loadShaderProgramFromFiles("./src/shaders/block-break-particle-vert.glsl", "./src/shaders/block-break-particle-frag.glsl");
     particleProgram.turnOn();
     particleProgram.loadMatrix("mProj", projectionMatrix);
@@ -68,7 +78,7 @@ async function makeBlockBreakParticleShaderProgram(projectionMatrix) {
     return particleProgram;
 }
 
-async function makeAnimatedParticleShaderProgram(projectionMatrix) {
+async function makeAnimatedParticleShaderProgram(projectionMatrix: Float32Array<ArrayBufferLike>) {
     let particleProgram = await loadShaderProgramFromFiles("./src/shaders/animated-particle-vert.glsl", "./src/shaders/animated-particle-frag.glsl");
     particleProgram.turnOn();
     particleProgram.loadMatrix("mProj", projectionMatrix);

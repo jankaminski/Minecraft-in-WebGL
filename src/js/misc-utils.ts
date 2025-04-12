@@ -1,14 +1,16 @@
 import { Vec3 } from "./math-utils.js";
 
 class Cooldown {
-    constructor(rate) {
+    rate: number;
+    currentProgress: number;
+    constructor(rate: number) {
         this.rate = Math.round(rate);
         this.currentProgress = 0;
     }
     getRate() {
         return this.rate;
     }
-    setCurrentProgress(currentProgress) {
+    setCurrentProgress(currentProgress: number) {
         this.currentProgress = currentProgress;
     }
     getCurrentProgress() {
@@ -35,19 +37,19 @@ class Cooldown {
     }
 }
 
-function castRay(origin, rotV, rotH, range) {
+function castRay(origin: Vec3, rotV: number, rotH: number, range: number) {
     let sinV = Math.sin(rotV);
     let cosV = Math.cos(rotV);
     let distH = cosV * range;
     let sinH = Math.sin(rotH);
     let cosH = Math.cos(rotH);
-    let offset = Vec3.negated(Vec3.make(sinH * distH, sinV * range, cosH * distH));
-    let tip = Vec3.add(origin, offset);
+    let offset = new Vec3(sinH * distH, sinV * range, cosH * distH).negated();
+    let tip = origin.withAdded(offset);
     return { offset, tip };
 }
 
-function areAll(array, condition) {
-    let checks = [];
+function areAll(array: any[], condition: (item: any) => boolean) {
+    let checks: boolean[] = [];
     for (let elem of array) {
         checks.push(condition(elem));
     }

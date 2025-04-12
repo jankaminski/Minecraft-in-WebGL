@@ -1,4 +1,4 @@
-import { ShaderProgram } from "./shader-program.ts";
+import { ShaderProgram } from "./shader-program.js";
 
 function loadTextResource(url: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
@@ -22,16 +22,16 @@ function loadImage(url: string): Promise<HTMLImageElement> {
     });
 }
 
-async function loadShaderProgramFromFiles(vertURL: string, fragURL: string) {
+async function loadShaderProgramFromFiles(vertURL: string, fragURL: string): Promise<ShaderProgram> {
     let vertexShaderSource = await loadTextResource(vertURL);
     let fragmentShaderSource = await loadTextResource(fragURL);
     let shaderProgram = new ShaderProgram(vertexShaderSource, fragmentShaderSource);
     return shaderProgram;
 }
 
-async function loadMeshDataFromJSON(url: string) {
+async function loadMeshDataFromJSON(url: string): Promise<any> {
     let src = await loadTextResource(url);
-    let meshData;
+    let meshData = null;
     try {
         meshData = JSON.parse(src);
     } catch (e) {

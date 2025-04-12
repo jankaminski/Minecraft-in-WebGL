@@ -6,10 +6,11 @@ import {
 import { VoxelBox } from "./voxel-box.js";
 import { 
     Hitbox, 
-    collided 
+    collided,
+    Collidable 
 } from "./collision.js";
 import { 
-    makeAttrPtr,
+    VertexAttribute,
     makeOneFaceIndices,
     Mesh, 
     Model,
@@ -33,6 +34,9 @@ import {
     CHUNK_WIDTH_IN_BLOCKS, 
     TOTAL_BLOCKS_PER_CHUNK 
 } from "./block-access.js";
+import { Generator, StructureGenerator, Terrain } from "./terrain.js";
+import { Entity } from "./entity.js";
+import { Level } from "./level.js";
 
 const FACES_IN_CUBE = 6; // oh really? 
 
@@ -41,30 +45,45 @@ const INDICES_TEMPLATE = [
 ];
 
 class ChunkIndex {
-    constructor(x, z) {
+    x: number;
+    z: number;
+    constructor(x: number, z: number) {
         this.x = x;
         this.z = z;
     }
-    equals(index) {
+    equals(index: ChunkIndex) {
         return this.x === index.x && this.z === index.z;
     }
     clone() {
         return new ChunkIndex(this.x, this.z);
     }
-    offset(x, z) {
+    offset(x: number, z: number) {
         this.x += x;
         this.z += z;
         return this;
     }
 }
 
-class Chunk extends VoxelBox {
-    constructor(terrain, indexX, indexZ) {
+class Chunk extends VoxelBox implements Collidable {
+    terrain: Terrain;
+    blocks: number[];
+    modifiedBlocks: boolean[];
+    index: ChunkIndex;
+    toDelete: boolean;
+    model: Model | null;
+    toRefresh: boolean;
+    terrainHeightMap: number[];
+    entitiesForCollision: Entity[];
+    isHighlighted: boolean;
+    highlightedBlockIndex: number;
+    blockBreakProgress: number;
+    loadedStructures: Structure[];
+    constructor(terrain: Terrain, index: ChunkIndex) {
         super(CHUNK_WIDTH_IN_BLOCKS, CHUNK_HEIGHT_IN_BLOCKS, CHUNK_WIDTH_IN_BLOCKS);
         this.terrain = terrain;
         this.blocks = [];
         this.modifiedBlocks = [];
-        this.index = new ChunkIndex(indexX, indexZ);
+        this.index = index.clone();
         this.toDelete = false;
         this.model = null;
         this.toRefresh = false;
@@ -81,12 +100,12 @@ class Chunk extends VoxelBox {
         this.loadedStructures = [];
         this.generateStructures(terrain.getStructureGenerators());
     }
-    loadBlockUpdateData(index, breakProgress) {
+    loadBlockUpdateData(index: number, breakProgress: number) {
         this.highlightedBlockIndex = index;
         this.isHighlighted = true;
         this.blockBreakProgress = breakProgress;
     }
-    setToRefresh(toRefresh) {
+    setToRefresh(toRefresh: boolean) {
         this.toRefresh = toRefresh;
     }
     isToRefresh() {
@@ -94,47 +113,59 @@ class Chunk extends VoxelBox {
     }
     getWorldMinPosition() {
         let wpArray = this.getWorldPositionArray();
-        let min = { x : wpArray[0], y : 0, z : wpArray[2] };
+        let min = new Vec3(wpArray[0], 0, wpArray[2]);
         return min;
     }
-    getWorldBounds() {
-        let min = this.getWorldMinPosition();
-        let max = { x : min.x + CHUNK_WIDTH, y : CHUNK_HEIGHT, z : min.z + CHUNK_WIDTH };
-        return { 
-            min, 
-            max,
-            getMinX : () => min.x,
-            getMinY : () => min.y,
-            getMinZ : () => min.z,
-            getMaxX : () => max.x,
-            getMaxY : () => max.y,
-            getMaxZ : () => max.z
-        };
+    getCenter(): Vec3 {
+        return this.getWorldMinPosition().withAdded(this.getSize().dividedByScalar(2));
+    }
+    getSize(): Vec3 {
+        return new Vec3(CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_WIDTH);
+    }
+    getMinX(): number {
+        return this.getWorldMinPosition().x;
+    }
+    getMaxX(): number {
+        return this.getWorldMinPosition().x + CHUNK_WIDTH;
+    }
+    getMinY(): number {
+        return 0;
+    }
+    getMaxY(): number {
+        return CHUNK_HEIGHT;
+    }
+    getMinZ(): number {
+        return this.getWorldMinPosition().z;
+    }
+    getMaxZ(): number {
+        return this.getWorldMinPosition().z + CHUNK_WIDTH;
     }
     shredEntities() {
         this.entitiesForCollision = [];
     }
-    updateEntities(level) {
+    updateEntities(level: Level) {
         this.entitiesForCollision = [];
         for (let entity of level.entities) {
-            let entityHitbox = new Hitbox(entity);
-            if (collided(entityHitbox, this.getWorldBounds()))
+            if (collided(entity, this))
                 this.entitiesForCollision.push(entity);
         }
     }
-    getNearbyChunk(xOffset, zOffset) {
+    getNearbyChunk(xOffset: number, zOffset: number): Chunk | null {
         let indexX = this.index.x + xOffset;
         let indexZ = this.index.z + zOffset;
         return BlockAccess.getChunkByIndex(this.terrain, new ChunkIndex(indexX, indexZ));
     }
-    getNeighborChunks(xRadius, zRadius) {
-        let fetchedChunks = [];
+    getNeighborChunks(xRadius: number, zRadius: number): Chunk[] {
+        let fetchedChunks: Chunk[] = [];
         for (let x = -xRadius; x <= xRadius; x++)
-            for (let z = -zRadius; z <= zRadius; z++)
-                fetchedChunks.push(this.getNearbyChunk(x, z));
+            for (let z = -zRadius; z <= zRadius; z++) {
+                let chunk = this.getNearbyChunk(x, z);
+                if (chunk !== null)
+                    fetchedChunks.push(chunk);
+            }
         return fetchedChunks;
     }
-    generateTerrain(generator) {
+    generateTerrain(generator: Generator) {
         for (let i = 0; i < TOTAL_BLOCKS_PER_CHUNK; i++) {
             let { x, y, z } = this.makeVoxelCoordsFromIndex(i);
             let height = 90 + generator.evalHeight(this.index, x, z);
@@ -148,7 +179,7 @@ class Chunk extends VoxelBox {
             }
         }
     }
-    generateStructures(generators) {
+    generateStructures(generators: StructureGenerator[]) {
         for (let i = 0; i < TOTAL_BLOCKS_PER_CHUNK; i++) {
             let { x, y, z } = this.makeVoxelCoordsFromIndex(i);
             for (let generator of generators) {
@@ -157,14 +188,14 @@ class Chunk extends VoxelBox {
                 if (y === terrHeight && height > Math.trunc(generator.hillHeight) - 2) {
                     let xx = x + this.index.x * CHUNK_WIDTH_IN_BLOCKS;
                     let zz = z + this.index.z * CHUNK_WIDTH_IN_BLOCKS;
-                    let position = Vec3.make(xx, y, zz);
+                    let position = new Vec3(xx, y, zz);
                     let structure = new Structure(generator.structureTemplate, position, this);
                     this.terrain.structures.push(structure);
                 }
             }
         }
     }
-    loadStructure(structure) {
+    loadStructure(structure: Structure) {
         let template = structure.template;
         let min = structure.getMin(this);
         let size = template.size;
@@ -189,18 +220,18 @@ class Chunk extends VoxelBox {
             0,
             this.index.z * CHUNK_WIDTH
         ];
-        return position;
+        return new Float32Array(position);
     }
     acquireModel() {
         this.model = new Model(makeChunkMesh(this), BLOCK_TEXTURE_ATLAS);
     }
-    getBlockByIndex(index) {
+    getBlockByIndex(index: number) {
         return this.blocks[index];
     }
-    setBlockByIndex(index, newBlockID) {
+    setBlockByIndex(index: number, newBlockID: number) {
         this.blocks[index] = newBlockID;
     }
-    setBlockByInChunkCoords(x, y, z, block) {
+    setBlockByInChunkCoords(x: number, y: number, z: number, block: number) {
         let { chunk, chunkIndex, blockCoords, exceededY } = BlockAccess.getChunkAndInChunkBlockCoordsByBlockCoords(this, x, y, z);
         if (chunk === null)
             return;
@@ -211,25 +242,27 @@ class Chunk extends VoxelBox {
 }
 
 class ChunkVertexBuffer {
-    constructor(chunk) {
+    vertices: number[];
+    indices: number[];
+    constructor(chunk: Chunk) {
         let verticesAndIndices = this.makeVerticesAndIndices(chunk);
         this.vertices = verticesAndIndices.vertices;
         this.indices = verticesAndIndices.indices;
     }
-    makeOneFaceVertices(faceIndex, blockIndex, thisBlockID) {
-        let vertices = [];
+    makeOneFaceVertices(faceIndex: number, blockIndex: number, thisBlockID: number) {
+        let vertices: number[] = [];
         for (let i = 0; i < VERTICES_PER_FACE; i++) {
             let vertexIndex = faceIndex * VERTICES_PER_FACE + i;
             vertices.push(vertexIndex, blockIndex, thisBlockID);
         }
         return vertices;
     }
-    makeVerticesAndIndices(chunk) {
-        let vertices = [];
-        let indices = [];
+    makeVerticesAndIndices(chunk: Chunk) {
+        let vertices: number[] = [];
+        let indices: number[] = [];
         for (let blockIndex = 0; blockIndex < TOTAL_BLOCKS_PER_CHUNK; blockIndex++) {
             let thisBlockID = chunk.getBlockByIndex(blockIndex);
-            let neighbors = [];
+            let neighbors: number[] = [];
             let { x, y, z } = chunk.makeVoxelCoordsFromIndex(blockIndex);
             neighbors[0] = BlockAccess.getBlockByInChunkCoords(chunk, x + 1, y, z);
             neighbors[1] = BlockAccess.getBlockByInChunkCoords(chunk, x - 1, y, z);
@@ -250,16 +283,16 @@ class ChunkVertexBuffer {
     }
 }
 
-function makeChunkMesh(chunk) {
+function makeChunkMesh(chunk: Chunk): Mesh {
     let chunkVertexBuffer = new ChunkVertexBuffer(chunk);
     let vertices = chunkVertexBuffer.vertices;
     let indices = chunkVertexBuffer.indices;
-    let attr = makeAttrPtr(0, 3, 3, 0);
+    let attr = new VertexAttribute(0, 3, 3, 0);
     let mesh = new Mesh(vertices, indices, attr);
     return mesh;
 }
 
-async function makeChunkShaderProgram(projectionMatrix) {
+async function makeChunkShaderProgram(projectionMatrix: Float32Array<ArrayBufferLike>) {
     let terrainProgram = await loadShaderProgramFromFiles("./src/shaders/terrain-vert.glsl", "./src/shaders/terrain-frag.glsl");
     terrainProgram.turnOn();
     terrainProgram.loadMatrix("mProj", projectionMatrix);

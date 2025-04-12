@@ -1,8 +1,10 @@
-import { Vec3 } from "./math-utils.ts";
+import { Vec3 } from "./math-utils.js";
+import { Chunk } from "./chunk.js";
+import { Collidable } from "./collision.js";
 
 const BLOCK_SIZE = 1.0;
 
-class Block {
+class Block implements Collidable {
     static AIR = 0;
     static OAK_LOG = 1;
     static COBBLESTONE = 2;
@@ -23,28 +25,34 @@ class Block {
         this.center = pos.clone();
         this.id = id;
     }
-    getID() {
+    getID(): number {
         return this.id;
     }
-    getChunk() {
+    getChunk(): Chunk {
         return this.chunk;
     }
-    getPosInChunk() {
+    getPosInChunk(): Vec3 {
         return this.posInChunk;
     }
-    getIndex() {
+    getIndex(): number {
         return this.index;
     }
-    getCenter() {
+    getCenter(): Vec3 {
         return this.center.clone();
     }
-    getSize() {
+    getSize(): Vec3 {
         return new Vec3(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
     }
-    isSolid() {
+    getMinX() { return this.center.x - (BLOCK_SIZE / 2); }
+    getMinY() { return this.center.y - (BLOCK_SIZE / 2); }
+    getMinZ() { return this.center.z - (BLOCK_SIZE / 2); }
+    getMaxX() { return this.center.x + (BLOCK_SIZE / 2); }
+    getMaxY() { return this.center.y + (BLOCK_SIZE / 2); }
+    getMaxZ() { return this.center.z + (BLOCK_SIZE / 2); }
+    isSolid(): boolean {
         return getBlockProperties(this.id).solid;
     }
-    isTransparent() {
+    isTransparent(): boolean {
         return getBlockProperties(this.id).transparent;
     }
 }
@@ -54,7 +62,7 @@ class BlockProperties {
     solid: boolean;
     transparent: boolean;
     blastResistance: number;
-    constructor(id, solid, transparent, blastResistance) {
+    constructor(id: number, solid: boolean, transparent: boolean, blastResistance: number) {
         this.id = id;
         this.solid = solid;
         this.transparent = transparent;
@@ -62,9 +70,9 @@ class BlockProperties {
     }
 }
 
-let blockList = [];
+let blockList: BlockProperties[] = [];
 
-function registerBlock(blockList, id, solid, transparent, blastResistance) {
+function registerBlock(blockList: BlockProperties[], id: number, solid: boolean, transparent: boolean, blastResistance: number) {
     blockList[id] = new BlockProperties(id, solid, transparent, blastResistance);
 }
 
@@ -77,7 +85,7 @@ registerBlock(blockList, Block.DIRT,         true,  false, 38);
 registerBlock(blockList, Block.GRASS,        true,  false, 38);
 registerBlock(blockList, Block.OAK_LEAVES,   true,  true, 0.1);
 
-function getBlockProperties(id) {
+function getBlockProperties(id: number) {
     return blockList[id];
 }
 

@@ -1,40 +1,51 @@
 import { VoxelBox } from "./voxel-box.js";
 import { loadMeshDataFromJSON } from "./res-utils.js";
 import { Vec3 } from "./math-utils.js";
-import { CHUNK_WIDTH_IN_BLOCKS } from "./chunk.js";
+import { Chunk, CHUNK_WIDTH_IN_BLOCKS, ChunkIndex } from "./chunk.js";
 import { BlockAccess } from "./block-access.js";
 import { areAll } from "./misc-utils.js";
 
 class StructureTemplate extends VoxelBox {
-    constructor(jsonData) {
+    blocks: number[];
+    size: Vec3;
+    root: Vec3;
+    noOfBlocks: number;
+    constructor(jsonData: any) {
         super(jsonData.size.x, jsonData.size.y, jsonData.size.z)
         this.blocks = jsonData.blocks;
         this.size = jsonData.size;
         this.root = jsonData.root;
-        this.noOfBlocks = Vec3.xyzScalarProduct(this.sizeInVoxels);
+        this.noOfBlocks = this.sizeInVoxels.xyzScalarProduct();
     }
 }
 
 class Structure {
-    constructor(template, position, rootChunk) {
+    template: StructureTemplate;
+    position: Vec3;
+    rootChunk: Chunk;
+    min: Vec3;
+    max: Vec3;
+    collidingChunkIndices: ChunkIndex[];
+    constructor(template: StructureTemplate, position: Vec3, rootChunk: Chunk) {
         this.template = template;
         this.position = position;
         this.rootChunk = rootChunk;
         this.min = this.getMin(rootChunk);
-        this.max = Vec3.add(this.min, template.size);
+        this.max = this.min.withAdded(template.size);
         this.collidingChunkIndices = [];
         this.acquireCollidingChunkIndices();
         this.reload();
     }
-    getMin(chunk) {
-        let chunkMinInBlocks = { 
-            x : chunk.index.x * CHUNK_WIDTH_IN_BLOCKS, 
-            y : 0, 
-            z : chunk.index.z * CHUNK_WIDTH_IN_BLOCKS };
-        return Vec3.sub(Vec3.sub(this.position, this.template.root), chunkMinInBlocks);
+    getMin(chunk: Chunk) {
+        let chunkMinInBlocks = new Vec3( 
+            chunk.index.x * CHUNK_WIDTH_IN_BLOCKS, 
+            0, 
+            chunk.index.z * CHUNK_WIDTH_IN_BLOCKS
+        );
+        return this.position.subtractedWith(this.template.root).subtractedWith(chunkMinInBlocks);
     }
-    equals(structure) {
-        let posEq = Vec3.compare(structure.position, this.position);
+    equals(structure: Structure) {
+        let posEq = structure.position.equals(this.position);
         let temEq = structure.template == this.template;
         let chuEq = structure.rootChunk == this.rootChunk;
         return posEq && temEq && chuEq;
@@ -63,7 +74,7 @@ class Structure {
     }
 }
 
-async function loadStructureFromFile(url) {
+async function loadStructureFromFile(url: string) {
     const data = await loadMeshDataFromJSON(url);
     return new StructureTemplate(data);
 }

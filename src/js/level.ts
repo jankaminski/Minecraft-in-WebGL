@@ -2,13 +2,19 @@ import { Terrain } from "./terrain.js";
 import { Camera } from "./camera.js";
 import { Input } from "./input.js";
 import { Explosion } from "./explosion.js";
+import { Model } from "./model.js";
+import { Entity } from "./entity.js";
+import { AnimatedParticle, BlockBreakParticle } from "./particle.js";
+import { Player } from "./player.js";
 
 const TERMINAL_VELOCITY = -0.4;
 const GRAVITY_CONSTANT = 0.003;
 
 class EntityRenderBatch {
-    constructor(model, entities) {
-        let batchEntities = [];
+    model: Model;
+    entities: Entity[];
+    constructor(model: Model, entities: Entity[]) {
+        let batchEntities: Entity[] = [];
         for (let entity of entities) {
             if (entity.getModel() === model)
                 batchEntities.push(entity);
@@ -16,16 +22,21 @@ class EntityRenderBatch {
         this.model = model;
         this.entities = batchEntities;
     }
-    add(entity) {
-        if (entity.getModel() !== this.model) {
-            console.log("tried to push wrong entity into batch!");
-            return;
-        }
+    add(entity: Entity) {
+        if (entity.getModel() !== this.model)
+            throw new Error("ERROR: tried to push wrong entity into batch!");
         this.entities.push(entity);
     }
 }
 
 class Level {
+    entities: Entity[];
+    terrain: Terrain;
+    camera: Camera;
+    blockBreakParticles: BlockBreakParticle[];
+    animatedParticles: AnimatedParticle[];
+    entityRenderBatches: EntityRenderBatch[];
+    players: Player[];
     constructor() {
         this.entities = [];
         this.terrain = new Terrain();
@@ -35,10 +46,10 @@ class Level {
         this.entityRenderBatches = [];
         this.players = [];
     }
-    addPlayer(player) {
+    addPlayer(player: Player) {
         this.players.push(player);
     }
-    addEntity(entity) {
+    addEntity(entity: Entity) {
         this.entities.push(entity);
         let model = entity.getModel();
         for (let batch of this.entityRenderBatches) {

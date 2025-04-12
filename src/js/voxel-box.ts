@@ -1,4 +1,4 @@
-import { Vec3 } from "./math-utils.ts";
+import { Vec3 } from "./math-utils.js";
 
 class VoxelBox {
     sizeInVoxels: Vec3;

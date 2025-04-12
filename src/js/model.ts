@@ -1,36 +1,45 @@
+import { Texture } from "./texture.js";
 import { gl } from "./webgl-init.js";
 
-function makeVBO(vertices, attrPtrs) {
+function makeVBO(vertices: number[], attrPtrs: VertexAttribute[]) {
     let buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     for (let i = 0; i < attrPtrs.length; i++) {
         let a = attrPtrs[i];
-        gl.vertexAttribPointer(a.loc, a.size, gl.FLOAT, gl.FALSE, a.stride, a.offset);
+        gl.vertexAttribPointer(a.loc, a.size, gl.FLOAT, false, a.stride, a.offset);
         gl.enableVertexAttribArray(a.loc);
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     return buf;
 }
 
-function makeIBO(indices) {
+function makeIBO(indices: number[]) {
     let indexBuf = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuf);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
     return indexBuf;
 }
 
-function makeAttrPtr(loc, size, stride, offset) {
-    return {
-        loc : loc,
-        size : size,
-        stride : stride * Float32Array.BYTES_PER_ELEMENT,
-        offset : offset * Float32Array.BYTES_PER_ELEMENT
-    };
+class VertexAttribute {
+    loc: number;
+    size: number;
+    stride: number;
+    offset: number;
+    constructor(loc: number, size: number, stride: number, offset: number) {
+        this.loc = loc;
+        this.size = size;
+        this.stride = stride * Float32Array.BYTES_PER_ELEMENT;
+        this.offset = offset * Float32Array.BYTES_PER_ELEMENT;
+    }
 }
 
 class Mesh {
-    constructor(vertices, indices, ...attrPtrs) {
+    attrPtrs: VertexAttribute[];
+    vertexBuf: WebGLBuffer;
+    indexBuf: WebGLBuffer;
+    indicesCount: number;
+    constructor(vertices: number[], indices: number[], ...attrPtrs: VertexAttribute[]) {
         this.attrPtrs = [];
         for (let i = 0; i < attrPtrs.length; i++)
             this.attrPtrs.push(attrPtrs[i]);
@@ -43,7 +52,7 @@ class Mesh {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuf);
         for (let i = 0; i < this.attrPtrs.length; i++) {
             let a = this.attrPtrs[i];
-            gl.vertexAttribPointer(a.loc, a.size, gl.FLOAT, gl.FALSE, a.stride, a.offset);
+            gl.vertexAttribPointer(a.loc, a.size, gl.FLOAT, false, a.stride, a.offset);
             gl.enableVertexAttribArray(a.loc);
         }
     }
@@ -56,7 +65,9 @@ class Mesh {
 }
 
 class Model {
-    constructor(mesh, texture) {
+    mesh: Mesh;
+    texture: Texture;
+    constructor(mesh: Mesh, texture: Texture) {
         this.mesh = mesh;
         this.texture = texture;
     }
@@ -73,8 +84,8 @@ class Model {
 const VERTICES_PER_FACE = 4;
 const INDICES_PER_FACE = 6;
 
-function makeOneFaceIndices(currentLength, indicesTemplate) {
-    let indices = [];
+function makeOneFaceIndices(currentLength: number, indicesTemplate: number[]) {
+    let indices: number[] = [];
     for (let i = 0; i < INDICES_PER_FACE; i++) {
         let index = indicesTemplate[i] + (currentLength / INDICES_PER_FACE) * VERTICES_PER_FACE;
         indices.push(index);
@@ -82,8 +93,8 @@ function makeOneFaceIndices(currentLength, indicesTemplate) {
     return indices;
 }
 
-function makeMeshIndices(noOfFaces, indicesTemplate) {
-    let indices = [];
+function makeMeshIndices(noOfFaces: number, indicesTemplate: number[]) {
+    let indices: number[] = [];
     for (let i = 0; i < noOfFaces; i++)
         indices = indices.concat(makeOneFaceIndices(indices.length, indicesTemplate));
     return indices;
@@ -92,7 +103,7 @@ function makeMeshIndices(noOfFaces, indicesTemplate) {
 export {
     Mesh,
     Model,
-    makeAttrPtr,
+    VertexAttribute,
     VERTICES_PER_FACE,
     INDICES_PER_FACE,
     makeOneFaceIndices,

@@ -21,11 +21,11 @@ class BlockTextureAtlas extends TextureAtlas {
             BLOCK_TEX_ATLAS_COLUMNS, 
             BLOCK_TEX_ATLAS_ROWS);
     }
-    addBlock(blockID, ...images) {
+    addBlock(blockID: number, ...images: HTMLImageElement[]) {
         if (images.length != 6 && images.length != 1) 
-            throw "BLEH";
+            throw new Error("ERROR: incorrect number of textures assigned to block");
         for (let i = 0; i < 6; i++) {
-            let image;
+            let image: HTMLImageElement | null;
             if (images.length === 1)
                 image = images[0];
             else
@@ -46,7 +46,7 @@ class AnimatedParticleTextureAtlas extends TextureAtlas {
             PARTICLE_TEX_ATLAS_COLUMNS, 
             PARTICLE_TEX_ATLAS_ROWS);
     }
-    addParticle(animation, ...images) {
+    addParticle(animation: ParticleAnimation, ...images: HTMLImageElement[]) {
         if (images.length !== animation.noOfFrames) 
             throw "BLEH";
         for (let i = 0; i < animation.noOfFrames; i++) {

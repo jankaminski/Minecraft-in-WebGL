@@ -1,4 +1,4 @@
-import { canvas, gl } from "./webgl-init.ts";
+import { canvas, gl } from "./webgl-init.js";
 
 class Texture {
     target: GLenum;
@@ -131,6 +131,7 @@ class Framebuffer {
 
 export {
     make2DTexFromImage,
+    Texture,
     TextureAtlas,
     Framebuffer
 };

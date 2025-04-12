@@ -1,4 +1,4 @@
-import { noise } from './perlin-noise.js';
+import { noiseSeed, noiseSimplex2 } from './perlin-noise.js';
 import { 
     areAll, 
     Cooldown 
@@ -7,18 +7,27 @@ import { Chunk, ChunkIndex } from './chunk.js';
 import { Input } from './input.js';
 import { 
     HUGE_BOX, 
-    OAK_TREE
+    OAK_TREE,
+    Structure,
+    StructureTemplate
 } from './structure.js';
 import { 
     BlockAccess, 
     CHUNK_WIDTH_IN_BLOCKS 
 } from './block-access.js';
+import { Block } from './block.js';
+import { Level } from './level.js';
 
 let RENDER_DISTANCE = 12;
 
 class Terrain {
+    chunks: Chunk[];
+    loadedAreas: LoadedArea[];
+    generator: Generator;
+    structureGenerators: StructureGenerator[];
+    structures: Structure[];
     constructor() {
-        noise.seed(Math.random());
+        noiseSeed(Math.random());
         this.chunks = [];
         this.loadedAreas = [];
         this.generator = new Generator(0.017, 2);
@@ -32,17 +41,17 @@ class Terrain {
     getStructureGenerators() {
         return this.structureGenerators;
     }
-    getLoadedAreaByID(id) {
+    getLoadedAreaByID(id: number) {
         for (let area of this.loadedAreas)
             if (area.id === id)
                 return area;
         return null;
     }
-    updateChunkEntities(level) {
+    updateChunkEntities(level: Level) {
         for (let chunk of this.chunks)
             chunk.updateEntities(level);
     }
-    updateLoadedAreas(level) {
+    updateLoadedAreas(level: Level) {
         if (level.players.length === 0)
             return;
         for (let player of level.players) {
@@ -57,7 +66,7 @@ class Terrain {
             area.update(playerChunkIndex);
         }
     }
-    update(level) {
+    update(level: Level) {
         this.updateChunkEntities(level);
         this.updateLoadedAreas(level);
         this.deleteOutOfSightChunks();
@@ -96,7 +105,7 @@ class Terrain {
         }
         this.chunks = [];
     }
-    setBlockByWorldCoords(x, y, z, block) {
+    setBlockByWorldCoords(x: number, y: number, z: number, block: number) {
         let chunk = BlockAccess.getChunkByWorldCoords(this, x, z);
         if (chunk === null) 
             return false;
@@ -106,7 +115,7 @@ class Terrain {
         chunk.setBlockByInChunkCoords(blockPosInChunk.x, blockPosInChunk.y, blockPosInChunk.z, block);
         return true;
     }
-    setBlockByBlock(oldBlock, newBlockID) {
+    setBlockByBlock(oldBlock: Block, newBlockID: number) {
         let chunk = oldBlock.getChunk();
         let index = oldBlock.getIndex();
         chunk.setBlockByIndex(index, newBlockID);
@@ -115,26 +124,38 @@ class Terrain {
 }
 
 class Generator {
-    constructor(hillWidth, hillHeight) {
+    hillWidth: number;
+    hillHeight: number;
+    constructor(hillWidth: number, hillHeight: number) {
         this.hillWidth = hillWidth;
         this.hillHeight = hillHeight;
     }
-    evalHeight(chunkIndex, x, z) {
-        return noise.simplex2(
+    evalHeight(chunkIndex: ChunkIndex, x: number, z: number) {
+        return noiseSimplex2(
             (chunkIndex.x * CHUNK_WIDTH_IN_BLOCKS + x) * this.hillWidth, 
             (chunkIndex.z * CHUNK_WIDTH_IN_BLOCKS + z) * this.hillWidth) * this.hillHeight;
     }
 }
 
 class StructureGenerator extends Generator {
-    constructor(hillWidth, hillHeight, structureTemplate) {
+    structureTemplate: StructureTemplate;
+    constructor(hillWidth: number, hillHeight: number, structureTemplate: StructureTemplate) {
         super(hillWidth, hillHeight);
         this.structureTemplate = structureTemplate;
     }
 }
 
 class LoadedArea {
-    constructor(terrain, index, radius, id) {
+    id: number;
+    terrain: Terrain;
+    radius: number;
+    centralIndex: ChunkIndex;
+    physicalSpreader: LoadSpreader;
+    graphicalSpreader: LoadSpreader;
+    refreshSpreader: LoadSpreader;
+    distanceFromPreviousCenter: number;
+    refreshCooldown: Cooldown;
+    constructor(terrain: Terrain, index: ChunkIndex, radius: number, id: number) {
         this.id = id;
         this.terrain = terrain;
         this.radius = radius;
@@ -146,7 +167,7 @@ class LoadedArea {
         this.refreshCooldown = new Cooldown(300);
         this.refreshCooldown.setCurrentProgress(280);
     }
-    update(newCentralIndex) {
+    update(newCentralIndex: ChunkIndex) {
         if (!this.centralIndex.equals(newCentralIndex)) {
             this.centralIndex = newCentralIndex.clone();
             console.log("loaded area moved");
@@ -170,12 +191,24 @@ class LoadedArea {
 }
 
 class LoadSpreader {
-    constructor(terrain, originIndex, updateRate) {
+    terrain: Terrain;
+    updateCooldown: Cooldown;
+    originIndex: ChunkIndex;
+    currentLayerIndices: ChunkIndex[];
+    noOfAlreadyLoadedChunks: number;
+    noOfChunksToLoad: number;
+    currentLayer: number;
+    constructor(terrain: Terrain, originIndex: ChunkIndex, updateRate: number) {
         this.terrain = terrain;
         this.updateCooldown = new Cooldown(updateRate);
-        this.restart(originIndex);
+        //this.restart(originIndex);
+        this.originIndex = originIndex.clone();
+        this.currentLayerIndices = [originIndex.clone()];
+        this.noOfAlreadyLoadedChunks = 0;
+        this.noOfChunksToLoad = 0;
+        this.currentLayer = 0;
     }
-    restart(originIndex) {
+    restart(originIndex: ChunkIndex) {
         this.originIndex = originIndex.clone();
         this.currentLayerIndices = [originIndex.clone()];
         this.noOfAlreadyLoadedChunks = 0;
@@ -183,7 +216,7 @@ class LoadSpreader {
         this.currentLayer = 0;
     }
     beginNewLoadingLayer() {
-        let newIndices = [];
+        let newIndices: ChunkIndex[] = [];
         for (let i = -this.currentLayer; i <= this.currentLayer; i++) {
             let offsetX = this.originIndex.x + i;
             let offsetZ1 = this.originIndex.z;
@@ -213,21 +246,21 @@ class LoadSpreader {
 } 
 
 class PhysicalLoadSpreader extends LoadSpreader {
-    constructor(terrain, originIndex, updateRate) {
+    constructor(terrain: Terrain, originIndex: ChunkIndex, updateRate: number) {
         super(terrain, originIndex, updateRate);
     }
     onUpdate() {
         let index = this.currentLayerIndices[this.noOfAlreadyLoadedChunks];
         let chunk = BlockAccess.getChunkByIndex(this.terrain, index);
         if (chunk === null) {
-            chunk = new Chunk(this.terrain, index.x, index.z);
+            chunk = new Chunk(this.terrain, index);
             this.terrain.chunks.push(chunk);
         }
     }
 }
 
 class GraphicalLoadSpreader extends LoadSpreader {
-    constructor(terrain, originIndex, updateRate) {
+    constructor(terrain: Terrain, originIndex: ChunkIndex, updateRate: number) {
         super(terrain, originIndex, updateRate);
     }
     onUpdate() {
@@ -239,7 +272,7 @@ class GraphicalLoadSpreader extends LoadSpreader {
 }
 
 class RefreshSpreader extends LoadSpreader {
-    constructor(terrain, originIndex, updateRate) {
+    constructor(terrain: Terrain, originIndex: ChunkIndex, updateRate: number) {
         super(terrain, originIndex, updateRate);
     }
     onUpdate() {
@@ -251,4 +284,4 @@ class RefreshSpreader extends LoadSpreader {
     }
 }
 
-export { Terrain };
+export { Terrain, Generator, StructureGenerator };

@@ -4,10 +4,25 @@ import { Vec3 } from "./math-utils.js";
 import { castRay } from "./misc-utils.js";
 import { ParticleAnimation } from "./particle-animation.js";
 import { AnimatedParticle } from "./particle.js";
+import { Level } from "./level.js";
+import { Chunk } from "./chunk.js";
+import { Entity } from "./entity.js";
 
 class Explosion {
-    constructor(position, strength, level, rayWithParticlesFreq, particleOnRayFreq) {
-        this.position = Vec3.copy(position);
+    position: Vec3;
+    strength: number;
+    level: Level;
+    rayWithParticlesFreq: number;
+    particleOnRayFreq: number;
+    affectedChunks: Chunk[];
+    constructor(
+        position: Vec3, 
+        strength: number, 
+        level: Level, 
+        rayWithParticlesFreq: number, 
+        particleOnRayFreq: number
+    ) {
+        this.position = position.clone();
         this.strength = strength;
         this.level = level;
         this.rayWithParticlesFreq = rayWithParticlesFreq;
@@ -24,10 +39,10 @@ class Explosion {
         for (let chunk of this.affectedChunks)
             chunk.acquireModel();
     }
-    castExplosionRay(rayIndex) {
+    castExplosionRay(rayIndex: number) {
         let rv = (Math.random() * 2 - 1) * (Math.PI * 4);
         let rh = (Math.random() * 2 - 1) * (Math.PI * 4);
-        let rayTip = Vec3.copy(this.position);
+        let rayTip = this.position.clone();
         for (let j = 0; j < this.strength; j++) {
             if (rayIndex % this.rayWithParticlesFreq === 0 && j % this.particleOnRayFreq === 0)
                 this.spawnExplosionParticle(rayTip);
@@ -45,13 +60,13 @@ class Explosion {
                 this.affectedChunks.push(block.chunk);
         }
     }
-    spawnExplosionParticle(rayTip) {
+    spawnExplosionParticle(rayTip: Vec3) {
         let mx = (Math.random() - 0.5) / 10;
         let my = (Math.random() - 0.5) / 10;
         let mz = (Math.random() - 0.5) / 10;
         let particle = new AnimatedParticle(
             rayTip, 
-            Vec3.make(mx, my, mz), 
+            new Vec3(mx, my, mz), 
             20, 
             ParticleAnimation.EXPLOSION
         );
@@ -59,7 +74,7 @@ class Explosion {
         this.level.animatedParticles.push(particle);
     }
     punchEntities() {
-        let punchedEntities = [];
+        let punchedEntities: Entity[] = [];
         for (let chunk of this.affectedChunks) {
             //chunk.acquireModel();
             let entities = chunk.entitiesForCollision;
@@ -68,11 +83,11 @@ class Explosion {
                     continue;
                 if (punchedEntities.includes(entity))
                     continue;
-                let diff = Vec3.sub(entity.getCenter(), this.position);
-                let length = Vec3.length(diff);
+                let diff = entity.getCenter().subtractedWith(this.position);
+                let length = diff.length();
                 if (length < this.strength) {
                     let punch = 1 - (length / this.strength);
-                    let { x, y, z } = Vec3.mulS(diff, punch);
+                    let { x, y, z } = diff.multipliedByScalar(punch);
                     entity.addMomentum(x, y, z);
                     punchedEntities.push(entity);
                 }

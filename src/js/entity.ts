@@ -1,31 +1,52 @@
 import { BlockAccess } from "./block-access.js";
 import { BLOCK_SIZE } from "./block.js";
+import { Chunk } from "./chunk.js";
 import { 
+    Collidable,
+    Collision,
     detectCollision, 
     detectCollisionWithTerrain 
 } from "./collision.js";
-import { GRAVITY_CONSTANT, TERMINAL_VELOCITY } from "./level.js";
+import { GRAVITY_CONSTANT, Level, TERMINAL_VELOCITY } from "./level.js";
 import { 
     Mat4, 
     Vec3 
 } from "./math-utils.js";
 import { 
-    makeAttrPtr, 
+    VertexAttribute, 
     makeMeshIndices, 
-    Mesh 
+    Mesh, 
+    Model
 } from "./model.js";
 import { 
     loadShaderProgramFromFiles
 } from "./res-utils.js";
 
-class Entity {
-    constructor(posX, posY, posZ, sizeX, sizeY, sizeZ, model) {
-        this.rotation = Vec3.makeS(0.0);
-        this.center = Vec3.make(posX, posY, posZ);
-        this.size = Vec3.make(sizeX, sizeY, sizeZ);
+class Entity implements Collidable {
+    center: Vec3;
+    size: Vec3;
+    rotation: Vec3;
+    momentum: Vec3;
+    affectedByGravity: boolean;
+    feetOnGround: boolean;
+    toRender: boolean;
+    model: Model;
+    toDelete: boolean;
+    constructor(
+        posX: number, 
+        posY: number, 
+        posZ: number, 
+        sizeX: number, 
+        sizeY: number, 
+        sizeZ: number, 
+        model: Model
+    ) {
+        this.rotation = new Vec3(0.0, 0.0, 0.0);
+        this.center = new Vec3(posX, posY, posZ);
+        this.size = new Vec3(sizeX, sizeY, sizeZ);
         this.toRender = true;
         this.model = model;
-        this.momentum = Vec3.makeS(0.0);
+        this.momentum = new Vec3(0.0, 0.0, 0.0);
         this.affectedByGravity = true;
         this.feetOnGround = false;
         this.toDelete = false;
@@ -33,13 +54,13 @@ class Entity {
     getLimbMatrices() {
         let worldMat = Mat4.identity();
         worldMat = Mat4.translate(worldMat, this.getCenter());
-        worldMat = Mat4.rotate(worldMat, this.rotation.x, Vec3.make(1, 0, 0));
-        worldMat = Mat4.rotate(worldMat, this.rotation.y, Vec3.make(0, 1, 0));
-        worldMat = Mat4.rotate(worldMat, this.rotation.z, Vec3.make(0, 0, 1));
+        worldMat = Mat4.rotate(worldMat, this.rotation.x, new Vec3(1, 0, 0));
+        worldMat = Mat4.rotate(worldMat, this.rotation.y, new Vec3(0, 1, 0));
+        worldMat = Mat4.rotate(worldMat, this.rotation.z, new Vec3(0, 0, 1));
         return [worldMat];
     }
     getEyePos() {
-        return Vec3.copy(this.center);
+        return this.center.clone();
     }
     getModel() {
         return this.model;
@@ -47,74 +68,92 @@ class Entity {
     isToRender() { 
         return this.toRender; 
     }
-    setToRender(toRender) {
+    setToRender(toRender: boolean) {
         this.toRender = toRender;
     }
     getMomentum() {
-        return Vec3.copy(this.momentum);
+        return this.momentum.clone();
     }
-    setMomentum(momentum) {
-        this.momentum = Vec3.copy(momentum);
+    setMomentum(momentum: Vec3) {
+        this.momentum = momentum.clone();
     }
-    setMomX(momX) {
+    setMomX(momX: number) {
         this.momentum.x = momX;
     }
-    setMomY(momY) {
+    setMomY(momY: number) {
         this.momentum.y = momY;
     }
-    setMomZ(momZ) {
+    setMomZ(momZ: number) {
         this.momentum.z = momZ;
     }
-    addMomentumV(momentum) {
-        this.momentum = Vec3.add(this.momentum, momentum);
+    addMomentumV(momentum: Vec3) {
+        this.momentum = this.momentum.withAdded(momentum);
     }
-    addMomentum(x, y, z) {
-        this.momentum = Vec3.add(this.momentum, { x, y, z });
+    addMomentum(x: number, y: number, z: number) {
+        this.momentum = this.momentum.withAdded(new Vec3(x, y, z));
     }
-    addMomX(momX) {
+    addMomX(momX: number) {
         this.momentum.x += momX;
     }
-    addMomY(momY) {
+    addMomY(momY: number) {
         this.momentum.y += momY;
     }
-    addMomZ(momZ) {
+    addMomZ(momZ: number) {
         this.momentum.z += momZ;
     }
     getSize() {
-        return Vec3.copy(this.size);
+        return this.size.clone();
     }
     getCenter() {
-        return Vec3.copy(this.center);
+        return this.center.clone();
     }
-    setCenter(center) {
-        this.center = Vec3.copy(center);
+    getMinX(): number {
+        return this.center.x - this.size.x / 2;
     }
-    shiftPosition(x, y, z) {
-        this.center = Vec3.add(this.center, { x, y, z });
+    getMaxX(): number {
+        return this.center.x + this.size.x / 2;
     }
-    shiftPosX(shift) {
+    getMinY(): number {
+        return this.center.y - this.size.y / 2;
+    }
+    getMaxY(): number {
+        return this.center.y + this.size.y / 2;
+    }
+    getMinZ(): number {
+        return this.center.z - this.size.z / 2;
+    }
+    getMaxZ(): number {
+        return this.center.z + this.size.z / 2;
+    }
+    setCenter(center: Vec3) {
+        this.center = center.clone();
+    }
+    shiftPosition(x: number, y: number, z: number) {
+        this.center = this.center.withAdded(new Vec3(x, y, z));
+    }
+    shiftPosX(shift: number) {
         this.center.x += shift;
     }
-    shiftPosY(shift) {
+    shiftPosY(shift: number) {
         this.center.y += shift;
     }
-    shiftPosZ(shift) {
+    shiftPosZ(shift: number) {
         this.center.z += shift;
     }
     hasFeetOnGround() {
         return this.feetOnGround;
     }
-    setFeetOnGround(feetOnGround) {
+    setFeetOnGround(feetOnGround: boolean) {
         this.feetOnGround = feetOnGround;
     }
     isAffectedByGravity() {
         return this.affectedByGravity;
     }
-    setAffectedByGravity(affectedByGravity) {
+    setAffectedByGravity(affectedByGravity: boolean) {
         this.affectedByGravity = affectedByGravity;
     }
     getRotation() {
-        return Vec3.copy(this.rotation);
+        return this.rotation.clone();
     }
     getRotX() {
         return this.rotation.x;
@@ -122,13 +161,13 @@ class Entity {
     getRotY() {
         return this.rotation.y;
     }
-    setRotX(rotX) {
+    setRotX(rotX: number) {
         this.rotation.x = rotX;
     }
-    setRotY(rotY) {
+    setRotY(rotY: number) {
         this.rotation.y = rotY;
     }
-    rotate(turnH, turnV) {
+    rotate(turnH: number, turnV: number) {
         this.rotation.x += turnV;
         this.rotation.y += turnH;
         if (this.rotation.x > Math.PI / 2 - 0.001) {
@@ -138,7 +177,7 @@ class Entity {
             this.rotation.x = (-Math.PI / 2) + 0.001;
         }
     }
-    onCollision(collision, level) {  }
+    onCollision(collision: Collision, level: Level) {  }
     unsinkInBlock() {
         console.log("im inside");
         let momentum = this.getMomentum();
@@ -155,30 +194,30 @@ class Entity {
         if (momentum.z < 0) 
             this.shiftPosZ( 0.01);
     }
-    getExternalForces(level) { 
+    getExternalForces(level: Level) { 
         return { 
             turn: { horiz : 0, vert : 0 }, 
-            push : Vec3.makeS(0) 
+            push : new Vec3(0.0, 0.0, 0.0)
         }; 
     }
-    receiveMomentum(level) {
+    receiveMomentum(level: Level) {
         let { turn, push } = this.getExternalForces(level);
         this.rotate(turn.horiz, turn.vert);
         if (this.isAffectedByGravity() && push.y > TERMINAL_VELOCITY) 
             push.y -= GRAVITY_CONSTANT;
-        this.momentum = Vec3.add(this.momentum, push);
+        this.momentum = this.momentum.withAdded(push);
     }
-    getChunksForEntityCollisionCheck(level) {
+    getChunksForEntityCollisionCheck(level: Level): Chunk[] {
         let chunk = BlockAccess.getChunkByWorldCoords(level.terrain, this.center.x, this.center.z);
+        let chunks: Chunk[] = [];
         if (chunk === null)
-            return [null];
-        let neighbors = chunk.getNeighborChunks();
-        let chunks = [];
+            return chunks;
+        let neighbors = chunk.getNeighborChunks(1, 1);
         chunks.push(chunk);
         chunks = chunks.concat(neighbors);
         return chunks;
     }
-    manageCollisionsWithEntities(level) {
+    manageCollisionsWithEntities(level: Level) {
         let chunksToCheck = this.getChunksForEntityCollisionCheck(level);
         for (let chunk of chunksToCheck) {
             if (chunk === null)
@@ -187,11 +226,11 @@ class Entity {
                 if (entity === this)
                     continue;
                 let collision = detectCollision(this, entity);
-                this.onCollision(collision);
+                this.onCollision(collision, level);
             }
         }
     }
-    manageCollisionsWithTerrain(level) {
+    manageCollisionsWithTerrain(level: Level) {
         let { collision, newMomentum } = detectCollisionWithTerrain(this, this.momentum, level.terrain);
         if (collision != null) {
             if (collision.sank) 
@@ -201,24 +240,24 @@ class Entity {
         this.setFeetOnGround(this.momentum.y != newMomentum.y);
         this.momentum = newMomentum;
     }
-    onBeforeMove(level) {}
-    onAfterMove(level) {}
+    onBeforeMove(level: Level) {}
+    onAfterMove(level: Level) {}
     applyFriction() {
         this.momentum.x *= 0.5;
         this.momentum.z *= 0.5;
     }
-    move(level) {
+    move(level: Level) {
         this.onBeforeMove(level);
         if (this.feetOnGround) {
             this.applyFriction();
         }
-        this.center = Vec3.add(this.center, this.momentum);
+        this.center = this.center.withAdded(this.momentum);
         this.onAfterMove(level);
     }
-    onBeforeUpdate(level) {}
-    onAfterUpdate(level) {}
-    getAnimationExternalForces(level) {  }
-    update(level) {
+    onBeforeUpdate(level: Level) {}
+    onAfterUpdate(level: Level) {}
+    getAnimationExternalForces(level: Level) {  }
+    update(level: Level) {
         this.onBeforeUpdate(level);
         // receive momentum
         this.receiveMomentum(level);
@@ -234,10 +273,10 @@ class Entity {
     }
 }
 
-function makeEntityMesh(meshData) {
-    let posAttrPtr = makeAttrPtr(0, 3, 6, 0);
-    let texAttrPtr = makeAttrPtr(1, 2, 6, 3);
-    let jointAttrPtr = makeAttrPtr(2, 1, 6, 5);
+function makeEntityMesh(meshData: any) {
+    let posAttrPtr = new VertexAttribute(0, 3, 6, 0);
+    let texAttrPtr = new VertexAttribute(1, 2, 6, 3);
+    let jointAttrPtr = new VertexAttribute(2, 1, 6, 5);
     let mesh = new Mesh(
         meshData.vertices, 
         makeMeshIndices(meshData.noOfFaces, meshData.indicesTemplate), 
@@ -247,7 +286,7 @@ function makeEntityMesh(meshData) {
     return mesh;
 }
 
-async function makeEntityShaderProgram(projectionMatrix) {
+async function makeEntityShaderProgram(projectionMatrix: Float32Array<ArrayBufferLike>) {
     let entityProgram = await loadShaderProgramFromFiles("./src/shaders/entity-vert.glsl", "./src/shaders/entity-frag.glsl");
     entityProgram.turnOn();
     entityProgram.loadMatrix("mProj", projectionMatrix);

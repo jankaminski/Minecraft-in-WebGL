@@ -6,15 +6,19 @@ import { Creeper } from "./creeper.js";
 import { Player } from "./player.js";
 import { Level } from "./level.js";
 import { CREEPER_MODEL, LEAF_MODEL } from "./models.js";
-import { makeAttrPtr, Mesh } from "./model.js";
+import { VertexAttribute, Mesh } from "./model.js";
 import { Framebuffer } from "./texture.js";
 import { loadShaderProgramFromFiles } from "./res-utils.js";
 import { Input } from "./input.js";
 import { makeAnimatedParticleShaderProgram, makeBlockBreakParticleShaderProgram } from "./particle.js";
-import { AnimatedParticleRenderer, BlockBreakParticleRenderer, EntityRenderer/*, GUIRenderer*/, ScreenBufferRenderer, TerrainRenderer } from "./renderer.js";
+import { AnimatedParticleRenderer, BlockBreakParticleRenderer, EntityRenderer/*, GUIRenderer*/, ScreenBuffer, ScreenBufferRenderer, TerrainRenderer } from "./renderer.js";
 import { QUAD_INDICES, QUAD_VERTICES } from "./misc-utils.js";
 
 class FPSCounter {
+    msPrev: number;
+    fps: number;
+    msPerFrame: number;
+    frames: number;
     constructor() {
         this.msPrev = window.performance.now();
         this.fps = 60;
@@ -40,22 +44,8 @@ class FPSCounter {
     }
 }
 
-function paintSky(red, green, blue) {
+function paintSky(red: number, green: number, blue: number) {
     gl.clearColor(red, green, blue, 1.0);
-}
-
-class ScreenBuffer {
-    constructor(width, height) {
-        this.mesh = new Mesh(QUAD_VERTICES, QUAD_INDICES, makeAttrPtr(0, 2, 4, 0), makeAttrPtr(1, 2, 4, 2));
-        this.frameBuffer = new Framebuffer(width, height);
-        this.unbind();
-    }
-    bind() {
-        this.frameBuffer.bindBuffer();
-    }
-    unbind() {
-        this.frameBuffer.unbindBuffer();
-    }
 }
 
 
@@ -107,7 +97,7 @@ async function run() {
     
     
 
-    let tab = false;
+    let tab: boolean | undefined = false;
     let loop = () => {
         if (quittingGame) {
             return;
@@ -162,6 +152,12 @@ let resumeButton = document.getElementById("resume");
 let quittingGame = false;
 
 let start = () => {
+    if (mainMenu === null)
+        throw new Error("ERROR: could not access main menu in DOM");
+    if (pauseMenu === null)
+        throw new Error("ERROR: could not access pause menu in DOM");
+    if (hotbar === null)
+        throw new Error("ERROR: could not access hotbar in DOM");
     mainMenu.classList.add("hide");
     canvas.classList.add("show");
     Input.init();
@@ -174,24 +170,45 @@ let start = () => {
 };
 
 let pause = () => {
+    if (pauseMenu === null)
+        throw new Error("ERROR: could not access pause menu in DOM");
+    if (hotbar === null)
+        throw new Error("ERROR: could not access hotbar in DOM");
     document.exitPointerLock();
     pauseMenu.classList.add("pause");
     hotbar.classList.add("pause");
 };
 
 let resume = () => {
+    if (pauseMenu === null)
+        throw new Error("ERROR: could not access pause menu in DOM");
+    if (hotbar === null)
+        throw new Error("ERROR: could not access hotbar in DOM");
     canvas.requestPointerLock();
     pauseMenu.classList.remove("pause");
     hotbar.classList.remove("pause");
 };
 
 let quit = () => {
+    if (mainMenu === null)
+        throw new Error("ERROR: could not access main menu in DOM");
+    if (pauseMenu === null)
+        throw new Error("ERROR: could not access pause menu in DOM");
+    if (hotbar === null)
+        throw new Error("ERROR: could not access hotbar in DOM");
     pauseMenu.classList.remove("pause");
     canvas.classList.remove("show");
     mainMenu.classList.remove("hide");
     hotbar.classList.add("hide");
     quittingGame = true;
 };
+
+if (startButton === null)
+    throw new Error("ERROR: could not access start button in DOM");
+if (resumeButton === null)
+    throw new Error("ERROR: could not access resume button in DOM");
+if (quitButton === null)
+    throw new Error("ERROR: could not access quit button in DOM");
 
 console.log("Launched");
 startButton.addEventListener("click", start);

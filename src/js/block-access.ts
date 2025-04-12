@@ -1,6 +1,7 @@
 import { Block, BLOCK_SIZE } from "./block.js";
-import { ChunkIndex } from "./chunk.js";
+import { Chunk, ChunkIndex } from "./chunk.js";
 import { Vec3 } from "./math-utils.js";
+import { Terrain } from "./terrain.js";
 
 const CHUNK_HEIGHT_IN_BLOCKS = 128;
 const CHUNK_WIDTH_IN_BLOCKS = 16;
@@ -10,7 +11,7 @@ const CHUNK_HEIGHT = CHUNK_HEIGHT_IN_BLOCKS * BLOCK_SIZE;
 const TOTAL_BLOCKS_PER_CHUNK = CHUNK_WIDTH_IN_BLOCKS * CHUNK_HEIGHT_IN_BLOCKS * CHUNK_WIDTH_IN_BLOCKS;
 
 class BlockAccess {
-    static getChunkIndexByWorldCoords(x, z) {
+    static getChunkIndexByWorldCoords(x: number, z: number) {
         let x1 = x % CHUNK_WIDTH;
         let z1 = z % CHUNK_WIDTH;
         let x2 = x - x1;
@@ -23,7 +24,7 @@ class BlockAccess {
             indexZ--;
         return new ChunkIndex(indexX, indexZ);
     }
-    static getInChunkBlockCoordsByWorldCoords(x, y, z) {
+    static getInChunkBlockCoordsByWorldCoords(x: number, y: number, z: number): Vec3 | null {
         let blockY = Math.trunc(y) / BLOCK_SIZE;
         if (blockY < 0 || blockY >= CHUNK_HEIGHT_IN_BLOCKS) 
             return null;
@@ -39,27 +40,28 @@ class BlockAccess {
         let blockZ = Math.trunc(z1);
         if (blockZ < 0 || blockZ >= CHUNK_WIDTH_IN_BLOCKS) 
             return null;
-        return { x : blockX, y : blockY, z : blockZ };
+        return new Vec3(blockX, blockY, blockZ);
     }
-    static getChunkByIndex(terrain, index) {
+    static getChunkByIndex(terrain: Terrain, index: ChunkIndex) {
         for (let chunk of terrain.chunks)
             if (index.equals(chunk.index))
                 return chunk;
         return null;
     }
-    static getChunkByWorldCoords(terrain, x, z) {
+    static getChunkByWorldCoords(terrain: Terrain, x: number, z: number) {
         let index = this.getChunkIndexByWorldCoords(x, z);
         let chunk = this.getChunkByIndex(terrain, index);
         return chunk;
     }
-    static getBlockCenterByWorldCoords(x, y, z) {
-        let center = Vec3.make(
+    static getBlockCenterByWorldCoords(x: number, y: number, z: number) {
+        let center = new Vec3(
             (Math.trunc(x) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(x), 
             (Math.trunc(y) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(y), 
-            (Math.trunc(z) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(z));
+            (Math.trunc(z) / BLOCK_SIZE) + (BLOCK_SIZE / 2) * Math.sign(z)
+        );
         return center;
     }
-    static getBlockByWorldCoords(terrain, x, y, z) {
+    static getBlockByWorldCoords(terrain: Terrain, x: number, y: number, z: number) {
         let chunk = this.getChunkByWorldCoords(terrain, x, z);
         if (chunk === null) 
             return null;
@@ -72,23 +74,23 @@ class BlockAccess {
         let blockID = this.getBlockByInChunkCoords(chunk, blockX, blockY, blockZ);
         return new Block(chunk, blockPosInChunk, blockIndex, center, blockID);
     }
-    static getWorldCoordsByInChunkBlockCoords(chunk, x, y, z) {
+    static getWorldCoordsByInChunkBlockCoords(chunk: Chunk, x: number, y: number, z: number) {
         let worldX = chunk.index.x * CHUNK_WIDTH + x * BLOCK_SIZE + (BLOCK_SIZE / 2);
         let worldY = y * BLOCK_SIZE;
         let worldZ = chunk.index.z * CHUNK_WIDTH + z * BLOCK_SIZE + (BLOCK_SIZE / 2);
         return { worldX, worldY, worldZ };
     }
-    static coordsNotOutsideChunk(x, y, z) {
+    static coordsNotOutsideChunk(x: number, y: number, z: number) {
         let notExceededX = x < CHUNK_WIDTH_IN_BLOCKS && x >= 0;
         let notExceededY = y < CHUNK_HEIGHT_IN_BLOCKS && y >= 0;
         let notExceededZ = z < CHUNK_WIDTH_IN_BLOCKS && z >= 0;
         return { notExceededX, notExceededY, notExceededZ };
     }
-    static allCoordsInsideChunk(x, y, z) {
+    static allCoordsInsideChunk(x: number, y: number, z: number) {
         let { notExceededX, notExceededY, notExceededZ } = this.coordsNotOutsideChunk(x, y, z);
         return notExceededX && notExceededY && notExceededZ;
     }
-    static getChunkIndexByBlockCoords(origChunk, x, z) {
+    static getChunkIndexByBlockCoords(origChunk: Chunk, x: number, z: number) {
         let chunkXOffset = Math.trunc(x / CHUNK_WIDTH_IN_BLOCKS);
         let chunkZOffset = Math.trunc(z / CHUNK_WIDTH_IN_BLOCKS);
         if (x < 0)
@@ -97,7 +99,7 @@ class BlockAccess {
             chunkZOffset--;
         return origChunk.index.clone().offset(chunkXOffset, chunkZOffset);
     }
-    static getChunkIndexAndInChunkBlockCoordsByBlockCoords(origChunk, x, y, z) {
+    static getChunkIndexAndInChunkBlockCoordsByBlockCoords(origChunk: Chunk, x: number, y: number, z: number) {
         let { notExceededX, notExceededY, notExceededZ } = this.coordsNotOutsideChunk(x, y, z);
         if (notExceededX && notExceededY && notExceededZ) {
             return {
@@ -119,9 +121,9 @@ class BlockAccess {
             exceededY : !notExceededY
         };
     }
-    static getChunkAndInChunkBlockCoordsByBlockCoords(origChunk, x, y, z) {
+    static getChunkAndInChunkBlockCoordsByBlockCoords(origChunk: Chunk, x: number, y: number, z: number) {
         let { blockCoords, chunkIndex, exceededY } = this.getChunkIndexAndInChunkBlockCoordsByBlockCoords(origChunk, x, y, z);
-        let chunk = null;
+        let chunk: Chunk | null = null;
         if (exceededY)
             return { chunk, chunkIndex, blockCoords, exceededY };
         if (origChunk.index.equals(chunkIndex))
@@ -130,7 +132,7 @@ class BlockAccess {
             chunk = this.getChunkByIndex(origChunk.terrain, chunkIndex);
         return { chunk, chunkIndex, blockCoords, exceededY };
     }
-    static getBlockByInChunkCoords(origChunk, x, y, z) {
+    static getBlockByInChunkCoords(origChunk: Chunk, x: number, y: number, z: number) {
         let { chunk, chunkIndex, blockCoords, exceededY } = this.getChunkAndInChunkBlockCoordsByBlockCoords(origChunk, x, y, z);
         if (exceededY)
             return 0;

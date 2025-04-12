@@ -1,6 +1,3 @@
-import { Vec2 } from "./math-utils.js";
-import { QUAD_INDICES, QUAD_VERTICES } from "./misc-utils.js";
-import { makeAttrPtr, Mesh } from "./model.js";
 
 /*class GUI {
     constructor(min, max) {
