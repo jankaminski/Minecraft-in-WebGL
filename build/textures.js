@@ -32,7 +32,7 @@ class AnimatedParticleTextureAtlas extends TextureAtlas {
     }
     addParticle(animation, ...images) {
         if (images.length !== animation.noOfFrames)
-            throw "BLEH";
+            throw new Error("ERROR: incoorect number of particle animation frames");
         for (let i = 0; i < animation.noOfFrames; i++) {
             this.addTile(images[i], i, animation.id);
         }
